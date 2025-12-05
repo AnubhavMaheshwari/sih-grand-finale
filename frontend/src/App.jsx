@@ -1,3 +1,4 @@
+// App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
 import "./App.css";
 
@@ -6,7 +7,8 @@ import UploadDocumentPage from "./pages/UploadDocumentPage.jsx";
 import FAQPage from "./pages/FAQPage.jsx";
 import ContactUsPage from "./pages/ContactUsPage.jsx";
 import EduRankPage from "./pages/EduRankPage.jsx";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx"; // ✅ NEW
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import UploadedDataPage from "./pages/UploadedDataPage.jsx";  // ✅ NEW
 
 function App() {
   return (
@@ -16,12 +18,16 @@ function App() {
         <Route path="/" element={<LoginPage />} />
 
         {/* Application pages */}
+        {/* Institution upload dashboard */}
         <Route path="/upload" element={<UploadDocumentPage />} />
+        {/* UGC uploaded-data explorer */}
+        <Route path="/uploaded-data" element={<UploadedDataPage />} />   {/* ✅ NEW */}
+
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/contact" element={<ContactUsPage />} />
         <Route path="/edu" element={<EduRankPage />} />
 
-        {/* ✅ Forgot password page */}
+        {/* Forgot password page */}
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* Redirecting from old HTML paths to new React paths */}

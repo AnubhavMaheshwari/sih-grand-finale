@@ -1,5 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
+import { useNavigate } from "react-router-dom";
 import AIIMSDashboard from "../components/AIIMSDashboard";
 import Navigation from "../components/Navigation";
 
@@ -9,10 +14,12 @@ const DEEP_INDIGO = "#3730A3";
 const AIIMS_DELHI_PDF_LINK =
   "https://drive.usercontent.google.com/download?id=12Y4FPPyl14Zyo5kUXgL4KWgXEdiXGJP9&export=download&authuser=0&confirm=t&uuid=8eb9e2e3-31c0-43ac-8fcb-5b4eda3f76e0&at=AKSUxGMnKQF63N2Thj8KYYBHea7I:1760378258613";
 
+const CONSOLIDATED_REPORT_LINK = "/consolidated-report-2025.pdf";
+
 // ---------------- FOOTER ----------------
 const Footer = () => (
-  <footer className="bg-white border-t border-gray-200 py-6 mt-12">
-    <div className="container mx-auto text-center text-sm text-gray-500">
+  <footer className="bg-white border-t border-gray-200 py-4 sm:py-6">
+    <div className="container mx-auto px-4 text-center text-xs sm:text-sm text-gray-500">
       &copy; 2025 SARTHI National Portal, all rights reserved
     </div>
   </footer>
@@ -103,37 +110,69 @@ const instituteData = [
   },
 ];
 
+// 🔥 Amazon-style categories with sub-filters
 const categoryOptions = [
   { value: "all", label: "All Categories" },
-  { value: "Engineering", label: "Engineering" },
-  { value: "Medical", label: "Medical" },
-  { value: "Business", label: "Business" },
-  { value: "Architecture", label: "Architecture" },
-  { value: "Pharmacy", label: "Pharmacy" },
+  {
+    value: "Engineering",
+    label: "Engineering",
+    subcategories: [
+      { value: "top-3", label: "Top 3 in India" },
+      { value: "score-80-plus", label: "Score 80+" },
+    ],
+  },
+  {
+    value: "Medical",
+    label: "Medical",
+    subcategories: [
+      { value: "top-3", label: "Top 3 in India" },
+      { value: "score-80-plus", label: "Score 80+" },
+    ],
+  },
+  {
+    value: "Business",
+    label: "Business",
+    subcategories: [
+      { value: "top-3", label: "Top 3 in India" },
+      { value: "score-80-plus", label: "Score 80+" },
+    ],
+  },
+  {
+    value: "Architecture",
+    label: "Architecture",
+    subcategories: [
+      { value: "top-3", label: "Top 3 in India" },
+      { value: "score-80-plus", label: "Score 80+" },
+    ],
+  },
+  {
+    value: "Pharmacy",
+    label: "Pharmacy",
+    subcategories: [
+      { value: "top-3", label: "Top 3 in India" },
+      { value: "score-80-plus", label: "Score 80+" },
+    ],
+  },
 ];
 
 const SortIcon = ({ direction }) => {
   const isAsc = direction === "asc";
   const isDesc = direction === "desc";
   return (
-    <span className="sort-icon ml-auto opacity-40 transition-opacity group-hover:opacity-100">
+    <span className="ml-1 opacity-50 inline-flex">
       <svg
-        className="w-4 h-4"
+        className="w-3 h-3"
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
         fill="currentColor"
         viewBox="0 0 24 24"
       >
         <path
-          className={`transition-colors ${
-            isAsc ? "text-indigo-600" : "text-gray-400"
-          }`}
+          className={isAsc ? "text-indigo-600" : "text-gray-300"}
           d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Z"
         />
         <path
-          className={`transition-colors ${
-            isDesc ? "text-indigo-600" : "text-gray-400"
-          }`}
+          className={isDesc ? "text-indigo-600" : "text-gray-300"}
           d="M8.574 12.976h6.852a2.075 2.075 0 0 0 1.847-1.087 1.9 1.9 0 0 0-.11-1.985L13.736 7.952a2.122 2.122 0 0 0-3.472 0L6.837 12.976a1.9 1.9 0 0 0-.11 1.985 2.074 2.074 0 0 0 1.847 1.087Z"
         />
       </svg>
@@ -141,9 +180,60 @@ const SortIcon = ({ direction }) => {
   );
 };
 
+const RowActionButton = ({
+  label,
+  href,
+  onClick,
+  disabled,
+  download,
+  variant = "primary",
+}) => {
+  const baseClasses =
+    "px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-medium text-white shadow-sm transition-colors whitespace-nowrap";
+
+  const variants = {
+    primary: "bg-indigo-600 hover:bg-indigo-700",
+    success: "bg-emerald-600 hover:bg-emerald-700",
+    warning: "bg-amber-500 hover:bg-amber-600",
+    neutral: "bg-slate-600 hover:bg-slate-700",
+    disabled:
+      "bg-gray-300 text-gray-600 cursor-not-allowed opacity-70 shadow-none",
+  };
+
+  const classes = disabled ? variants.disabled : variants[variant] || variants.primary;
+
+  if (href && !disabled) {
+    const anchorProps = download
+      ? { download: true }
+      : { target: "_blank", rel: "noopener noreferrer" };
+
+    return (
+      <a
+        href={href}
+        {...anchorProps}
+        className={`${baseClasses} ${classes}`}
+      >
+        {label}
+      </a>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`${baseClasses} ${classes}`}
+    >
+      {label}
+    </button>
+  );
+};
+
 // ---------------- MAIN PAGE ----------------
 function EduRankPage() {
-  // Decide which tab to highlight in navbar
+  const navigate = useNavigate();
+
   const isInstitutionLoggedIn =
     typeof window !== "undefined" &&
     localStorage.getItem("institutionLoggedIn") === "true";
@@ -153,13 +243,19 @@ function EduRankPage() {
     localStorage.getItem("ugcMemberLoggedIn") === "true";
 
   const currentNavTab = isInstitutionLoggedIn
-    ? "Institute Performance" // for institutes
-    : "My Dashboard"; // for UGC/AICTE / others
+    ? "Institute Performance"
+    : "My Dashboard";
 
   const [showDashboard, setShowDashboard] = useState(false);
   const [selectedInstituteId, setSelectedInstituteId] = useState(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+
+  // NEW: subcategory filter + which category is expanded (Amazon-style)
+  const [subCategoryFilter, setSubCategoryFilter] = useState(null);
+  const [expandedCategory, setExpandedCategory] = useState(null);
+
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [sort, setSort] = useState({ column: "rank", direction: "asc" });
@@ -167,12 +263,21 @@ function EduRankPage() {
   const filteredAndSortedData = useMemo(() => {
     let currentData = [...instituteData];
 
+    // Main category filter
     if (categoryFilter !== "all") {
       currentData = currentData.filter(
         (item) => item.category === categoryFilter
       );
     }
 
+    // Subcategory filter (generic, works for all categories)
+    if (subCategoryFilter === "top-3") {
+      currentData = currentData.filter((item) => item.rank <= 3);
+    } else if (subCategoryFilter === "score-80-plus") {
+      currentData = currentData.filter((item) => item.score >= 80);
+    }
+
+    // Search
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       currentData = currentData.filter(
@@ -184,6 +289,7 @@ function EduRankPage() {
       );
     }
 
+    // Compute ranks based on score (within filtered set)
     const rankedData = currentData
       .sort((a, b) => b.score - a.score)
       .map((item, index) => ({ ...item, rank: index + 1 }));
@@ -200,7 +306,7 @@ function EduRankPage() {
     });
 
     return rankedData;
-  }, [searchTerm, categoryFilter, sort]);
+  }, [searchTerm, categoryFilter, subCategoryFilter, sort]);
 
   const pageCount = Math.ceil(filteredAndSortedData.length / entriesPerPage);
   const startIndex = (currentPage - 1) * entriesPerPage;
@@ -213,7 +319,7 @@ function EduRankPage() {
   const entriesInfo = useMemo(() => {
     const total = filteredAndSortedData.length;
     if (total === 0) return "Showing 0 to 0 of 0 entries";
-    return `Showing ${startIndex + 1} to ${endIndex} of ${total} entries`;
+    return `Showing ${startIndex + 1} to ${endIndex} of ${total} institutions`;
   }, [filteredAndSortedData.length, startIndex, endIndex]);
 
   const handleSort = useCallback((column) => {
@@ -229,15 +335,28 @@ function EduRankPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, categoryFilter, entriesPerPage]);
+  }, [searchTerm, categoryFilter, subCategoryFilter, entriesPerPage]);
+
+  const handleViewSubmittedPdfs = (instituteId) => {
+    navigate("/uploaded-data", {
+      state: {
+        instituteId,
+        viewLastFiveYears: true,
+      },
+    });
+  };
+
+  const handleOpenDashboard = (instituteId) => {
+    setSelectedInstituteId(instituteId);
+    setShowDashboard(true);
+  };
 
   // ---------- DASHBOARD VIEW ----------
   if (showDashboard) {
     return (
       <div className="bg-gray-50 font-sans min-h-screen flex flex-col">
-        {/* Highlight tab in navbar */}
         <Navigation currentPage={currentNavTab} />
-        <main className="py-10 flex-grow">
+        <main className="flex-1 py-6 sm:py-8">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <AIIMSDashboard
               instituteId={selectedInstituteId}
@@ -250,15 +369,14 @@ function EduRankPage() {
     );
   }
 
-  // ---------- TABLE VIEW ----------
   const PaginationButton = ({ page, isActive, isDisabled, children }) => (
     <button
       onClick={() => !isDisabled && setCurrentPage(page)}
       disabled={isDisabled}
-      className={`inline-flex items-center justify-center px-3 h-8 text-sm font-medium border rounded-md transition-colors ${
+      className={`inline-flex items-center justify-center px-3 h-8 text-xs sm:text-sm font-medium rounded-md transition-colors ${
         isActive
-          ? "bg-indigo-600 text-white border-indigo-600"
-          : "bg-white text-gray-500 border-gray-300 hover:bg-gray-100"
+          ? "bg-indigo-600 text-white"
+          : "bg-white text-gray-600 hover:bg-gray-100"
       } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
       aria-current={isActive ? "page" : undefined}
     >
@@ -272,12 +390,13 @@ function EduRankPage() {
     return (
       <div className="flex items-center space-x-2">
         <PaginationButton page={currentPage - 1} isDisabled={currentPage === 1}>
-          Previous
+          Prev
         </PaginationButton>
         {pages.map((p) => (
           <PaginationButton key={p} page={p} isActive={currentPage === p}>
-            {p}
-          </PaginationButton>
+  {p}
+</PaginationButton>
+
         ))}
         <PaginationButton
           page={currentPage + 1}
@@ -289,104 +408,215 @@ function EduRankPage() {
     );
   };
 
-  const TableHeader = ({ column, title }) => (
-    <th
-      scope="col"
-      className={`px-6 py-4 font-semibold group cursor-pointer ${
-        sort.column === column ? "bg-gray-100" : ""
-      }`}
-      onClick={() => handleSort(column)}
-    >
-      <div className="flex items-center">
-        {title}
-        <SortIcon direction={sort.column === column ? sort.direction : null} />
-      </div>
-    </th>
-  );
+  const currentCategoryOption =
+    categoryOptions.find((opt) => opt.value === categoryFilter) ||
+    categoryOptions[0];
 
-  const currentCategoryLabel =
-    categoryOptions.find((opt) => opt.value === categoryFilter)?.label ||
-    "All Institutions";
+  const currentSubcategoryLabel =
+    currentCategoryOption.subcategories?.find(
+      (sub) => sub.value === subCategoryFilter
+    )?.label || null;
+
+  const currentCategoryLabel = currentSubcategoryLabel
+    ? `${currentCategoryOption.label} • ${currentSubcategoryLabel}`
+    : currentCategoryOption.label;
 
   return (
     <>
       <style jsx="true">{`
-        #table-body tr {
-          border-bottom: 1px solid #e5e7eb;
-          transition: all 0.2s ease-in-out;
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
         }
-        #table-body tr:last-child {
-          border-bottom: none;
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
         }
-        #table-body tr:hover {
-          transform: scale(1.02);
-          background-color: white;
-          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
-            0 4px 6px -4px rgb(0 0 0 / 0.1);
-          position: relative;
-          z-index: 10;
-        }
-        #table-body tr:nth-child(even) {
-          background-color: #f9fafb;
-        }
-        #table-body tr:nth-child(even):hover {
-          background-color: white;
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background-color: rgba(148, 163, 184, 0.8);
+          border-radius: 999px;
         }
       `}</style>
-      <div className="bg-gray-50 font-sans min-h-screen flex flex-col">
-        {/* Highlight tab in navbar */}
+
+      <div className="bg-slate-50 font-sans h-screen flex flex-col">
+        {/* Top navbar */}
         <Navigation currentPage={currentNavTab} />
 
-        <main className="py-10 flex-grow">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-gray-200">
-              <header className="text-left mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-                  Institute Rankings 2025:{" "}
-                  <span className="text-indigo-600">
-                    {currentCategoryLabel}
-                  </span>
-                </h1>
-              </header>
+        {/* Main layout: LEFT FIXED, RIGHT SCROLLABLE */}
+        <main className="flex-1 flex overflow-hidden">
+          {/* LEFT SIDEBAR (static on md+) */}
+          <aside className="hidden md:flex w-64 lg:w-72 bg-white border-r border-gray-200 flex-col">
+            <div className="p-4 space-y-6 flex-1 overflow-y-auto scrollbar-thin">
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-semibold text-gray-800">
+                  Filters
+                </h2>
+                <span className="text-[10px] text-gray-400 uppercase tracking-wide">
+                  NIRF & Category
+                </span>
+              </div>
 
-              <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span>Show</span>
-                  <select
-                    value={entriesPerPage}
-                    onChange={(e) => setEntriesPerPage(Number(e.target.value))}
-                    className="bg-white border-2 border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-auto p-2"
-                  >
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                  </select>
-                  <span>entries</span>
+              {/* Amazon-style category filter */}
+              <div className="bg-slate-50 rounded-xl border border-slate-100 p-3 space-y-2">
+                <p className="text-[11px] font-semibold text-gray-500 uppercase mb-1">
+                  Category
+                </p>
+                <div className="space-y-1 text-sm">
+                  {categoryOptions.map((opt) => {
+                    const isActive = categoryFilter === opt.value;
+                    const hasSub = !!opt.subcategories?.length;
+                    const isExpanded = expandedCategory === opt.value;
+
+                    return (
+                      <div
+                        key={opt.value}
+                        className="border-b border-gray-100 pb-2 last:border-none last:pb-0"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCategoryFilter(opt.value);
+                            setSubCategoryFilter(null);
+                            setExpandedCategory((prev) =>
+                              prev === opt.value ? null : opt.value
+                            );
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md transition-colors ${
+                            isActive
+                              ? "bg-indigo-600 text-white"
+                              : "bg-white text-gray-800 hover:bg-slate-100 border border-transparent hover:border-slate-200"
+                          }`}
+                        >
+                          <span className="text-xs font-medium">
+                            {opt.label}
+                          </span>
+                          {hasSub && (
+                            <span
+                              className={`ml-2 transform text-[10px] ${
+                                isExpanded ? "rotate-90" : ""
+                              }`}
+                            >
+                              ▶
+                            </span>
+                          )}
+                        </button>
+
+                        {/* Subcategory list */}
+                        {hasSub && isExpanded && (
+                          <div className="mt-2 space-y-1 pl-2">
+                            {opt.subcategories.map((sub) => (
+                              <label
+                                key={sub.value}
+                                className="flex items-center gap-2 text-[11px] text-gray-700 cursor-pointer"
+                              >
+                                <input
+                                  type="radio"
+                                  name={`sub-${opt.value}`}
+                                  className="h-3 w-3 rounded-sm border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                  checked={subCategoryFilter === sub.value}
+                                  onChange={() =>
+                                    setSubCategoryFilter(sub.value)
+                                  }
+                                />
+                                <span>{sub.label}</span>
+                              </label>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => setSubCategoryFilter(null)}
+                              className="mt-1 text-[11px] text-indigo-600 hover:underline"
+                            >
+                              Clear sub-filter
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="bg-white border-2 border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
-                  >
-                    {categoryOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="relative w-full sm:w-auto">
+              </div>
+
+              {/* Uploaded / Submitted Data link */}
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                <p className="text-[11px] font-semibold text-emerald-700 uppercase mb-2">
+                  Uploaded / Submitted Data
+                </p>
+                <a
+                  href="/uploaded-data"
+                  className="inline-flex items-center justify-center w-full px-3 py-2 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-colors"
+                >
+                  View Uploaded Documents
+                </a>
+              </div>
+
+              {/* Summary */}
+              <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-100">
+                <p className="text-[11px] font-semibold text-indigo-700 uppercase mb-1">
+                  Summary
+                </p>
+                <p className="text-sm text-indigo-900 font-semibold">
+                  {filteredAndSortedData.length}{" "}
+                  <span className="font-normal text-indigo-700">
+                    institutions in view
+                  </span>
+                </p>
+                <p className="text-[11px] text-indigo-700 mt-1">
+                  Filter:{" "}
+                  <span className="font-semibold">{currentCategoryLabel}</span>
+                </p>
+              </div>
+            </div>
+          </aside>
+
+          {/* RIGHT CONTENT – ONLY THIS PART SCROLLS */}
+          <section className="flex-1 flex flex-col overflow-y-auto">
+            <div className="h-full flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+              {/* Header card */}
+{/* Simple header (clean) */}
+  <div className="mt-2 mb-3">
+    <h1 className="text-xl sm:text-3xl font-bold text-gray-900">
+      Institute Rankings 2025
+    </h1>
+    
+  </div>
+
+
+              {/* Controls bar */}
+              <div className="mt-4 bg-white rounded-2xl shadow-sm border border-slate-200 px-3 py-3 sm:px-4 sm:py-4">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
+                  {/* Left: entries per page + summary */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 text-xs sm:text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <span>Show</span>
+                      <select
+                        value={entriesPerPage}
+                        onChange={(e) =>
+                          setEntriesPerPage(Number(e.target.value))
+                        }
+                        className="bg-white border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-auto px-2 py-1"
+                      >
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                      </select>
+                      <span>institutions per page</span>
+                    </div>
+                    <div className="hidden sm:block h-4 w-px bg-gray-200" />
+                    <div className="text-xs text-gray-500">
+                      {entriesInfo}
+                    </div>
+                  </div>
+
+                  {/* Right: search */}
+                  <div className="w-full lg:w-72 relative">
                     <input
                       type="text"
-                      placeholder="Search..."
+                      placeholder="Search by name, city, state, ID..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="bg-white border-2 border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5"
+                      className="bg-slate-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-full focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9 pr-3 py-2"
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <svg
-                        className="w-5 h-5 text-gray-400"
+                        className="w-4 h-4 text-gray-400"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -402,131 +632,118 @@ function EduRankPage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-gray-500">
-                  <thead className="text-sm text-gray-800 border-b-2 border-gray-200">
-                    <tr>
-                      <TableHeader column="instituteId" title="Institute ID" />
-                      <TableHeader column="name" title="Name" />
-                      <TableHeader column="city" title="City" />
-                      <TableHeader column="state" title="State" />
-                      <TableHeader column="score" title="Score" />
-                      <TableHeader column="rank" title="Rank" />
-                      <th
-                        scope="col"
-                        className="px-6 py-4 font-semibold text-center"
+              {/* Cards list */}
+              <div className="mt-4 flex-1 overflow-y-auto space-y-4 pb-4 scrollbar-thin">
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((item) => {
+                    const hasPdf =
+                      item.name ===
+                      "All India Institute of Medical Sciences, Delhi";
+
+                    return (
+                      <div
+                        key={item.instituteId}
+                        className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-5 hover:shadow-md hover:border-indigo-100 transition-shadow transition-colors"
                       >
-                        Download
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody id="table-body">
-                    {paginatedData.length > 0 ? (
-                      paginatedData.map((item) => (
-                        <tr key={item.instituteId} className="group">
-                          <td className="px-6 py-4 text-gray-900 whitespace-nowrap">
-                            {item.instituteId}
-                          </td>
-                          <td className="px-6 py-4 font-medium text-gray-900">
-                            <div>{item.name}</div>
-                            <div className="text-xs text-indigo-600 mt-1 space-x-2">
-                              <span
-                                className="hover:underline text-indigo-600 cursor-pointer"
-                                onClick={() => {
-                                  setSelectedInstituteId(item.instituteId);
-                                  setShowDashboard(true);
-                                }}
-                              >
-                                **Statistics**
+                        {/* Top content */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[10px] sm:text-[11px] font-mono text-gray-400 bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5">
+                                {item.instituteId}
                               </span>
-                              <span>|</span>
-                              <Link to="/" className="hover:underline">
-                                📄
-                              </Link>
-                              <span>|</span>
-                              <Link to="/" className="hover:underline">
-                                📊
-                              </Link>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                {item.category}
+                              </span>
                             </div>
-                          </td>
-                          <td className="px-6 py-4">{item.city}</td>
-                          <td className="px-6 py-4">{item.state}</td>
-                          <td className="px-6 py-4">
-                            {item.score.toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 font-bold text-gray-800">
-                            {item.rank}
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            {item.name ===
-                            "All India Institute of Medical Sciences, Delhi" ? (
-                              <a
-                                href={AIIMS_DELHI_PDF_LINK}
-                                className="text-indigo-600 hover:text-indigo-800 transition-colors"
-                                title="Download Report"
-                              >
-                                <svg
-                                  className="w-6 h-6 mx-auto"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth="1.5"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                                  />
-                                </svg>
-                              </a>
-                            ) : (
-                              <span
-                                className="text-gray-400 cursor-not-allowed"
-                                title="No report available"
-                              >
-                                <svg
-                                  className="w-6 h-6 mx-auto"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth="1.5"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                                  />
-                                </svg>
+                            <h2 className="text-sm sm:text-lg font-semibold text-gray-900">
+                              {item.name}
+                            </h2>
+                            <p className="text-xs sm:text-sm text-gray-500">
+                              {item.city}, {item.state}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-4 sm:gap-6">
+                            <div className="text-right">
+                              <p className="text-[10px] sm:text-[11px] uppercase text-gray-400">
+                                Overall Score
+                              </p>
+                              <p className="text-lg sm:text-2xl font-bold text-emerald-600">
+                                {item.score.toFixed(2)}
+                              </p>
+                              <p className="text-[11px] text-gray-400">
+                                AI-evaluated
+                              </p>
+                            </div>
+                            <div className="flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-800 text-white text-xs shadow-sm">
+                              <span className="uppercase text-[9px] tracking-wide">
+                                Rank
                               </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="7"
-                          className="px-6 py-4 text-center text-gray-500"
-                        >
-                          No matching records found.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                              <span className="text-base sm:text-lg font-bold">
+                                {item.rank}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="my-3 border-t border-dashed border-slate-200" />
+
+                        {/* Bottom row: actions */}
+                        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                          {/* 1️⃣ Statistics (dashboard) */}
+                          <RowActionButton
+                            label="Statistics"
+                            variant="primary"
+                            onClick={() => handleOpenDashboard(item.instituteId)}
+                          />
+
+                          {/* 2️⃣ Consolidated Reports */}
+                          <RowActionButton
+                            label="Consolidated Reports"
+                            variant="success"
+                            href={CONSOLIDATED_REPORT_LINK}
+                            download
+                          />
+
+                          {/* 3️⃣ Submitted PDFs -> Uploaded Data Page for that institute */}
+                          <RowActionButton
+                            label="Submitted PDFs (5-year view)"
+                            variant="warning"
+                            onClick={() =>
+                              handleViewSubmittedPdfs(item.instituteId)
+                            }
+                          />
+
+                          {/* 4️⃣ Generate AI Report */}
+                          <RowActionButton
+                            label="Generate AI Report"
+                            variant="neutral"
+                            onClick={() => handleOpenDashboard(item.instituteId)}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center text-gray-500 text-sm py-10">
+                    No matching institutions found for this filter/search.
+                  </div>
+                )}
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-between items-center mt-4">
-                <div className="text-sm text-gray-600 mb-2 sm:mb-0">
+              {/* Footer info + pagination */}
+              <div className="pt-2 mt-2 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div className="text-xs sm:text-sm text-gray-600">
                   {entriesInfo}
                 </div>
                 <PaginationControls />
               </div>
             </div>
-          </div>
+          </section>
         </main>
+
         <Footer />
       </div>
     </>

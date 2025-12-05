@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";
 
 const Navigation = ({ currentPage }) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const isInstitutionLoggedIn =
     typeof window !== "undefined" &&
@@ -17,13 +19,13 @@ const Navigation = ({ currentPage }) => {
   const navItems = isInstitutionLoggedIn
     ? [
         { name: "My Dashboard", path: "/upload" },
-        { name: "Institute Performance", path: "/edu" },
         { name: "FAQ", path: "/faq" },
         { name: "Contact Us", path: "/contact" },
       ]
     : isUGCLoggedIn
     ? [
         { name: "My Dashboard", path: "/edu" },
+        { name: "Uploaded Data", path: "/uploaded-data" },
         { name: "FAQ", path: "/faq" },
         { name: "Contact Us", path: "/contact" },
       ]
@@ -46,12 +48,9 @@ const Navigation = ({ currentPage }) => {
       ]
     : [{ label: "Login", path: "/" }];
 
+  // ✅ use React Router instead of HTML redirects
   const navigateSimulated = (path) => {
-    if (path === "/") window.location.href = "index.html";
-    else if (path === "/faq") window.location.href = "faq.html";
-    else if (path === "/contact") window.location.href = "contactUs.html";
-    else if (path === "/upload") window.location.href = "uploadDoc.html";
-    else if (path === "/edu") window.location.href = "edu.html";
+    navigate(path);
   };
 
   const handleUserMenuClick = (event) => {
@@ -72,30 +71,24 @@ const Navigation = ({ currentPage }) => {
     <nav className="bg-white shadow-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16">
+          {/* Logo */}
           <div className="flex items-center">
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                navigateSimulated("/");
-              }}
-              className="text-2xl font-bold"
+            <button
+              onClick={() => navigateSimulated("/")}
+              className="text-2xl font-bold focus:outline-none"
               style={{ color: DEEP_INDIGO }}
             >
               SARTHI Portal
-            </a>
+            </button>
           </div>
 
           <div className="flex items-center space-x-6">
+            {/* Main Tabs */}
             <div className="hidden md:flex items-baseline space-x-4">
               {navItems.map((item) => (
-                <a
+                <button
                   key={item.name}
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateSimulated(item.path);
-                  }}
+                  onClick={() => navigateSimulated(item.path)}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     item.name === currentPage
                       ? "text-white bg-primary-blue"
@@ -108,10 +101,11 @@ const Navigation = ({ currentPage }) => {
                   }}
                 >
                   {item.name}
-                </a>
+                </button>
               ))}
             </div>
 
+            {/* User Profile Icon and Dropdown */}
             <div className="relative flex items-center">
               <button
                 type="button"
