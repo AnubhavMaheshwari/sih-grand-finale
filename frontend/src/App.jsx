@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
+import { Link } from "react-router-dom";
+import LoginPage from "./pages/LoginPage.jsx";
+import UploadDocumentPage from "./pages/UploadDocumentPage.jsx";
+import FAQPage from "./pages/FAQPage.jsx";
+import ContactUsPage from "./pages/ContactUsPage.jsx";
+import EduRankPage from "./pages/EduRankPage.jsx"; // 1. Import the EduRankPage component
+import { Navigate } from "react-router-dom";
+
+
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Router>
+      <Routes>
+        {/* The main login page */}
+        <Route path="/" element={<LoginPage />} />
+        
+        {/* Application pages */}
+        <Route path="/upload" element={<UploadDocumentPage />} />
+        <Route path="/faq" element={<FAQPage />} />
+        <Route path="/contact" element={<ContactUsPage />} />
+        {/* 2. Add the /edu route to render EduRankPage */}
+        <Route path="/edu" element={<EduRankPage />} /> 
+        
+        {/* Redirecting from old HTML paths to new React paths */}
+        <Route path="/uploaddoc.html" element={<Navigate to="/upload" replace />} />
+        <Route path="/faq.html" element={<Navigate to="/faq" replace />} />
+        <Route path="/contactUs.html" element={<Navigate to="/contact" replace />} />
+        <Route path="/index.html" element={<Navigate to="/" replace />} />
+        <Route path="/edu.html" element={<Navigate to="/edu" replace />} /> {/* Add redirect for edu.html */}
+        
+        {/* Optional: 404 Not Found Page */}
+        <Route path="*" element={
+          <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+            <h1 className="text-6xl font-extrabold text-deep-indigo">404</h1>
+            <p className="text-xl text-gray-700 mt-4">Page Not Found</p>
+            <Link to="/" className="mt-8 text-primary-blue hover:underline">Go to Login Page</Link>
+          </div>
+        } />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
