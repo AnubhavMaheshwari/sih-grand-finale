@@ -1,135 +1,160 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
 
-// Default links used if no links are provided by the parent component (e.g., for the Upload Doc page)
-const defaultNavLinks = [
-    { to: "/upload", label: "Upload Doc" },
-    { to: "/faq", label: "FAQ" },
-    { to: "/contact", label: "Contact Us" },
-];
+const PRIMARY_BLUE = "#4F46E5";
+const DEEP_INDIGO = "#3730A3";
 
-const defaultUserMenuItems = ["Your Profile", "Settings", "Sign out"];
+const Navigation = ({ currentPage }) => {
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-/**
- * Navigation Component
- * Renders links based on the 'navLinks' prop or falls back to 'defaultNavLinks'.
- * @param {string} currentPage - The label of the current active page.
- * @param {Array} navLinks - Custom list of { to: string, label: string } links.
- */
-function Navigation({ currentPage, navLinks }) {
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    
-    // Use the custom links if provided, otherwise use the default.
-    const effectiveNavLinks = navLinks || defaultNavLinks;
+  const isInstitutionLoggedIn =
+    typeof window !== "undefined" &&
+    localStorage.getItem("institutionLoggedIn") === "true";
 
-    const handleUserMenuClick = (event) => {
-        event.stopPropagation();
-        setIsUserMenuOpen(prev => !prev);
-    };
-    
-    const handleMobileMenuClick = (event) => {
-        event.stopPropagation();
-        setIsMobileMenuOpen(prev => !prev);
-    };
+  const isUGCLoggedIn =
+    typeof window !== "undefined" &&
+    localStorage.getItem("ugcMemberLoggedIn") === "true";
 
-    return (
-        <nav className="bg-white shadow-md">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative flex items-center justify-center h-16">
-                    {/* Logo/Title */}
-                    <div className="absolute inset-y-0 left-0 flex items-center">
-                        <Link to="/" className="flex-shrink-0">
-                            <h1 className="text-2xl font-bold text-deep-indigo">
-                                SARTHI National Portal
-                            </h1>
-                        </Link>
-                    </div>
+  const navItems = isInstitutionLoggedIn
+    ? [
+        { name: "My Dashboard", path: "/upload" },
+        { name: "Institute Performance", path: "/edu" },
+        { name: "FAQ", path: "/faq" },
+        { name: "Contact Us", path: "/contact" },
+      ]
+    : isUGCLoggedIn
+    ? [
+        { name: "My Dashboard", path: "/edu" },
+        { name: "FAQ", path: "/faq" },
+        { name: "Contact Us", path: "/contact" },
+      ]
+    : [
+        { name: "Login", path: "/" },
+        { name: "EduRank", path: "/edu" },
+        { name: "FAQ", path: "/faq" },
+        { name: "Contact Us", path: "/contact" },
+      ];
 
-                    {/* Desktop Menu */}
-                    <div className="hidden md:block">
-                        <div className="flex items-baseline space-x-4">
-                            {effectiveNavLinks.map((link) => (
-                                <Link
-                                    key={link.to}
-                                    to={link.to}
-                                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                                        currentPage === link.label || link.to === window.location.pathname
-                                          ? 'text-white bg-primary-blue'
-                                          : 'text-gray-700 hover:bg-primary-blue hover:text-white'
-                                    }`}
-                                    aria-current={currentPage === link.label ? 'page' : undefined}
-                                >
-                                    {link.label}
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
+  const userMenuItems = isInstitutionLoggedIn
+    ? [
+        { label: "Your Profile", path: "/upload" },
+        { label: "Sign out", path: "/" },
+      ]
+    : isUGCLoggedIn
+    ? [
+        { label: "Your Profile", path: "/edu" },
+        { label: "Sign out", path: "/" },
+      ]
+    : [{ label: "Login", path: "/" }];
 
-                    {/* User Menu & Mobile Button */}
-                    <div className="absolute inset-y-0 right-0 flex items-center space-x-3">
-                        {/* User Dropdown */}
-                        <div className="relative">
-                            <button
-                                type="button"
-                                onClick={handleUserMenuClick}
-                                className="flex items-center justify-center h-10 w-10 bg-gray-100 rounded-full text-deep-indigo hover:bg-light-gray focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue"
-                            >
-                                <span className="sr-only">User menu</span>
-                                <i className="fas fa-user"></i>
-                            </button>
+  const navigateSimulated = (path) => {
+    if (path === "/") window.location.href = "index.html";
+    else if (path === "/faq") window.location.href = "faq.html";
+    else if (path === "/contact") window.location.href = "contactUs.html";
+    else if (path === "/upload") window.location.href = "uploadDoc.html";
+    else if (path === "/edu") window.location.href = "edu.html";
+  };
 
-                            {isUserMenuOpen && (
-                                <div
-                                    className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
-                                    onBlur={() => setIsUserMenuOpen(false)}
-                                >
-                                    {defaultUserMenuItems.map((item) => (
-                                        <Link
-                                            key={item}
-                                            to={item === "Sign out" ? "/" : "#"}
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                        >
-                                            {item}
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+  const handleUserMenuClick = (event) => {
+    event.stopPropagation();
+    setIsUserMenuOpen((prev) => !prev);
+  };
 
-                        {/* Mobile Menu Button */}
-                        <div className="flex md:hidden">
-                            <button
-                                type="button"
-                                onClick={handleMobileMenuClick}
-                                className="bg-gray-100 inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-white hover:bg-primary-blue focus:outline-none"
-                            >
-                                <span className="sr-only">Open main menu</span>
-                                <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+  const handleUserMenuItemClick = (item) => {
+    if (item.label === "Sign out") {
+      localStorage.removeItem("institutionLoggedIn");
+      localStorage.removeItem("ugcMemberLoggedIn");
+    }
+    navigateSimulated(item.path);
+    setIsUserMenuOpen(false);
+  };
+
+  return (
+    <nav className="bg-white shadow-md border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigateSimulated("/");
+              }}
+              className="text-2xl font-bold"
+              style={{ color: DEEP_INDIGO }}
+            >
+              SARTHI Portal
+            </a>
+          </div>
+
+          <div className="flex items-center space-x-6">
+            <div className="hidden md:flex items-baseline space-x-4">
+              {navItems.map((item) => (
+                <a
+                  key={item.name}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateSimulated(item.path);
+                  }}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    item.name === currentPage
+                      ? "text-white bg-primary-blue"
+                      : "text-gray-700 hover:bg-primary-blue hover:text-blue-700"
+                  }`}
+                  style={{
+                    backgroundColor:
+                      item.name === currentPage ? PRIMARY_BLUE : undefined,
+                    color: item.name === currentPage ? "white" : undefined,
+                  }}
+                >
+                  {item.name}
+                </a>
+              ))}
             </div>
 
-            {/* Mobile Menu Content */}
-            {isMobileMenuOpen && (
-                <div className="md:hidden">
-                    <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                        {effectiveNavLinks.map((link) => (
-                            <Link
-                                key={link.to}
-                                to={link.to}
-                                className="text-gray-700 hover:bg-primary-blue hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </div>
+            <div className="relative flex items-center">
+              <button
+                type="button"
+                onClick={handleUserMenuClick}
+                className="flex items-center justify-center h-10 w-10 bg-gray-100 rounded-full border-2 border-primary-blue text-deep-indigo hover:bg-gray-200 focus:outline-none"
+              >
+                <span className="sr-only">User menu</span>
+                <svg
+                  className="h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </button>
+
+              {isUserMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                  {userMenuItems.map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => handleUserMenuItemClick(item)}
+                      className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
                 </div>
-            )}
-        </nav>
-    );
-}
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
 
 export default Navigation;

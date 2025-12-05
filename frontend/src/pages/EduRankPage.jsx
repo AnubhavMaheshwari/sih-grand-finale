@@ -1,124 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-// Removed unnecessary imports from 'react-router-dom' based on the state-based approach
-import { Link } from "react-router-dom"; 
-
-// 🎯 FIX: Assuming this import statement correctly brings the component from the external file.
+import { Link } from "react-router-dom";
 import AIIMSDashboard from "../components/AIIMSDashboard";
+import Navigation from "../components/Navigation";
 
-// Define the two main colors based on the design system
-const PRIMARY_BLUE = "#4F46E5"; // Primary Blue
-const DEEP_INDIGO = "#3730A3"; // Deep Indigo
+const PRIMARY_BLUE = "#4F46E5";
+const DEEP_INDIGO = "#3730A3";
 
-// --- MODIFIED: Add your direct download link here ---
 const AIIMS_DELHI_PDF_LINK =
   "https://drive.usercontent.google.com/download?id=12Y4FPPyl14Zyo5kUXgL4KWgXEdiXGJP9&export=download&authuser=0&confirm=t&uuid=8eb9e2e3-31c0-43ac-8fcb-5b4eda3f76e0&at=AKSUxGMnKQF63N2Thj8KYYBHea7I:1760378258613";
 
-// --- Custom Navigation Component (Shared Design) ---
-const Navigation = ({ currentPage }) => {
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const navItems = [
-    { name: "FAQ", path: "/faq" },
-    { name: "Contact Us", path: "/contact" },
-  ];
-  const userMenuItems = [
-    { label: "Your Profile", path: "#" },
-    { label: "Settings", path: "#" },
-    { label: "Sign out", path: "/" },
-  ];
-  const navigateSimulated = (path) => {
-    if (path === "/") window.location.href = "index.html";
-    else if (path === "/faq") window.location.href = "faq.html";
-    else if (path === "/contact") window.location.href = "contactUs.html";
-  };
-  const handleUserMenuClick = (event) => {
-    event.stopPropagation();
-    setIsUserMenuOpen((prev) => !prev);
-  };
-  return (
-    <nav className="bg-white shadow-md border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <a
-              href="/"
-              className="text-2xl font-bold"
-              style={{ color: DEEP_INDIGO }}
-            >
-              SARTHI Portal
-            </a>
-          </div>
-          <div className="flex items-center space-x-6">
-            <div className="hidden md:flex items-baseline space-x-4">
-              {navItems.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.path}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateSimulated(item.path);
-                  }}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    item.name === currentPage
-                      ? "text-white"
-                      : "text-gray-700 hover:bg-indigo-500 hover:text-white"
-                  }`}
-                  style={{
-                    backgroundColor:
-                      item.name === currentPage ? PRIMARY_BLUE : undefined,
-                  }}
-                >
-                  {item.name}
-                </a>
-              ))}
-            </div>
-            <div className="relative flex items-center">
-              <button
-                type="button"
-                onClick={handleUserMenuClick}
-                className="flex items-center justify-center h-10 w-10 bg-gray-100 rounded-full border-2 border-indigo-500 text-indigo-800 hover:bg-gray-200 focus:outline-none"
-              >
-                <span className="sr-only">User menu</span>
-                <svg
-                  className="h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </button>
-              {isUserMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                  {userMenuItems.map((item) => (
-                    <Link
-                      key={item.label}
-                      to={item.path}
-                      onClick={() => {
-                        if (item.path !== "#") navigateSimulated(item.path);
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-};
-
-// --- Custom Footer Component ---
+// ---------------- FOOTER ----------------
 const Footer = () => (
   <footer className="bg-white border-t border-gray-200 py-6 mt-12">
     <div className="container mx-auto text-center text-sm text-gray-500">
@@ -127,7 +18,7 @@ const Footer = () => (
   </footer>
 );
 
-// --- Hardcoded Data (Simulating fetch) ---
+// ---------------- DATA ----------------
 const instituteData = [
   {
     instituteId: "IR-E-U-0456",
@@ -212,7 +103,6 @@ const instituteData = [
   },
 ];
 
-// --- Constants ---
 const categoryOptions = [
   { value: "all", label: "All Categories" },
   { value: "Engineering", label: "Engineering" },
@@ -222,7 +112,6 @@ const categoryOptions = [
   { value: "Pharmacy", label: "Pharmacy" },
 ];
 
-// --- Helper Components ---
 const SortIcon = ({ direction }) => {
   const isAsc = direction === "asc";
   const isDesc = direction === "desc";
@@ -252,25 +141,38 @@ const SortIcon = ({ direction }) => {
   );
 };
 
-// --- Main Page Component ---
+// ---------------- MAIN PAGE ----------------
 function EduRankPage() {
-  // 💥 FIX: HOOKS MOVED HERE (UNCONDITIONALLY)
+  // Decide which tab to highlight in navbar
+  const isInstitutionLoggedIn =
+    typeof window !== "undefined" &&
+    localStorage.getItem("institutionLoggedIn") === "true";
+
+  const isUGCLoggedIn =
+    typeof window !== "undefined" &&
+    localStorage.getItem("ugcMemberLoggedIn") === "true";
+
+  const currentNavTab = isInstitutionLoggedIn
+    ? "Institute Performance" // for institutes
+    : "My Dashboard"; // for UGC/AICTE / others
+
   const [showDashboard, setShowDashboard] = useState(false);
-  const [selectedInstituteId, setSelectedInstituteId] = useState(null); 
+  const [selectedInstituteId, setSelectedInstituteId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [sort, setSort] = useState({ column: "rank", direction: "asc" });
 
-  // Memoized values and callbacks moved here
   const filteredAndSortedData = useMemo(() => {
     let currentData = [...instituteData];
+
     if (categoryFilter !== "all") {
       currentData = currentData.filter(
         (item) => item.category === categoryFilter
       );
     }
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       currentData = currentData.filter(
@@ -281,9 +183,11 @@ function EduRankPage() {
           item.instituteId.toLowerCase().includes(term)
       );
     }
+
     const rankedData = currentData
       .sort((a, b) => b.score - a.score)
       .map((item, index) => ({ ...item, rank: index + 1 }));
+
     rankedData.sort((a, b) => {
       let aVal = a[sort.column];
       let bVal = b[sort.column];
@@ -294,6 +198,7 @@ function EduRankPage() {
       if (aVal > bVal) return isAsc ? 1 : -1;
       return 0;
     });
+
     return rankedData;
   }, [searchTerm, categoryFilter, sort]);
 
@@ -313,7 +218,7 @@ function EduRankPage() {
 
   const handleSort = useCallback((column) => {
     setSort((prevSort) => ({
-      column: column,
+      column,
       direction:
         prevSort.column === column && prevSort.direction === "asc"
           ? "desc"
@@ -325,21 +230,18 @@ function EduRankPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, categoryFilter, entriesPerPage]);
-  // 💥 END OF HOOKS
 
-  
-  // --- CONDITIONAL RETURN (Dashboard) ---
-  // The conditional logic itself is fine, it just needs to follow the hooks.
+  // ---------- DASHBOARD VIEW ----------
   if (showDashboard) {
     return (
       <div className="bg-gray-50 font-sans min-h-screen flex flex-col">
-        <Navigation currentPage={null} />
+        {/* Highlight tab in navbar */}
+        <Navigation currentPage={currentNavTab} />
         <main className="py-10 flex-grow">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <AIIMSDashboard 
-              instituteId={selectedInstituteId} 
+            <AIIMSDashboard
+              instituteId={selectedInstituteId}
               onBack={() => setShowDashboard(false)}
-              // Note: AIIMSDashboard must accept these props
             />
           </div>
         </main>
@@ -347,10 +249,8 @@ function EduRankPage() {
       </div>
     );
   }
-  // --- END CONDITIONAL RETURN ---
 
-
-  // --- RENDER TABLE (If showDashboard is false) ---
+  // ---------- TABLE VIEW ----------
   const PaginationButton = ({ page, isActive, isDisabled, children }) => (
     <button
       onClick={() => !isDisabled && setCurrentPage(page)}
@@ -434,7 +334,8 @@ function EduRankPage() {
         }
       `}</style>
       <div className="bg-gray-50 font-sans min-h-screen flex flex-col">
-        <Navigation currentPage={null} />
+        {/* Highlight tab in navbar */}
+        <Navigation currentPage={currentNavTab} />
 
         <main className="py-10 flex-grow">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -529,7 +430,6 @@ function EduRankPage() {
                           <td className="px-6 py-4 font-medium text-gray-900">
                             <div>{item.name}</div>
                             <div className="text-xs text-indigo-600 mt-1 space-x-2">
-                              {/* 🎯 FIX: Use span with onClick to control state */}
                               <span
                                 className="hover:underline text-indigo-600 cursor-pointer"
                                 onClick={() => {
@@ -551,7 +451,9 @@ function EduRankPage() {
                           </td>
                           <td className="px-6 py-4">{item.city}</td>
                           <td className="px-6 py-4">{item.state}</td>
-                          <td className="px-6 py-4">{item.score.toFixed(2)}</td>
+                          <td className="px-6 py-4">
+                            {item.score.toFixed(2)}
+                          </td>
                           <td className="px-6 py-4 font-bold text-gray-800">
                             {item.rank}
                           </td>
@@ -615,6 +517,7 @@ function EduRankPage() {
                   </tbody>
                 </table>
               </div>
+
               <div className="flex flex-col sm:flex-row justify-between items-center mt-4">
                 <div className="text-sm text-gray-600 mb-2 sm:mb-0">
                   {entriesInfo}

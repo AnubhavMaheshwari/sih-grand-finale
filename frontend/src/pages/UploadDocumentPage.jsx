@@ -1,55 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-
-// --- FIX: Define constants and components to resolve 'not defined' errors ---
+import Navigation from "../components/Navigation";
 
 const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";
-
-// --- Navigation Component ---
-const Navigation = ({ currentPage }) => {
-  // This component's internal logic can be expanded as needed
-  const navItems = [
-    { name: "Upload Doc", path: "/upload" },
-    { name: "FAQ", path: "/faq" },
-    { name: "Contact Us", path: "/contact" },
-  ];
-  return (
-    <nav className="bg-white shadow-md border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <a
-              href="/"
-              className="text-2xl font-bold"
-              style={{ color: DEEP_INDIGO }}
-            >
-              SARTHI Portal
-            </a>
-          </div>
-          <div className="hidden md:flex items-baseline space-x-4">
-            {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  item.name === currentPage
-                    ? "text-white"
-                    : "text-gray-700 hover:bg-indigo-500 hover:text-white"
-                }`}
-                style={{
-                  backgroundColor:
-                    item.name === currentPage ? PRIMARY_BLUE : undefined,
-                }}
-              >
-                {item.name}
-              </a>
-            ))}
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-};
 
 // --- Footer Component ---
 const Footer = () => (
@@ -74,6 +27,7 @@ function FilePreview({ file, onRemove }) {
 
   const getFileIcon = (fileType) =>
     fileType.startsWith("image/") ? "fa-file-image" : "fa-file-alt";
+
   const formatFileSize = (bytes) =>
     bytes > 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${bytes} Bytes`;
 
@@ -161,11 +115,14 @@ function UploadDocumentPage() {
       ? "border-indigo-500 bg-indigo-100"
       : "border-gray-300 hover:border-indigo-500 hover:bg-indigo-50"
   }`;
+
   const totalFiles = Object.keys(files).length;
 
   return (
     <div className="bg-gray-50 font-sans min-h-screen flex flex-col">
-      <Navigation currentPage="Upload Doc" />
+      {/* Reusable navbar from ../components/Navigation */}
+      <Navigation currentPage="My Dashboard" />
+
       <main className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 mt-10 flex-grow w-full">
         <div className="bg-white rounded-xl shadow-lg p-6 sm:p-10">
           <div className="text-center mb-8">
@@ -179,6 +136,7 @@ function UploadDocumentPage() {
               Drag & drop files here or click to browse.
             </p>
           </div>
+
           <div
             className={dropAreaClasses}
             onDragEnter={(e) => {
@@ -217,6 +175,7 @@ function UploadDocumentPage() {
               </button>
             </div>
           </div>
+
           <div className="mt-8 space-y-4">
             {Object.values(files).map((file) => (
               <FilePreview
@@ -226,6 +185,7 @@ function UploadDocumentPage() {
               />
             ))}
           </div>
+
           {totalFiles > 0 && (
             <div className="mt-8 pt-4 border-t border-gray-200">
               <button
@@ -239,7 +199,9 @@ function UploadDocumentPage() {
           )}
         </div>
       </main>
+
       <Footer />
+
       {toastMessage && (
         <div
           className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center bg-gray-800 text-white text-sm font-semibold px-5 py-3 rounded-lg shadow-2xl"
