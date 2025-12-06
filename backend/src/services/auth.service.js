@@ -2,6 +2,7 @@ import User from "../models/User.model.js";
 import Institute from "../models/Institute.model.js";
 import jwt from "jsonwebtoken";
 import { JWT_CONFIG } from "../config/constants.js";
+import { generateUniqueUserId, generatePassword } from "../utils/userGenerator.js";
 
 export const loginUser = async (userId, password) => {
   const user = await User.findOne({ userId });
@@ -59,13 +60,19 @@ export const loginUser = async (userId, password) => {
 };
 
 export const createUser = async (userData) => {
-  const { userId, password, role, instituteId, instituteName, fullName, email } = userData;
+  const { 
+    role, 
+    instituteId, 
+    instituteName, 
+    instituteType = 'others',
+    fullName, 
+    email
+  } = userData;
   
-  // Check if user already exists
-  const exists = await User.findOne({ userId });
-  if (exists) {
-    throw new Error("UserId already exists");
-  }
+  // Always generate User ID and password
+  const finalUserId = await generateUniqueUserId(User, { role, instituteType, instituteId });
+  const generatedPassword = generatePassword();
+  const finalPassword = generatedPassword;
 
   // Validate institute exists for institute users
   if (role === "institute") {
@@ -73,22 +80,34 @@ export const createUser = async (userData) => {
       throw new Error("Institute ID and name are required for institute users");
     }
     
-    // Check if institute exists in Institute collection
-    const institute = await Institute.findOne({ instituteId });
+    // Check if institute exists in Institute collection, create if it doesn't
+    let institute = await Institute.findOne({ instituteId });
     if (!institute) {
-      throw new Error("Institute not found. Please create institute first.");
+      // Create new institute with basic information
+      institute = await Institute.create({
+        instituteId,
+        name: instituteName,
+        type: "Institute", // Default type
+        location: {
+          city: "Unknown",
+          state: "Unknown"
+        },
+        isActive: true
+      });
     }
   }
 
   // Create new user
   const newUser = await User.create({
-    userId,
-    password,
+    userId: finalUserId,
+    password: finalPassword,
     role: role || "institute",
     instituteId: role === "institute" ? instituteId : undefined,
     instituteName: role === "institute" ? instituteName : undefined,
+    instituteType: role === "institute" ? instituteType : undefined,
     fullName,
     email: email || "",
+    generatedPassword: generatedPassword || '', // Store generated password for admin reference
   });
 
   // Prepare response
@@ -98,11 +117,13 @@ export const createUser = async (userData) => {
     role: newUser.role,
     fullName: newUser.fullName,
     email: newUser.email,
+    generatedPassword: generatedPassword || undefined, // Include generated password in response for admin
   };
 
   if (newUser.role === "institute") {
     userResponse.instituteId = newUser.instituteId;
     userResponse.instituteName = newUser.instituteName;
+    userResponse.instituteType = newUser.instituteType;
   }
 
   return {
@@ -184,4 +205,32 @@ export const deleteUser = async (userId, currentUserRole) => {
   }
 
   return { message: "User deleted successfully" };
+};
+
+export const regeneratePassword = async (userId, currentUserRole) => {
+  if (currentUserRole !== "admin") {
+    throw new Error("Only admin can regenerate passwords");
+  }
+
+  const user = await User.findOne({ userId });
+  
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Generate new password
+  const newPassword = generatePassword();
+  const generatedPassword = newPassword;
+  
+  // Update user password and store generated password
+  user.password = newPassword;
+  user.generatedPassword = generatedPassword;
+  await user.save();
+  
+  return {
+    message: "Password regenerated successfully",
+    generatedPassword,
+    userId: user.userId,
+    fullName: user.fullName,
+  };
 };

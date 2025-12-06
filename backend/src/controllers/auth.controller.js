@@ -136,3 +136,21 @@ export const updateProfile = async (req, res) => {
     errorResponse(res, "Server error");
   }
 };
+
+export const regeneratePassword = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const currentUserRole = req.user?.role;
+    
+    const result = await authService.regeneratePassword(userId, currentUserRole);
+    
+    successResponse(res, result);
+  } catch (error) {
+    if (error.message === "Only admin can regenerate passwords" || 
+        error.message === "User not found") {
+      return errorResponse(res, error.message, 400);
+    }
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};

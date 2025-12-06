@@ -26,11 +26,21 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: function() { return this.role === "institute"; },
     },
+    instituteType: {
+      type: String,
+      enum: ["engineering", "management", "medical", "others"],
+      default: "others",
+      required: function() { return this.role === "institute"; },
+    },
     fullName: {
       type: String,
       required: true,
     },
     email: {
+      type: String,
+      default: "",
+    },
+    generatedPassword: {
       type: String,
       default: "",
     },

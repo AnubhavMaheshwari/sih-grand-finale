@@ -15,7 +15,8 @@ import {
   updateUser, 
   deleteUser,
   getProfile,
-  updateProfile
+  updateProfile,
+  regeneratePassword
 } from "../controllers/auth.controller.js";
 
 const router = express.Router();
@@ -33,5 +34,6 @@ router.get("/users", auth, isAdminOrUgc, getUsers);
 router.get("/users/:userId", auth, getUser);
 router.put("/users/:userId", auth, updateUser);
 router.delete("/users/:userId", auth, isAdmin, deleteUser);
+router.post("/users/:userId/regenerate-password", auth, isAdmin, regeneratePassword);
 
 export default router;
