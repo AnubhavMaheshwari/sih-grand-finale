@@ -41,7 +41,7 @@ const MovingImageNavbar = () => {
   };
 
   return (
-    <div className="w-full py-1 border-gray-200 rounded-lg py-border-b bg-gray-50">
+    <div className="w-full py-1 ">
       <div className="relative flex items-center max-w-4xl px-2 mx-auto">
         {/* Left Arrow */}
         <button
@@ -66,9 +66,9 @@ const MovingImageNavbar = () => {
             <span className="text-base font-semibold text-gray-900 sm:text-lg">
               {currentItem.label}
             </span>
-            <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+            {/* <p className="mt-1 text-xs text-gray-500 sm:text-sm">
               Click to open detailed analytics.
-            </p>
+            </p> */}
           </div>
         </div>
 
