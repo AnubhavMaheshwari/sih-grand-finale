@@ -1,3 +1,5 @@
+import MovingImageNavbar from "../MovingImageNavbar";
+
 const PromoSection = () => {
   const metrics = [
     { value: '8.5', label: 'NAS Score', sublabel: 'National Average' },
@@ -20,38 +22,42 @@ const PromoSection = () => {
   ];
 
   return (
-    <div className="hidden lg:flex w-full lg:w-1/2 promo-gradient text-white p-8 md:p-10 lg:p-12 xl:p-16 flex-col justify-center items-center">
-      <div className="max-w-2xl w-full">
+    <div className="flex-col items-center justify-center hidden w-full p-8 text-white rounded lg:flex lg:w-1/2 promo-gradient md:p-10 lg:p-12 xl:p-16">
+      <div className="w-full max-w-2xl">
         <div className="mb-8 md:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-4">
+          <h2 className="mb-4 text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
             Transforming Higher Education in India
           </h2>
-          <p className="text-indigo-200 text-sm sm:text-base md:text-lg lg:text-xl">
+          
+          <p className="text-sm text-indigo-200 sm:text-base md:text-lg lg:text-xl">
             Comprehensive platform for institutional performance monitoring and quality enhancement
           </p>
+          <div className="pt-4">
+            <MovingImageNavbar/>
+          </div>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-2xl mb-10 md:mb-14 border border-white/20">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+        <div className="p-6 mb-10 border shadow-2xl bg-white/10 backdrop-blur-sm rounded-2xl md:p-8 md:mb-14 border-white/20">
+          <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
             <div>
-              <h3 className="text-lg md:text-xl font-bold text-white">
+              <h3 className="text-lg font-bold text-white md:text-xl">
                 National Education Performance Dashboard
               </h3>
-              <p className="text-indigo-200 text-sm mt-1">
+              <p className="mt-1 text-sm text-indigo-200">
                 Real-time insights across 500+ institutions
               </p>
             </div>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-300 mt-2 md:mt-0">
+            <span className="inline-flex items-center px-3 py-1 mt-2 text-xs font-medium text-green-300 rounded-full bg-green-500/20 md:mt-0">
               Live Monitoring
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-3">
             {metrics.map((metric, index) => (
-              <div key={index} className="bg-white/5 rounded-xl p-4">
-                <p className="text-2xl md:text-3xl font-bold text-white">{metric.value}</p>
-                <p className="text-xs text-green-300 font-medium mt-1">{metric.label}</p>
-                <p className="text-xs text-indigo-200 mt-1">{metric.sublabel}</p>
+              <div key={index} className="p-4 bg-white/5 rounded-xl">
+                <p className="text-2xl font-bold text-white md:text-3xl">{metric.value}</p>
+                <p className="mt-1 text-xs font-medium text-green-300">{metric.label}</p>
+                <p className="mt-1 text-xs text-indigo-200">{metric.sublabel}</p>
               </div>
             ))}
           </div>
@@ -71,11 +77,11 @@ const PromoSection = () => {
           </div>
         </div>
 
-        <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-white/20">
-          <p className="text-xs md:text-sm uppercase tracking-wider text-indigo-200 mb-4 md:mb-6 font-semibold">
+        <div className="pt-6 mt-8 border-t md:mt-12 md:pt-8 border-white/20">
+          <p className="mb-4 text-xs font-semibold tracking-wider text-indigo-200 uppercase md:text-sm md:mb-6">
             Trusted by Leading Institutions:
           </p>
-          <div className="flex flex-wrap justify-center gap-3 md:gap-4 text-xs md:text-sm">
+          <div className="flex flex-wrap justify-center gap-3 text-xs md:gap-4 md:text-sm">
             {institutions.map((institution, index) => (
               <span 
                 key={index}
