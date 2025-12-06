@@ -53,7 +53,8 @@ export const ROLE_OPTIONS = [
 
 export const VALIDATION_PATTERNS = {
   institute: /^[A-Z]{2}[0-9]{6}$/,
-  ugc_employee: /^[A-Z]{4}[0-6]{6}$/,
+  ugc_employee: /^[A-Z]{4}[0-9]{6}$/,
+  admin: /^[A-Z]{4}[0-9]{6}$/,
 };
 
 export const TOAST_CONFIG = {

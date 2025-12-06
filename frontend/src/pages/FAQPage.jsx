@@ -128,7 +128,7 @@ function FAQPage() {
         {/* ✅ Reusable navbar, declared in ../components/Navigation */}
         <Navigation currentPage="FAQ" />
 
-        <div className="container mx-auto px-4 py-16 flex-grow">
+        <div className="container mx-auto px-4 py-16 grow">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             {/* Left: FAQ List */}
             <div>

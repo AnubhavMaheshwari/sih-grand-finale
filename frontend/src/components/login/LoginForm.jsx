@@ -29,12 +29,10 @@ const LoginForm = ({ onToast }) => {
       return false;
     }
 
-    if (role !== 'admin') {
-      const pattern = VALIDATION_PATTERNS[role];
-      if (pattern && !pattern.test(userId.toUpperCase())) {
-        onToast('Invalid ID format!', 'error');
-        return false;
-      }
+    const pattern = VALIDATION_PATTERNS[role];
+    if (pattern && !pattern.test(userId.toUpperCase())) {
+      onToast('Invalid ID format!', 'error');
+      return false;
     }
 
     if (!password.trim()) {

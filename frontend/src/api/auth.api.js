@@ -43,4 +43,9 @@ export const authAPI = {
     const response = await axiosInstance.put("/auth/profile", profileData);
     return response;
   },
+
+  regeneratePassword: async (userId) => {
+    const response = await axiosInstance.post(`/auth/users/${userId}/regenerate-password`);
+    return response;
+  },
 };

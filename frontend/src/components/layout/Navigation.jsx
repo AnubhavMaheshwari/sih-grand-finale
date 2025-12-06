@@ -39,8 +39,6 @@ const Navigation = ({ currentPage, onLogout }) => {
         return [
           { name: "Admin Dashboard", path: "/admin/dashboard" },
           { name: "User Management", path: "/admin/dashboard" },
-          { name: "FAQ", path: "/faq" },
-          { name: "Contact Us", path: "/contact" },
         ];
       default:
         return [
