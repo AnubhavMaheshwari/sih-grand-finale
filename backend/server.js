@@ -2,12 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 
-// Import DB connection function
-import connectDB from "./Connections/dbConnect.js";
-
-// Import routes
-import authRoutes from "./routes/auth.routes.js";
-import User from "./Models/User.model.js";
+import connectDB from "./src/connections/dbConnect.js";
+import routes from "./src/routes/index.js";
+import User from "./src/models/User.model.js";
+import { DEFAULT_ADMIN } from "./src/config/constants.js";
 
 dotenv.config();
 
@@ -16,7 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/auth", authRoutes);
+app.use("/api", routes);
 
 app.get("/", (req, res) => {
   res.send("Server Running Successfully 🚀");
@@ -27,8 +25,8 @@ const createAdminIfNotExists = async () => {
     const admin = await User.findOne({ role: "admin" });
     if (!admin) {
       await User.create({
-        userId: process.env.ADMIN_USER_ID || "admin",
-        password: process.env.ADMIN_PASSWORD || "Admin@123",
+        userId: DEFAULT_ADMIN.USER_ID,
+        password: DEFAULT_ADMIN.PASSWORD,
         role: "admin",
       });
       console.log("✔ Admin user created");
@@ -40,12 +38,11 @@ const createAdminIfNotExists = async () => {
   }
 };
 
-// ---------- Start Server ----------
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  await connectDB(); // Connect DB here
-  await createAdminIfNotExists(); // Ensure admin exists
+  await connectDB();
+  await createAdminIfNotExists();
 
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);

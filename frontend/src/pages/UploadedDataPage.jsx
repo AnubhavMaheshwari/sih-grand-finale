@@ -1,6 +1,5 @@
-// src/pages/UploadedDataPage.jsx
-import React, { useState, useMemo } from "react";
-import Navigation from "../components/Navigation";
+import { useState, useMemo } from "react";
+import Navigation from "../components/layout/Navigation";
 
 const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";

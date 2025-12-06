@@ -1,13 +1,10 @@
-// src/pages/ContactUsPage.jsx
-import React, { useState } from "react";
-import Navigation from "../components/Navigation";   // ✅ use shared navbar
+import { useState } from "react";
+import Navigation from "../components/layout/Navigation";
 
 const PRIMARY_BLUE = "#4F46E5"; // Primary Blue
 const DEEP_INDIGO = "#3730A3"; // Deep Indigo
 
-/**
- * Custom Footer Component
- */
+
 const Footer = () => (
   <footer className="bg-white border-t border-gray-200 py-6 mt-12">
     <div className="container mx-auto text-center text-sm text-gray-500">
@@ -16,7 +13,6 @@ const Footer = () => (
   </footer>
 );
 
-// --- SVG Icons (Replacement for Font Awesome) ---
 const MapMarkerIcon = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -117,8 +113,8 @@ function ContactUsPage() {
     formStatus.type === "success"
       ? "text-green-300"
       : formStatus.type === "error"
-      ? "text-yellow-300"
-      : "text-white";
+        ? "text-yellow-300"
+        : "text-white";
 
   return (
     <>
@@ -264,11 +260,10 @@ function ContactUsPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-deep-indigo ${
-                      isSubmitting
+                    className={`w-full text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-deep-indigo ${isSubmitting
                         ? "bg-indigo-700 opacity-75 animate-pulse"
                         : "bg-primary-blue hover:bg-indigo-700"
-                    }`}
+                      }`}
                   >
                     {isSubmitting ? "Sending..." : "Submit Request"}
                   </button>

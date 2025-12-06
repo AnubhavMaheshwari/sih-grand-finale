@@ -1,231 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import ForgotPasswordPage from './ForgotPasswordPage';
-// --- Icon Components (Inline SVGs) ---
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import Toast from '../components/common/Toast.jsx';
+import LoginForm from '../components/login/LoginForm.jsx';
+import PromoSection from '../components/login/PromoSection.jsx';
+import { DEEP_INDIGO } from '../constants/login.constants.js';
 
-const EyeIcon = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
-
-const EyeSlashIcon = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M17.94 17.94A10 10 0 0 1 12 20c-7 0-10-7-10-7a1.14 1.14 0 0 1 .15-.22m1.9-1.93a10 10 0 0 1 10 10m-3.9-3.9a3 3 0 1 0-4.24-4.24M1 1l22 22" />
-    <line x1="1" x2="23" y1="1" y2="23" />
-  </svg>
-);
-
-// --- Hardcoded User Database ---
-const userDatabase = {
-  institute: {
-    AI987654: 'collegepass1',
-    RT543210: 'collegepass2',
-    GH112233: 'collegepass3',
-    LP808080: 'collegepass4',
-    QK001122: 'collegepass5',
-  },
-  ugc_member: {
-    UGCM123456: 'employeepass1',
-    AITC987654: 'employeepass2',
-    SARTHI0001: 'employeepass3',
-    GESCOS7777: 'employeepass4',
-    FEDC909090: 'employeepass5',
-  },
-};
-
-// --- Validation helpers ---
-function validateIdFormat(role, id) {
-  const upperId = id.toUpperCase();
-  if (role === 'institute') {
-    return /^[A-Z]{2}[0-9]{6}$/.test(upperId);
-  } else if (role === 'ugc_member') {
-    return /^[A-Z]{4}[0-9]{6}$/.test(upperId);
-  }
-  return false;
-}
-
-function authenticateUser(role, id, password) {
-  const upperId = id.toUpperCase();
-  if (userDatabase[role]) {
-    const userCredentials = userDatabase[role];
-    return userCredentials[upperId] === password;
-  }
-  return false;
-}
-
-// --- Simulated navigation (matches your HTML files) ---
-const navigateSimulated = (path) => {
-  if (path === '/upload') {
-    window.location.href = 'uploadDoc.html';
-  } else if (path === '/edu') {
-    window.location.href = 'edu.html';
-  } else if (path === '/') {
-    window.location.href = 'index.html';
-  }
-  console.log('Simulating navigation to:', path);
-};
-
-function LoginPage() {
-  const navigate = navigateSimulated;
-
-  // --- State Management ---
-  const [role, setRole] = useState('');
-  const [id, setId] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [buttonText, setButtonText] = useState('Login');
-  const [buttonClass, setButtonClass] = useState('bg-primary-blue hover:bg-blue-600');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Toast state
+const LoginPage = () => {
+  const { error } = useAuth();
   const [toast, setToast] = useState({ message: '', type: '' });
 
-  // --- ID Field Logic ---
-  const getIDConfig = () => {
-    switch (role) {
-      case 'institute':
-        return {
-          label: 'Institute ID (Registered Users Only)',
-          placeholder: 'e.g., AI987654',
-          hint: 'Format: Exactly 8 characters (2 letters A-Z, 6 numbers).',
-          maxLength: 8,
-          isDisabled: false,
-        };
-      case 'ugc_member':
-        return {
-          label: 'User ID (UGC/AICTE Employee Only)',
-          placeholder: 'e.g., UGCM123456',
-          hint: 'Format: Exactly 10 characters (4 letters A-Z, 6 numbers).',
-          maxLength: 10,
-          isDisabled: false,
-        };
-      default:
-        return {
-          label: 'User/Institute ID',
-          placeholder: 'Select a role above',
-          hint: '',
-          maxLength: 20,
-          isDisabled: true,
-        };
+  // Show error toast from auth context
+  useEffect(() => {
+    if (error) {
+      showToast(error, 'error');
     }
+  }, [error]);
+
+  const showToast = (message, type) => {
+    setToast({ message, type });
   };
 
-  const idConfig = getIDConfig();
-
-  // Reset ID + button when role changes
-  useEffect(() => {
-    setId('');
-    setButtonText('Login');
-    setButtonClass('bg-primary-blue hover:bg-blue-600');
-  }, [role]);
-
-  useEffect(() => {
-    console.log('--- Available Test Credentials ---');
-    console.log('Institute IDs (Password: collegepass1-5):', Object.keys(userDatabase.institute));
-    console.log('UGC/AICTE IDs (Password: employeepass1-5):', Object.keys(userDatabase.ugc_member));
-  }, []);
-
-  // --- Error helper (also shows toast) ---
-  const setErrorState = (message) => {
-  setButtonText(message);
-  setButtonClass("bg-red-500 hover:bg-red-600");
-  setIsSubmitting(false);
-
-  // ❌ Clear ID + Password fields completely
-  setId("");
-  setPassword("");
-
-  // ❌ Reset any checked or UI state too
-  setToast({ message, type: "error" });
-
-  setTimeout(() => {
-    setButtonText("Login");
-    setButtonClass("bg-primary-blue hover:bg-blue-600");
-    setToast({ message: "", type: "" });
-  }, 3000);
-};
-
-
-  // --- Success handler: sets login + toast + redirect ---
-  const finalLoginSuccess = (currentRole) => {
-  setButtonText("Login Successful!");
-  setButtonClass("bg-green-500 hover:bg-green-600");
-  setIsSubmitting(false);
-
-  if (currentRole === "institute") {
-    localStorage.setItem("institutionLoggedIn", "true");
-    localStorage.removeItem("ugcMemberLoggedIn");
-  } else if (currentRole === "ugc_member") {
-    localStorage.setItem("ugcMemberLoggedIn", "true");
-    localStorage.removeItem("institutionLoggedIn");
-  }
-
-  setToast({
-    message:
-      currentRole === "institute"
-        ? "Login successful! Redirecting to your dashboard..."
-        : "Login successful! Redirecting...",
-    type: "success",
-  });
-
-  setTimeout(() => {
-    if (currentRole === "institute") {
-      navigate("/upload");
-    } else if (currentRole === "ugc_member") {
-      navigate("/edu");
-    }
-  }, 1500);
-};
-
-
-  // --- Submit handler ---
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
-    if (role === '') {
-      setErrorState('Please Select a Role!');
-      return;
-    }
-
-    if (!validateIdFormat(role, id)) {
-      setErrorState('Invalid ID Format!');
-      return;
-    }
-
-    if (!authenticateUser(role, id, password)) {
-      setErrorState('Wrong User ID or Password!');
-      return;
-    }
-
-    // ✅ All good → success
-    console.log('Credentials Verified. Simulating successful login...');
-    finalLoginSuccess(role);
+  const handleToastClose = () => {
+    setToast({ message: '', type: '' });
   };
 
   return (
+<<<<<<< HEAD
     <>
       <style jsx="true">{`
         .promo-gradient {
@@ -444,10 +244,39 @@ function LoginPage() {
                   Open Universities
                 </span>
               </div>
+=======
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white lg:bg-transparent font-sans">
+      {/* Left: Login Form Section */}
+      <div className="w-full lg:w-1/2 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-8 sm:py-10 md:py-12 flex flex-col justify-between bg-white shadow-xl lg:shadow-none overflow-y-auto">
+        <div className="flex flex-col flex-1">
+          <div className="max-w-md w-full mx-auto">
+            {/* Header */}
+            <div className="mb-8 sm:mb-10">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 text-gray-900 leading-tight">
+                Welcome to <span className="text-deep-indigo">SARTHI</span> Portal
+              </h1>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Secure login for educational institutions and officials
+              </p>
+            </div>
+
+            {/* Login Form */}
+            <LoginForm onToast={showToast} />
+
+            {/* Additional Info */}
+            <div className="mt-8 pt-6 border-t border-gray-100">
+              <p className="text-xs text-gray-500 text-center">
+                Need help? Contact support at{' '}
+                <a href="mailto:support@sarthi.gov.in" className="text-indigo-600 hover:underline">
+                  support@sarthi.gov.in
+                </a>
+              </p>
+>>>>>>> sonu
             </div>
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* 🔔 Toast */}
         {toast.message && (
           <div
@@ -460,9 +289,31 @@ function LoginPage() {
             <span className="truncate">{toast.message}</span>
           </div>
         )}
+=======
+        {/* Footer */}
+        <footer className="text-center text-xs text-gray-400 mt-8 pt-6 border-t border-gray-100">
+          <p>© 2025 SARTHI National Portal. All rights reserved.</p>
+          <p className="mt-1">Ministry of Education, Government of India</p>
+          <p className="mt-1 text-[10px]">
+            Version 2.0.0 • Last updated: December 2025
+          </p>
+        </footer>
+>>>>>>> sonu
       </div>
-    </>
+
+      {/* Right: Promo Section */}
+      <PromoSection />
+
+      {/* Toast Notification */}
+      {toast.message && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={handleToastClose}
+        />
+      )}
+    </div>
   );
-}
+};
 
 export default LoginPage;
