@@ -249,15 +249,15 @@ function LoginPage() {
         }
       `}</style>
 
-      <div className="flex flex-col lg:flex-row min-h-screen bg-white lg:bg-transparent font-sans">
+      <div className="flex flex-col min-h-screen font-sans bg-white lg:flex-row lg:bg-transparent">
         {/* LEFT: Login form */}
-        <div className="w-full lg:w-1/2 px-5 py-8 sm:px-8 sm:py-10 md:px-12 lg:p-16 flex flex-col justify-between no-scrollbar bg-white shadow-xl lg:shadow-none overflow-y-auto">
+        <div className="flex flex-col justify-between w-full px-5 py-8 overflow-y-auto bg-white shadow-xl lg:w-1/2 sm:px-8 sm:py-10 md:px-12 lg:p-16 no-scrollbar lg:shadow-none">
           <div className="flex flex-col">
-            <div className="max-w-md w-full mx-auto">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 text-deep-indigo leading-snug">
+            <div className="w-full max-w-md mx-auto">
+              <h1 className="mb-4 text-3xl font-black leading-snug sm:text-4xl md:text-5xl text-deep-indigo">
                 Welcome to SARTHI National Portal
               </h1>
-              <p className="text-gray-500 mb-8 text-sm sm:text-base">
+              <p className="mb-8 text-sm text-gray-500 sm:text-base">
                 Enter your credentials to access your account
               </p>
 
@@ -266,7 +266,7 @@ function LoginPage() {
                 <div>
                   <label
                     htmlFor="loginRole"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block mb-1 text-sm font-medium text-gray-700"
                   >
                     Login as
                   </label>
@@ -274,7 +274,7 @@ function LoginPage() {
                     id="loginRole"
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-blue transition duration-150 text-sm sm:text-base"
+                    className="w-full px-3 py-2 text-sm transition duration-150 border border-gray-300 sm:px-4 sm:py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-blue sm:text-base"
                     required
                     disabled={isSubmitting}
                   >
@@ -291,7 +291,7 @@ function LoginPage() {
                   <label
                     htmlFor="idInput"
                     id="idLabel"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block mb-1 text-sm font-medium text-gray-700"
                   >
                     {idConfig.label}
                   </label>
@@ -302,14 +302,14 @@ function LoginPage() {
                     placeholder={idConfig.placeholder}
                     value={id}
                     onChange={(e) => setId(e.target.value)}
-                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-blue transition duration-150 uppercase text-sm sm:text-base"
+                    className="w-full px-3 py-2 text-sm uppercase transition duration-150 border border-gray-300 sm:px-4 sm:py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-blue sm:text-base"
                     required
                     disabled={idConfig.isDisabled || isSubmitting}
                     maxLength={idConfig.maxLength}
                   />
                   <p
                     id="idFormatHint"
-                    className="text-xs text-gray-500 mt-1"
+                    className="mt-1 text-xs text-gray-500"
                   >
                     {idConfig.hint}
                   </p>
@@ -319,7 +319,7 @@ function LoginPage() {
                 <div>
                 <label
                     htmlFor="password"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block mb-1 text-sm font-medium text-gray-700"
                 >
                     Password
                 </label>
@@ -331,13 +331,13 @@ function LoginPage() {
                     placeholder="Password"   // ✅ neutral, no length hint
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pr-10 pl-3 py-2 sm:pl-4 sm:py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-blue transition duration-150 text-sm sm:text-base"
+                    className="w-full py-2 pl-3 pr-10 text-sm transition duration-150 border border-gray-300 sm:pl-4 sm:py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-blue sm:text-base"
                     required                  // ✅ still required, but no length rule
                     disabled={isSubmitting}
                     />
                     <button type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 transition hover:text-gray-600"
                     aria-label="Toggle password visibility"
                     >
                     {showPassword ? (
@@ -349,7 +349,7 @@ function LoginPage() {
 
                 </div>
                 <Link to="/forgot-password"
-                className="float-right text-xs sm:text-sm text-primary-blue hover:underline mt-1"
+                className="float-right mt-2 mb-2 text-xs sm:text-sm text-primary-blue hover:underline"
                 >
                 Forgot password?
                 </Link>
@@ -375,44 +375,44 @@ function LoginPage() {
         </div>
 
         {/* RIGHT: Promo Section (hidden on very small screens to keep it clean) */}
-        <div className="hidden md:flex w-full lg:w-1/2 promo-gradient text-white p-8 md:p-10 lg:p-16 flex-col justify-center items-center">
-          <div className="max-w-xl w-full">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-4">
+        <div className="flex-col items-center justify-center hidden w-full p-8 text-white md:flex lg:w-1/2 promo-gradient md:p-10 lg:p-16">
+          <div className="w-full max-w-xl">
+            <h2 className="mb-4 text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
               Institutional Performance at a Glance
             </h2>
-            <p className="text-indigo-200 text-sm sm:text-base md:text-lg mb-8 md:mb-10">
+            <p className="mb-8 text-sm text-indigo-200 sm:text-base md:text-lg md:mb-10">
               Key metrics for quality assurance and continuous growth management.
             </p>
 
-            <div className="bg-gray-900/40 backdrop-blur-md rounded-2xl p-4 sm:p-5 md:p-6 shadow-2xl mb-10 md:mb-16 border border-gray-700/30">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-xs sm:text-sm font-semibold text-white/80">
+            <div className="p-4 mb-10 border shadow-2xl bg-gray-900/40 backdrop-blur-md rounded-2xl sm:p-5 md:p-6 md:mb-16 border-gray-700/30">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-semibold sm:text-sm text-white/80">
                   National Accreditation Score (NAS)
                 </span>
                 <span className="text-[10px] sm:text-xs px-2 py-1 bg-white/10 rounded-full text-green-300 font-medium">
                   Target Met
                 </span>
               </div>
-              <div className="flex flex-wrap md:flex-nowrap gap-4 mb-6">
-                <div className="w-full md:w-1/3 p-3 bg-gray-800/50 rounded-xl">
-                  <p className="text-lg md:text-xl font-bold">8.5 / 10</p>
+              <div className="flex flex-wrap gap-4 mb-6 md:flex-nowrap">
+                <div className="w-full p-3 md:w-1/3 bg-gray-800/50 rounded-xl">
+                  <p className="text-lg font-bold md:text-xl">8.5 / 10</p>
                   <p className="text-[11px] sm:text-xs text-green-400 mt-1 font-medium">
                     +0.2 pts this quarter
                   </p>
                 </div>
-                <div className="w-full md:w-2/3 p-3 bg-gray-800/50 rounded-xl flex items-center justify-center">
-                  <div className="w-16 h-16 md:w-20 md:h-20 border-4 border-green-500 rounded-full flex flex-col items-center justify-center font-extrabold text-xl md:text-2xl">
+                <div className="flex items-center justify-center w-full p-3 md:w-2/3 bg-gray-800/50 rounded-xl">
+                  <div className="flex flex-col items-center justify-center w-16 h-16 text-xl font-extrabold border-4 border-green-500 rounded-full md:w-20 md:h-20 md:text-2xl">
                     85%
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3 text-xs sm:text-sm">
-                <div className="flex justify-between text-white/90 border-b border-indigo-400/20 pb-2">
+                <div className="flex justify-between pb-2 border-b text-white/90 border-indigo-400/20">
                   <span>Student Retention Rate</span>
                   <span className="font-bold text-green-300">92%</span>
                 </div>
-                <div className="flex justify-between text-white/90 border-b border-indigo-400/20 pb-2">
+                <div className="flex justify-between pb-2 border-b text-white/90 border-indigo-400/20">
                   <span>Research Output Index</span>
                   <span className="font-bold text-green-300">85%</span>
                 </div>
@@ -423,24 +423,24 @@ function LoginPage() {
               </div>
             </div>
 
-            <div className="mt-6 md:mt-10 pt-6 md:pt-10 border-t border-indigo-400/30">
+            <div className="pt-6 mt-6 border-t md:mt-10 md:pt-10 border-indigo-400/30">
               <p className="text-[11px] sm:text-xs md:text-sm uppercase tracking-wider text-indigo-200 mb-4 md:mb-6 font-semibold">
                 Empowering Over 500+ Top Indian Institutions:
               </p>
-              <div className="flex flex-wrap justify-around items-center gap-3 md:gap-6 text-xs sm:text-sm md:text-base">
-                <span className="font-semibold text-white/90 opacity-80 hover:opacity-100 transition">
+              <div className="flex flex-wrap items-center justify-around gap-3 text-xs md:gap-6 sm:text-sm md:text-base">
+                <span className="font-semibold transition text-white/90 opacity-80 hover:opacity-100">
                   Central Universities
                 </span>
-                <span className="font-semibold text-white/90 opacity-80 hover:opacity-100 transition">
+                <span className="font-semibold transition text-white/90 opacity-80 hover:opacity-100">
                   State Universities
                 </span>
-                <span className="font-semibold text-white/90 opacity-80 hover:opacity-100 transition">
+                <span className="font-semibold transition text-white/90 opacity-80 hover:opacity-100">
                   Deemed-to-be Universities
                 </span>
-                <span className="font-semibold text-white/90 opacity-80 hover:opacity-100 transition">
+                <span className="font-semibold transition text-white/90 opacity-80 hover:opacity-100">
                   Private Institutions
                 </span>
-                <span className="font-semibold text-white/90 opacity-80 hover:opacity-100 transition">
+                <span className="font-semibold transition text-white/90 opacity-80 hover:opacity-100">
                   Open Universities
                 </span>
               </div>
@@ -454,7 +454,7 @@ function LoginPage() {
             className="fixed bottom-4 left-1/2 -translate-x-1/2 max-w-[90%] sm:max-w-md flex items-center bg-gray-800 text-white text-xs sm:text-sm font-semibold px-3 py-2 sm:px-5 sm:py-3 rounded-lg shadow-2xl z-50"
             role="alert"
           >
-            <span className="mr-2 sm:mr-3 text-base sm:text-lg">
+            <span className="mr-2 text-base sm:mr-3 sm:text-lg">
               {toast.type === 'success' ? '✅' : '⚠️'}
             </span>
             <span className="truncate">{toast.message}</span>
