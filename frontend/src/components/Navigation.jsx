@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";
 
-const Navigation = ({ currentPage }) => {
+const Navigation = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isInstitutionLoggedIn =
     typeof window !== "undefined" &&
@@ -18,13 +19,13 @@ const Navigation = ({ currentPage }) => {
 
   const navItems = isInstitutionLoggedIn
     ? [
-        { name: "My Dashboard", path: "/upload" },
+        { name: "Institute Dashboard", path: "/upload" },
         { name: "FAQ", path: "/faq" },
         { name: "Contact Us", path: "/contact" },
       ]
     : isUGCLoggedIn
     ? [
-        { name: "My Dashboard", path: "/edu" },
+        { name: "UGC/AICTE Dashboard", path: "/edu" },
         { name: "Uploaded Data", path: "/uploaded-data" },
         { name: "FAQ", path: "/faq" },
         { name: "Contact Us", path: "/contact" },
@@ -48,7 +49,6 @@ const Navigation = ({ currentPage }) => {
       ]
     : [{ label: "Login", path: "/" }];
 
-  // ✅ use React Router instead of HTML redirects
   const navigateSimulated = (path) => {
     navigate(path);
   };
@@ -68,8 +68,8 @@ const Navigation = ({ currentPage }) => {
   };
 
   return (
-    <nav className="bg-white shadow-md border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-white border-b border-gray-200 shadow-md">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
@@ -84,25 +84,27 @@ const Navigation = ({ currentPage }) => {
 
           <div className="flex items-center space-x-6">
             {/* Main Tabs */}
-            <div className="hidden md:flex items-baseline space-x-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => navigateSimulated(item.path)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    item.name === currentPage
-                      ? "text-white bg-primary-blue"
-                      : "text-gray-700 hover:bg-primary-blue hover:text-blue-700"
-                  }`}
-                  style={{
-                    backgroundColor:
-                      item.name === currentPage ? PRIMARY_BLUE : undefined,
-                    color: item.name === currentPage ? "white" : undefined,
-                  }}
-                >
-                  {item.name}
-                </button>
-              ))}
+            <div className="items-baseline hidden space-x-4 md:flex">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => navigateSimulated(item.path)}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive
+                        ? "text-white"
+                        : "text-gray-700 hover:text-blue-700"
+                    }`}
+                    style={{
+                      backgroundColor: isActive ? PRIMARY_BLUE : undefined,
+                    }}
+                  >
+                    {item.name}
+                  </button>
+                );
+              })}
             </div>
 
             {/* User Profile Icon and Dropdown */}
@@ -110,11 +112,11 @@ const Navigation = ({ currentPage }) => {
               <button
                 type="button"
                 onClick={handleUserMenuClick}
-                className="flex items-center justify-center h-10 w-10 bg-gray-100 rounded-full border-2 border-primary-blue text-deep-indigo hover:bg-gray-200 focus:outline-none"
+                className="flex items-center justify-center w-10 h-10 bg-gray-100 border-2 rounded-full border-primary-blue text-deep-indigo hover:bg-gray-200 focus:outline-none"
               >
                 <span className="sr-only">User menu</span>
                 <svg
-                  className="h-6 w-6"
+                  className="w-6 h-6"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -130,13 +132,13 @@ const Navigation = ({ currentPage }) => {
               </button>
 
               {isUserMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                <div className="absolute right-0 z-10 w-48 py-1 mt-2 origin-top-right bg-white rounded-md shadow-lg top-full ring-1 ring-black ring-opacity-5 focus:outline-none">
                   {userMenuItems.map((item) => (
                     <button
                       key={item.label}
                       type="button"
                       onClick={() => handleUserMenuItemClick(item)}
-                      className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
                     >
                       {item.label}
                     </button>

@@ -20,8 +20,8 @@ const DEEP_INDIGO = "#3730A3";
 
 // --- Footer Component ---
 const Footer = () => (
-  <footer className="bg-white border-t border-gray-200 py-6 mt-4">
-    <div className="container mx-auto text-center text-sm text-gray-500">
+  <footer className="py-6 mt-4 bg-white border-t border-gray-200">
+    <div className="container mx-auto text-sm text-center text-gray-500">
       &copy; 2025 SARTHI National Portal, all rights reserved
     </div>
   </footer>
@@ -36,20 +36,20 @@ const instituteSideItems = [
 
 function InstituteSideNavbar({ activeId, onChange }) {
   return (
-    <div className="p-4 space-y-4 flex-1 overflow-y-auto scrollbar-thin">
+    <div className="flex-1 p-4 space-y-4 overflow-y-auto scrollbar-thin">
       <div>
         <h2
-          className="text-sm font-semibold uppercase tracking-wide"
+          className="text-sm font-semibold tracking-wide uppercase"
           style={{ color: DEEP_INDIGO }}
         >
           Institute Panel
         </h2>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="mt-1 text-xs text-gray-500">
           Upload reports and view AI insights.
         </p>
       </div>
 
-      <div className="bg-slate-50 rounded-xl border border-slate-100">
+      <div className="border bg-slate-50 rounded-xl border-slate-100">
         <nav className="py-1">
           {instituteSideItems.map((item) => {
             const isActive = item.id === activeId;
@@ -82,23 +82,23 @@ function FilePreview({ file, onRemove }) {
       : `${(bytes / 1024).toFixed(1)} KB`;
 
   return (
-    <div className="bg-gray-100 p-4 rounded-lg flex items-center justify-between transition-all">
+    <div className="flex items-center justify-between p-4 transition-all bg-gray-100 rounded-lg">
       <div className="flex items-center gap-4">
-        <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-white rounded-md shadow-sm">
+        <div className="flex items-center justify-center w-12 h-12 bg-white rounded-md shadow-sm flex-shrink:0">
           <FileText className="w-6 h-6" style={{ color: DEEP_INDIGO }} />
         </div>
         <div>
-          <p className="font-semibold text-gray-800 text-sm truncate max-w-[12rem] sm:max-w-md">
+          <p className="text-sm font-semibold text-gray-800 truncate max-w-48 sm:max-w-md">
             {file.name}
           </p>
-          <p className="text-gray-500 text-xs">
+          <p className="text-xs text-gray-500">
             {formatFileSize(file.size)} · PDF
           </p>
         </div>
       </div>
       <button
         onClick={() => onRemove(file.name)}
-        className="p-1 rounded-full hover:bg-red-50 transition-colors"
+        className="p-1 transition-colors rounded-full hover:bg-red-50"
       >
         <X className="w-4 h-4 text-gray-500 hover:text-red-500" />
       </button>
@@ -293,14 +293,14 @@ function UploadDocumentPage() {
         }
       `}</style>
 
-      <div className="bg-gray-50 font-sans min-h-screen flex flex-col">
+      <div className="flex flex-col min-h-screen font-sans bg-gray-50">
         {/* Top navbar */}
         <Navigation currentPage="My Dashboard" />
 
         {/* Main layout (same style as EduRank: left static, right scrollable) */}
-        <main className="flex-1 flex overflow-hidden">
+        <main className="flex flex-1 overflow-hidden">
           {/* LEFT SIDEBAR (static on md+) */}
-          <aside className="hidden md:flex w-64 lg:w-72 bg-white border-r border-gray-200 flex-col">
+          <aside className="flex-col hidden w-64 bg-white border-r border-gray-200 md:flex lg:w-72">
             <InstituteSideNavbar
               activeId={activePanel}
               onChange={setActivePanel}
@@ -308,20 +308,20 @@ function UploadDocumentPage() {
           </aside>
 
           {/* RIGHT CONTENT – ONLY THIS PART SCROLLS */}
-          <section className="flex-1 flex flex-col overflow-y-auto">
-            <div className="h-full flex flex-col w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <section className="flex flex-col flex-1 overflow-y-auto">
+            <div className="flex flex-col w-full h-full px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
               {/* Right content (cards, upload, reports, insights) */}
               {activePanel === "upload" && (
-                <section className="bg-white rounded-xl shadow-lg p-6 sm:p-8 flex flex-col h-full">
+                <section className="flex flex-col h-full p-6 bg-white shadow-lg rounded-xl sm:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2
-                        className="text-2xl sm:text-3xl font-extrabold"
+                        className="text-2xl font-extrabold sm:text-3xl"
                         style={{ color: DEEP_INDIGO }}
                       >
                         Upload Your Reports (PDF)
                       </h2>
-                      <p className="mt-2 text-gray-500 text-sm max-w-xl">
+                      <p className="max-w-xl mt-2 text-sm text-gray-500">
                         Upload your annual performance reports in PDF format.
                         Once submitted, they will be available in{" "}
                         <span className="font-medium text-indigo-600">
@@ -332,7 +332,7 @@ function UploadDocumentPage() {
                       </p>
                     </div>
 
-                    <div className="hidden sm:flex flex-col items-end text-xs text-gray-500">
+                    <div className="flex-col items-end hidden text-xs text-gray-500 sm:flex">
                       <span className="font-semibold text-gray-700">
                         Logged in Institute
                       </span>
@@ -343,7 +343,7 @@ function UploadDocumentPage() {
                   </div>
 
                   {/* Year selection */}
-                  <div className="mb-4 flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-3 mb-4 text-sm">
                     <span className="text-gray-700">Report Year:</span>
                     <select
                       value={reportYear}
@@ -390,7 +390,7 @@ function UploadDocumentPage() {
                     />
                     <div className="flex flex-col items-center justify-center space-y-4">
                       <UploadCloud className="w-10 h-10 text-gray-400" />
-                      <p className="text-gray-600 text-sm sm:text-base">
+                      <p className="text-sm text-gray-600 sm:text-base">
                         Drag & drop your PDF reports here
                       </p>
                       <p className="text-xs text-gray-400">
@@ -399,7 +399,7 @@ function UploadDocumentPage() {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-white font-semibold px-5 py-2 rounded-md shadow-sm text-sm sm:text-base"
+                        className="px-5 py-2 text-sm font-semibold text-white rounded-md shadow-sm sm:text-base"
                         style={{ backgroundColor: PRIMARY_BLUE }}
                       >
                         Browse PDF Files
@@ -408,9 +408,9 @@ function UploadDocumentPage() {
                   </div>
 
                   {/* Selected files */}
-                  <div className="mt-6 space-y-4 flex-1 overflow-y-auto">
+                  <div className="flex-1 mt-6 space-y-4 overflow-y-auto">
                     {Object.values(files).length === 0 ? (
-                      <p className="text-xs text-gray-400 italic">
+                      <p className="text-xs italic text-gray-400">
                         No files selected yet.
                       </p>
                     ) : (
@@ -425,7 +425,7 @@ function UploadDocumentPage() {
                   </div>
 
                   {totalFiles > 0 && (
-                    <div className="mt-6 pt-4 border-t border-gray-200">
+                    <div className="pt-4 mt-6 border-t border-gray-200">
                       <button
                         type="button"
                         onClick={handleSubmit}
@@ -440,7 +440,7 @@ function UploadDocumentPage() {
               )}
 
               {activePanel === "reports" && (
-                <section className="bg-white rounded-xl shadow-lg p-6 sm:p-8 flex flex-col h-full">
+                <section className="flex flex-col h-full p-6 bg-white shadow-lg rounded-xl sm:p-8">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h2
@@ -449,7 +449,7 @@ function UploadDocumentPage() {
                       >
                         My Submitted Reports
                       </h2>
-                      <p className="text-sm text-gray-500 mt-1 max-w-xl">
+                      <p className="max-w-xl mt-1 text-sm text-gray-500">
                         Below are the reports submitted by your institute. These
                         are the only documents used by SARTHI for your
                         institution’s AI-based insights.
@@ -463,7 +463,7 @@ function UploadDocumentPage() {
                       <select
                         value={reportYearFilter}
                         onChange={(e) => setReportYearFilter(e.target.value)}
-                        className="bg-white border border-gray-300 text-xs rounded-lg px-2 py-1 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="px-2 py-1 text-xs bg-white border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                       >
                         <option value="all">All Years</option>
                         {yearOptions.map((y) => (
@@ -475,15 +475,15 @@ function UploadDocumentPage() {
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto mt-2 space-y-3">
+                  <div className="flex-1 mt-2 space-y-3 overflow-y-auto">
                     {filteredReports.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 text-sm">
+                      <div className="flex flex-col items-center justify-center h-full text-sm text-center text-gray-500">
                         <FileText className="w-10 h-10 mb-2 text-gray-300" />
                         <p>No reports submitted yet for your institute.</p>
                         <button
                           type="button"
                           onClick={() => setActivePanel("upload")}
-                          className="mt-3 px-4 py-2 rounded-md text-xs font-medium text-white"
+                          className="px-4 py-2 mt-3 text-xs font-medium text-white rounded-md"
                           style={{ backgroundColor: PRIMARY_BLUE }}
                         >
                           Upload Your First Report
@@ -493,12 +493,12 @@ function UploadDocumentPage() {
                       filteredReports.map((report) => (
                         <div
                           key={report.id}
-                          className="flex items-start justify-between bg-indigo-50 rounded-lg px-4 py-3"
+                          className="flex items-start justify-between px-4 py-3 rounded-lg bg-indigo-50"
                         >
                           <div className="flex items-center gap-3">
                             <FileText className="w-6 h-6 text-indigo-600" />
                             <div>
-                              <p className="text-sm font-semibold text-gray-800 truncate max-w-[12rem] sm:max-w-lg">
+                              <p className="text-sm font-semibold text-gray-800 truncate max-w-48 sm:max-w-lg">
                                 {report.name}
                               </p>
                               <p className="text-xs text-gray-500">
@@ -530,9 +530,9 @@ function UploadDocumentPage() {
               )}
 
               {activePanel === "insights" && (
-                <section className="bg-white rounded-xl shadow-lg p-6 sm:p-8 flex flex-col h-full">
+                <section className="flex flex-col h-full p-6 bg-white shadow-lg rounded-xl sm:p-8">
                   <div className="flex items-center gap-3 mb-4">
-                    <BarChart3 className="w-7 h-7 text-indigo-600" />
+                    <BarChart3 className="text-indigo-600 w-7 h-7" />
                     <div>
                       <h2
                         className="text-2xl font-bold"
@@ -540,7 +540,7 @@ function UploadDocumentPage() {
                       >
                         Insights & AI Dashboard
                       </h2>
-                      <p className="text-sm text-gray-500 mt-1 max-w-xl">
+                      <p className="max-w-xl mt-1 text-sm text-gray-500">
                         The SARTHI AI engine uses your submitted reports to
                         compute trends, risk areas, and compliance readiness.
                         Access your live dashboard to see institution-specific
@@ -549,11 +549,11 @@ function UploadDocumentPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 bg-indigo-50 rounded-lg p-4 text-sm text-gray-700">
+                  <div className="p-4 mt-4 text-sm text-gray-700 rounded-lg bg-indigo-50">
                     <p className="mb-2">
                       <strong>How it works:</strong>
                     </p>
-                    <ul className="list-disc list-inside space-y-1 text-xs sm:text-sm">
+                    <ul className="space-y-1 text-xs list-disc list-inside sm:text-sm">
                       <li>
                         Every PDF report you upload (by year) is processed and
                         converted into structured indicators.
@@ -597,7 +597,7 @@ function UploadDocumentPage() {
         {/* Toast message */}
         {toast && (
           <div
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-3 rounded-lg shadow-2xl text-sm"
+            className="fixed flex items-center gap-2 px-4 py-3 text-sm -translate-x-1/2 rounded-lg shadow-2xl bottom-8 left-1/2"
             style={{
               backgroundColor: toast.type === "success" ? "#047857" : "#B91C1C",
               color: "white",
