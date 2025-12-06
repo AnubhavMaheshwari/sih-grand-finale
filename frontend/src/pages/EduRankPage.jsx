@@ -640,7 +640,7 @@ function EduRankPage() {
                     return (
                       <div
                         key={item.instituteId}
-                        className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-5 hover:shadow-md hover:border-indigo-100 transition-shadow transition-colors"
+                        className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-5 hover:shadow-md hover:border-indigo-100 transition-colors"
                       >
                         {/* Top content */}
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -673,7 +673,7 @@ function EduRankPage() {
                                 AI-evaluated
                               </p>
                             </div>
-                            <div className="flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-800 text-white text-xs shadow-sm">
+                            <div className="flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-linear-to-br from-indigo-600 to-indigo-800 text-white text-xs shadow-sm">
                               <span className="uppercase text-[9px] tracking-wide">
                                 Rank
                               </span>

@@ -143,7 +143,7 @@ function ContactUsPage() {
         {/* ✅ Shared navbar, with correct active tab */}
         <Navigation currentPage="Contact Us" />
 
-        <div className="container mx-auto px-4 py-16 flex-grow">
+        <div className="container mx-auto px-4 py-16 grow">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* CONTACT INFORMATION */}
             <div>
