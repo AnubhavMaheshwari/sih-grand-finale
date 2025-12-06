@@ -6,27 +6,79 @@ import FAQPage from "./pages/FAQPage.jsx";
 import ContactUsPage from "./pages/ContactUsPage.jsx";
 import EduRankPage from "./pages/EduRankPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
-import UploadedDataPage from "./pages/UploadedDataPage.jsx";  // ✅ NEW
+import UploadedDataPage from "./pages/UploadedDataPage.jsx";
+import AdminDashboardPage from "./pages/AdminDashboardPage.jsx";
+import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
+import PublicRoute from "./components/common/PublicRoute.jsx";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* The main login page */}
-        <Route path="/" element={<LoginPage />} />
+        {/* The main login page - Public only (redirects if already logged in) */}
+        <Route 
+          path="/" 
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          } 
+        />
 
-        {/* Application pages */}
-        {/* Institution upload dashboard */}
-        <Route path="/upload" element={<UploadDocumentPage />} />
-        {/* UGC uploaded-data explorer */}
-        <Route path="/uploaded-data" element={<UploadedDataPage />} />   {/* ✅ NEW */}
+        {/* Protected Application pages */}
+        {/* Admin Dashboard - Admin only */}
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          } 
+        />
 
+        {/* Institution upload dashboard - Institute users only */}
+        <Route 
+          path="/upload" 
+          element={
+            <ProtectedRoute requiredRole="institute">
+              <UploadDocumentPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* UGC uploaded-data explorer - UGC employees only */}
+        <Route 
+          path="/uploaded-data" 
+          element={
+            <ProtectedRoute requiredRole="ugc_employee">
+              <UploadedDataPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* EduRank page - UGC employees only */}
+        <Route 
+          path="/edu" 
+          element={
+            <ProtectedRoute requiredRole="ugc_employee">
+              <EduRankPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Public pages */}
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/contact" element={<ContactUsPage />} />
-        <Route path="/edu" element={<EduRankPage />} />
 
-        {/* Forgot password page */}
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        {/* Forgot password page - Public only */}
+        <Route 
+          path="/forgot-password" 
+          element={
+            <PublicRoute>
+              <ForgotPasswordPage />
+            </PublicRoute>
+          } 
+        />
 
         {/* Redirecting from old HTML paths to new React paths */}
         <Route path="/uploaddoc.html" element={<Navigate to="/upload" replace />} />

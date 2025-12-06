@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 // Assuming these chart components exist:
-import AIIMSDPerformanceRadar from '../components/AIIMSDPerformanceRadar';
-import AIIMSDPerceptionFSRChart from '../components/AIIMSDPerceptionFSRChart';
-import AIIMSDResearchMetricsChart from '../components/AIIMSDResearchMetricsChart';
-import GraduationPillarsChart from '../components/GraduationPillarsChart';
+import AIIMSDPerformanceRadar from './AIIMSDPerformanceRadar';
+import AIIMSDPerceptionFSRChart from './AIIMSDPerceptionFSRChart';
+import AIIMSDResearchMetricsChart from './AIIMSDResearchMetricsChart';
+import GraduationPillarsChart from './GraduationPillarsChart';
 
 const PRIMARY_BLUE = '#4F46E5'; 
 const DEEP_INDIGO = '#3730A3';
@@ -15,7 +15,7 @@ const DEEP_INDIGO = '#3730A3';
 const Card = ({ title, description, children }) => (
     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col">
         <h2 className="text-xl font-semibold mb-2" style={{ color: DEEP_INDIGO }}>{title}</h2>
-        <p className="text-sm text-gray-500 mb-4 flex-grow">{description}</p>
+        <p className="text-sm text-gray-500 mb-4 grow">{description}</p>
         <div className="mt-auto">
             {children}
         </div>

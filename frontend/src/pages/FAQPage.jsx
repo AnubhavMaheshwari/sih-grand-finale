@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import Navigation from "../components/Navigation";
+import { useState } from "react";
+import Navigation from "../components/layout/Navigation";
 
 const PRIMARY_BLUE = "#4F46E5"; // Primary Blue
 const DEEP_INDIGO = "#3730A3"; // Deep Indigo

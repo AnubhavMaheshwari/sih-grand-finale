@@ -1,12 +1,12 @@
-import React, {
+import {
   useState,
   useEffect,
   useMemo,
   useCallback,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import AIIMSDashboard from "../components/AIIMSDashboard";
-import Navigation from "../components/Navigation";
+import AIIMSDashboard from "../components/charts/AIIMSDashboard";
+import Navigation from "../components/layout/Navigation";
 
 const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";
@@ -373,11 +373,10 @@ function EduRankPage() {
     <button
       onClick={() => !isDisabled && setCurrentPage(page)}
       disabled={isDisabled}
-      className={`inline-flex items-center justify-center px-3 h-8 text-xs sm:text-sm font-medium rounded-md transition-colors ${
-        isActive
+      className={`inline-flex items-center justify-center px-3 h-8 text-xs sm:text-sm font-medium rounded-md transition-colors ${isActive
           ? "bg-indigo-600 text-white"
           : "bg-white text-gray-600 hover:bg-gray-100"
-      } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
       aria-current={isActive ? "page" : undefined}
     >
       {children}
@@ -394,8 +393,8 @@ function EduRankPage() {
         </PaginationButton>
         {pages.map((p) => (
           <PaginationButton key={p} page={p} isActive={currentPage === p}>
-  {p}
-</PaginationButton>
+            {p}
+          </PaginationButton>
 
         ))}
         <PaginationButton
@@ -479,20 +478,18 @@ function EduRankPage() {
                               prev === opt.value ? null : opt.value
                             );
                           }}
-                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md transition-colors ${
-                            isActive
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md transition-colors ${isActive
                               ? "bg-indigo-600 text-white"
                               : "bg-white text-gray-800 hover:bg-slate-100 border border-transparent hover:border-slate-200"
-                          }`}
+                            }`}
                         >
                           <span className="text-xs font-medium">
                             {opt.label}
                           </span>
                           {hasSub && (
                             <span
-                              className={`ml-2 transform text-[10px] ${
-                                isExpanded ? "rotate-90" : ""
-                              }`}
+                              className={`ml-2 transform text-[10px] ${isExpanded ? "rotate-90" : ""
+                                }`}
                             >
                               ▶
                             </span>
@@ -570,13 +567,13 @@ function EduRankPage() {
           <section className="flex-1 flex flex-col overflow-y-auto">
             <div className="h-full flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
               {/* Header card */}
-{/* Simple header (clean) */}
-  <div className="mt-2 mb-3">
-    <h1 className="text-xl sm:text-3xl font-bold text-gray-900">
-      Institute Rankings 2025
-    </h1>
-    
-  </div>
+              {/* Simple header (clean) */}
+              <div className="mt-2 mb-3">
+                <h1 className="text-xl sm:text-3xl font-bold text-gray-900">
+                  Institute Rankings 2025
+                </h1>
+
+              </div>
 
 
               {/* Controls bar */}

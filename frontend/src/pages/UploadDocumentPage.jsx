@@ -1,11 +1,11 @@
-import React, {
+import {
   useState,
   useCallback,
   useRef,
   useEffect,
   useMemo,
 } from "react";
-import Navigation from "../components/Navigation";
+import Navigation from "../components/layout/Navigation";
 import {
   FileText,
   UploadCloud,
