@@ -130,6 +130,55 @@ function UploadedDataPage() {
       });
   }, [searchTerm, selectedYear]);
 
+  // --- Pagination Logic ---
+  const [entriesPerPage, setEntriesPerPage] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const pageCount = Math.ceil(filteredInstitutions.length / entriesPerPage);
+  const startIndex = (currentPage - 1) * entriesPerPage;
+  const paginatedInstitutions = filteredInstitutions.slice(
+    startIndex,
+    startIndex + entriesPerPage
+  );
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedYear, entriesPerPage]);
+
+  const PaginationButton = ({ page, isActive, isDisabled, children }) => (
+    <button
+      onClick={() => !isDisabled && setCurrentPage(page)}
+      disabled={isDisabled}
+      className={`inline-flex items-center justify-center px-3 h-8 text-xs sm:text-sm font-medium rounded-md transition-colors ${isActive
+        ? "bg-indigo-600 text-white"
+        : "bg-white text-gray-600 hover:bg-gray-100"
+        } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      {children}
+    </button>
+  );
+
+  const PaginationControls = () => {
+    if (pageCount <= 1) return null;
+    const pages = Array.from({ length: pageCount }, (_, i) => i + 1);
+    return (
+      <div className="flex items-center space-x-2">
+        <PaginationButton page={currentPage - 1} isDisabled={currentPage === 1}>
+          Prev
+        </PaginationButton>
+        {pages.map((p) => (
+          <PaginationButton key={p} page={p} isActive={currentPage === p}>
+            {p}
+          </PaginationButton>
+        ))}
+        <PaginationButton page={currentPage + 1} isDisabled={currentPage === pageCount}>
+          Next
+        </PaginationButton>
+      </div>
+    );
+  };
+
   return (
     <>
       <style jsx="true">{`
@@ -208,11 +257,10 @@ function UploadedDataPage() {
                       <button
                         type="button"
                         onClick={() => setSelectedYear("all")}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                          selectedYear === "all"
-                            ? "bg-indigo-600 text-white border-indigo-600"
-                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                        }`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${selectedYear === "all"
+                          ? "bg-indigo-600 text-white border-indigo-600"
+                          : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                          }`}
                       >
                         All Years
                       </button>
@@ -221,11 +269,10 @@ function UploadedDataPage() {
                           key={year}
                           type="button"
                           onClick={() => setSelectedYear(year)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                            selectedYear === year
-                              ? "bg-indigo-600 text-white border-indigo-600"
-                              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                          }`}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${selectedYear === year
+                            ? "bg-indigo-600 text-white border-indigo-600"
+                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                            }`}
                         >
                           {year}
                         </button>
@@ -255,7 +302,7 @@ function UploadedDataPage() {
                   </div>
                 )}
 
-                {filteredInstitutions.map((inst) => {
+                {paginatedInstitutions.map((inst) => {
                   const isExpanded = expandedInstituteId === inst.instituteId;
                   return (
                     <div
@@ -284,11 +331,10 @@ function UploadedDataPage() {
                             onClick={() =>
                               handleToggleExpand(inst.instituteId)
                             }
-                            className={`text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg border transition-colors ${
-                              isExpanded
-                                ? "bg-indigo-600 text-white border-indigo-600"
-                                : "bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50"
-                            }`}
+                            className={`text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg border transition-colors ${isExpanded
+                              ? "bg-indigo-600 text-white border-indigo-600"
+                              : "bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+                              }`}
                           >
                             {isExpanded
                               ? "Hide PDFs & Reports"
@@ -359,6 +405,14 @@ function UploadedDataPage() {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="text-sm text-gray-500">
+                  Showing {startIndex + 1} to {Math.min(startIndex + entriesPerPage, filteredInstitutions.length)} of {filteredInstitutions.length}
+                </div>
+                <PaginationControls />
               </div>
             </section>
           </div>
