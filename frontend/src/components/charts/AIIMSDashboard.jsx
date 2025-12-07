@@ -28,8 +28,8 @@ const Card = ({ title, description, children }) => (
  */
 const AIIMSDashboard = () => {
     return (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-gray-50 min-h-screen">
-            <header className="text-center mb-12 bg-white p-6 rounded-xl shadow-md border border-gray-200">
+        <div className="px-2 sm:px-4 py-10 bg-gray-50 min-h-screen">
+            <header className="text-center mb-12 bg-white p-6 rounded-xl shadow-md border border-gray-200 mx-2 sm:mx-4">
                 <h1 className="text-4xl font-extrabold" style={{ color: DEEP_INDIGO }}>
                     AIIMS Delhi: Performance Metrics Dashboard (2021-2025) 📊
                 </h1>

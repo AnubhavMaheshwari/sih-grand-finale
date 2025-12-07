@@ -3,8 +3,6 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import Toast from '../components/common/Toast.jsx';
 import LoginForm from '../components/login/LoginForm.jsx';
 import PromoSection from '../components/login/PromoSection.jsx';
-import { DEEP_INDIGO } from '../constants/login.constants.js';
-import MovingImageNavbar from './MovingImageNavbar.jsx';
 import sarthiLogo from '../assets/images/sarthiLogo.jpg';
 
 const LoginPage = () => {
@@ -31,9 +29,9 @@ const LoginPage = () => {
     <div className="flex flex-col min-h-screen font-sans bg-white lg:flex-row lg:bg-transparent">
       {/* Left: Login Form Section */}
       
-      <div className="flex flex-col justify-between w-full px-4 py-4 overflow-y-auto bg-white shadow-xl lg:w-1/2 sm:px-6 md:px-8 lg:px-12 xl:px-16 sm:py-10 md:py-12 lg:shadow-none">
+      <div className="flex flex-col justify-between w-full px-2 py-4 overflow-y-auto bg-white shadow-xl lg:w-1/2 sm:px-4 sm:py-10 md:py-12 lg:shadow-none">
         <div className="flex flex-col flex-1">
-          <div className="w-full max-w-md mx-auto">
+          <div className="w-full max-w-md mx-auto px-2 sm:px-0">
             {/* Header */}
             <div className="mb-8 sm:mb-10">
               <div className='flex flex-col items-center'>

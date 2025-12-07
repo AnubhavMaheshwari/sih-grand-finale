@@ -19,7 +19,7 @@ const CONSOLIDATED_REPORT_LINK = "/consolidated-report-2025.pdf";
 // ---------------- FOOTER ----------------
 const Footer = () => (
   <footer className="bg-white border-t border-gray-200 py-4 sm:py-6">
-    <div className="container mx-auto px-4 text-center text-xs sm:text-sm text-gray-500">
+    <div className="px-2 sm:px-4 text-center text-xs sm:text-sm text-gray-500">
       &copy; 2025 SARTHI National Portal, all rights reserved
     </div>
   </footer>
@@ -357,7 +357,7 @@ function EduRankPage() {
       <div className="bg-gray-50 font-sans min-h-screen flex flex-col">
         <Navigation currentPage={currentNavTab} />
         <main className="flex-1 py-6 sm:py-8">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="px-2 sm:px-4">
             <AIIMSDashboard
               instituteId={selectedInstituteId}
               onBack={() => setShowDashboard(false)}
@@ -565,7 +565,7 @@ function EduRankPage() {
 
           {/* RIGHT CONTENT – ONLY THIS PART SCROLLS */}
           <section className="flex-1 flex flex-col overflow-y-auto">
-            <div className="h-full flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <div className="h-full flex flex-col px-2 sm:px-4 py-4 sm:py-6">
               {/* Header card */}
               {/* Simple header (clean) */}
               <div className="mt-2 mb-3">

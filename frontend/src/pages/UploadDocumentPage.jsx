@@ -309,7 +309,7 @@ function UploadDocumentPage() {
 
           {/* RIGHT CONTENT – ONLY THIS PART SCROLLS */}
           <section className="flex flex-col flex-1 overflow-y-auto">
-            <div className="flex flex-col w-full h-full px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="flex flex-col w-full h-full px-2 py-6 sm:px-4">
               {/* Right content (cards, upload, reports, insights) */}
               {activePanel === "upload" && (
                 <section className="flex flex-col h-full p-6 bg-white shadow-lg rounded-xl sm:p-8">

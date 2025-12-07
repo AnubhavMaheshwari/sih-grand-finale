@@ -66,5 +66,13 @@ export const TOAST_CONFIG = {
   error: {
     bgColor: 'bg-red-600',
     icon: '⚠️'
+  },
+  info: {
+    bgColor: 'bg-blue-600',
+    icon: 'ℹ️'
+  },
+  warning: {
+    bgColor: 'bg-yellow-600',
+    icon: '⚠️'
   }
 };

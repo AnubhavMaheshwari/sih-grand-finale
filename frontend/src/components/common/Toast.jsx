@@ -18,13 +18,14 @@ const Toast = ({ message, type = 'info', duration = TOAST_CONFIG.duration, onClo
   if (!isVisible) return null;
 
   const config = TOAST_CONFIG[type] || TOAST_CONFIG.info;
+  const safeConfig = config || TOAST_CONFIG.info; // Double safety check
 
   return (
     <div
-      className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 max-w-[90%] sm:max-w-md flex items-center text-white text-sm font-medium px-4 py-3 rounded-lg shadow-2xl z-50 animate-fade-in-up ${config.bgColor}`}
+      className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 max-w-[90%] sm:max-w-md flex items-center text-white text-sm font-medium px-4 py-3 rounded-lg shadow-2xl z-50 animate-fade-in-up ${safeConfig.bgColor || 'bg-blue-600'}`}
       role="alert"
     >
-      <span className="mr-3 text-lg">{config.icon}</span>
+      <span className="mr-3 text-lg">{safeConfig.icon || 'ℹ️'}</span>
       <span className="flex-1">{message}</span>
       <button
         onClick={() => {

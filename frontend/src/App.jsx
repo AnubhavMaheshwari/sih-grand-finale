@@ -8,6 +8,9 @@ import EduRankPage from "./pages/EduRankPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import UploadedDataPage from "./pages/UploadedDataPage.jsx";
 import AdminDashboardPage from "./pages/AdminDashboardPage.jsx";
+import UserManagementPage from "./pages/UserManagementPage.jsx";
+import AdminInstitutesPage from "./pages/AdminInstitutesPage.jsx";
+import AdminLayout from "./components/layout/AdminLayout.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import PublicRoute from "./components/common/PublicRoute.jsx";
 
@@ -26,15 +29,39 @@ function App() {
         />
 
         {/* Protected Application pages */}
-        {/* Admin Dashboard - Admin only */}
+        {/* Admin Routes with Sidebar Layout */}
         <Route 
           path="/admin/dashboard" 
           element={
             <ProtectedRoute requiredRole="admin">
-              <AdminDashboardPage />
+              <AdminLayout>
+                <AdminDashboardPage />
+              </AdminLayout>
             </ProtectedRoute>
           } 
         />
+        <Route 
+          path="/admin/users" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLayout>
+                <UserManagementPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/institutes" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLayout>
+                <AdminInstitutesPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          } 
+        />
+        {/* Redirect old admin dashboard to new dashboard */}
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
         {/* Institution upload dashboard - Institute users only */}
         <Route 
