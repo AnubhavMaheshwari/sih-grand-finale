@@ -420,12 +420,12 @@ function EduRankPage() {
         }
       `}</style>
 
-      <div className="bg-slate-50 font-sans h-screen flex flex-col">
+      <div className="bg-slate-50 font-sans min-h-screen flex flex-col">
         {/* Top navbar */}
         <Navigation currentPage={currentNavTab} />
 
-        {/* Main layout: LEFT FIXED, RIGHT SCROLLABLE */}
-        <main className="flex-1 flex overflow-hidden">
+        {/* Main layout: Normal scrollable page */}
+        <main className="flex-1 flex flex-col md:flex-row">
           {/* LEFT SIDEBAR (static on md+) */}
           <aside className="hidden md:flex w-64 lg:w-72 bg-white border-r border-gray-200 flex-col">
             <div className="p-4 space-y-6 flex-1 overflow-y-auto scrollbar-thin">
@@ -549,7 +549,7 @@ function EduRankPage() {
           </aside>
 
           {/* RIGHT CONTENT – ONLY THIS PART SCROLLS */}
-          <section className="flex-1 flex flex-col overflow-y-auto">
+          <section className="flex-1 flex flex-col">
             <div className="h-full flex flex-col px-2 sm:px-4 py-4 sm:py-6">
               {/* Header card */}
               {/* Simple header (clean) */}
