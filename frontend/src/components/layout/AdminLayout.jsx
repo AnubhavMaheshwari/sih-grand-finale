@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import Toast from "../common/Toast.jsx";
-import sarthiLogo from "../../assets/images/sarthiLogo.jpg";
+import sarthiLogo from "../../assets/images/sarthiLogo.png";
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
