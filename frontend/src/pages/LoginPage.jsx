@@ -3,8 +3,13 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import Toast from '../components/common/Toast.jsx';
 import LoginForm from '../components/login/LoginForm.jsx';
 import PromoSection from '../components/login/PromoSection.jsx';
-import sarthiLogo from '../assets/images/sarthiLogo.jpg';
+
 import Footer from '../components/layout/Footer.jsx';
+
+import { DEEP_INDIGO } from '../constants/login.constants.js';
+import MovingImageNavbar from './MovingImageNavbar.jsx';
+import sarthiLogo from '../assets/images/sarthiLogo.png';
+
 
 const LoginPage = () => {
   const { error } = useAuth();
