@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Using proxy configured in vite.config.js
 const axiosInstance = axios.create({
-  baseURL: "/api", // Proxy will forward to backend
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
   headers: {
     "Content-Type": "application/json",
   },
