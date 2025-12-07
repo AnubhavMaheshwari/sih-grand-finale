@@ -18,14 +18,7 @@ import {
 const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";
 
-// --- Footer Component ---
-const Footer = () => (
-  <footer className="py-6 mt-4 bg-white border-t border-gray-200">
-    <div className="container mx-auto text-sm text-center text-gray-500">
-      &copy; 2025 SARTHI National Portal, all rights reserved
-    </div>
-  </footer>
-);
+import Footer from "../components/layout/Footer";
 
 // --- Small left sidebar for Institute view ---
 const instituteSideItems = [
@@ -58,11 +51,10 @@ function InstituteSideNavbar({ activeId, onChange }) {
                 key={item.id}
                 type="button"
                 onClick={() => onChange && onChange(item.id)}
-                className={`w-full flex items-center px-4 py-3 text-sm font-medium text-left transition-colors border-l-4 ${
-                  isActive
+                className={`w-full flex items-center px-4 py-3 text-sm font-medium text-left transition-colors border-l-4 ${isActive
                     ? "bg-indigo-50 text-indigo-700 border-indigo-600"
                     : "text-gray-700 hover:bg-gray-50 border-transparent"
-                }`}
+                  }`}
               >
                 <span className="truncate">{item.label}</span>
               </button>
@@ -254,11 +246,10 @@ function UploadDocumentPage() {
     [handleFiles]
   );
 
-  const dropAreaClasses = `border-2 border-dashed rounded-lg p-8 text-center transition-all ${
-    isDragOver
+  const dropAreaClasses = `border-2 border-dashed rounded-lg p-8 text-center transition-all ${isDragOver
       ? "border-indigo-500 bg-indigo-100"
       : "border-gray-300 hover:border-indigo-500 hover:bg-indigo-50"
-  }`;
+    }`;
 
   const totalFiles = Object.keys(files).length;
 

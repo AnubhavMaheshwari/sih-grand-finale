@@ -7,23 +7,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import AIIMSDashboard from "../components/charts/AIIMSDashboard";
 import Navigation from "../components/layout/Navigation";
-
-const PRIMARY_BLUE = "#4F46E5";
-const DEEP_INDIGO = "#3730A3";
-
-const AIIMS_DELHI_PDF_LINK =
-  "https://drive.usercontent.google.com/download?id=12Y4FPPyl14Zyo5kUXgL4KWgXEdiXGJP9&export=download&authuser=0&confirm=t&uuid=8eb9e2e3-31c0-43ac-8fcb-5b4eda3f76e0&at=AKSUxGMnKQF63N2Thj8KYYBHea7I:1760378258613";
-
 const CONSOLIDATED_REPORT_LINK = "/consolidated-report-2025.pdf";
-
-// ---------------- FOOTER ----------------
-const Footer = () => (
-  <footer className="bg-white border-t border-gray-200 py-4 sm:py-6">
-    <div className="px-2 sm:px-4 text-center text-xs sm:text-sm text-gray-500">
-      &copy; 2025 SARTHI National Portal, all rights reserved
-    </div>
-  </footer>
-);
+import Footer from "../components/layout/Footer";
 
 // ---------------- DATA ----------------
 const instituteData = [
@@ -374,8 +359,8 @@ function EduRankPage() {
       onClick={() => !isDisabled && setCurrentPage(page)}
       disabled={isDisabled}
       className={`inline-flex items-center justify-center px-3 h-8 text-xs sm:text-sm font-medium rounded-md transition-colors ${isActive
-          ? "bg-indigo-600 text-white"
-          : "bg-white text-gray-600 hover:bg-gray-100"
+        ? "bg-indigo-600 text-white"
+        : "bg-white text-gray-600 hover:bg-gray-100"
         } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
       aria-current={isActive ? "page" : undefined}
     >
@@ -479,8 +464,8 @@ function EduRankPage() {
                             );
                           }}
                           className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md transition-colors ${isActive
-                              ? "bg-indigo-600 text-white"
-                              : "bg-white text-gray-800 hover:bg-slate-100 border border-transparent hover:border-slate-200"
+                            ? "bg-indigo-600 text-white"
+                            : "bg-white text-gray-800 hover:bg-slate-100 border border-transparent hover:border-slate-200"
                             }`}
                         >
                           <span className="text-xs font-medium">

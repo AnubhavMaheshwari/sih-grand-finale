@@ -5,13 +5,7 @@ const PRIMARY_BLUE = "#4F46E5"; // Primary Blue
 const DEEP_INDIGO = "#3730A3"; // Deep Indigo
 
 
-const Footer = () => (
-  <footer className="bg-white border-t border-gray-200 py-6 mt-12">
-    <div className="container mx-auto text-center text-sm text-gray-500">
-      &copy; 2025 SARTHI National Portal, all rights reserved
-    </div>
-  </footer>
-);
+import Footer from '../components/layout/Footer.jsx';
 
 const MapMarkerIcon = (props) => (
   <svg
@@ -261,8 +255,8 @@ function ContactUsPage() {
                     type="submit"
                     disabled={isSubmitting}
                     className={`w-full text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-deep-indigo ${isSubmitting
-                        ? "bg-indigo-700 opacity-75 animate-pulse"
-                        : "bg-primary-blue hover:bg-indigo-700"
+                      ? "bg-indigo-700 opacity-75 animate-pulse"
+                      : "bg-primary-blue hover:bg-indigo-700"
                       }`}
                   >
                     {isSubmitting ? "Sending..." : "Submit Request"}
