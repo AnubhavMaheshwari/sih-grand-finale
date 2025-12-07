@@ -4,14 +4,7 @@ import Navigation from "../components/layout/Navigation";
 const PRIMARY_BLUE = "#4F46E5"; // Primary Blue
 const DEEP_INDIGO = "#3730A3"; // Deep Indigo
 
-/** Footer */
-const Footer = () => (
-  <footer className="bg-white border-t border-gray-200 py-6 mt-12">
-    <div className="container mx-auto text-center text-sm text-gray-500">
-      &copy; 2025 SARTHI National Portal, all rights reserved
-    </div>
-  </footer>
-);
+import Footer from '../components/layout/Footer.jsx';
 
 // --- FAQ Data ---
 const faqData = [
@@ -55,9 +48,8 @@ function FAQItem({ question, answer, isOpen, onToggle }) {
       >
         <span>{question}</span>
         <svg
-          className={`w-6 h-6 transform transition-transform duration-300 ${
-            isOpen ? "rotate-90" : ""
-          }`}
+          className={`w-6 h-6 transform transition-transform duration-300 ${isOpen ? "rotate-90" : ""
+            }`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -72,9 +64,8 @@ function FAQItem({ question, answer, isOpen, onToggle }) {
         </svg>
       </button>
       <div
-        className={`mt-3 text-indigo-700 leading-relaxed ${
-          isOpen ? "block" : "hidden"
-        }`}
+        className={`mt-3 text-indigo-700 leading-relaxed ${isOpen ? "block" : "hidden"
+          }`}
       >
         {answer}
       </div>
