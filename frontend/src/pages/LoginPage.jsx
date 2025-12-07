@@ -4,6 +4,8 @@ import Toast from '../components/common/Toast.jsx';
 import LoginForm from '../components/login/LoginForm.jsx';
 import PromoSection from '../components/login/PromoSection.jsx';
 import { DEEP_INDIGO } from '../constants/login.constants.js';
+import MovingImageNavbar from './MovingImageNavbar.jsx';
+import sarthiLogo from '../assets/images/sarthiLogo.jpg';
 
 const LoginPage = () => {
   const { error } = useAuth();
@@ -25,17 +27,23 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-white lg:bg-transparent font-sans">
+    
+    <div className="flex flex-col min-h-screen font-sans bg-white lg:flex-row lg:bg-transparent">
       {/* Left: Login Form Section */}
-      <div className="w-full lg:w-1/2 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-8 sm:py-10 md:py-12 flex flex-col justify-between bg-white shadow-xl lg:shadow-none overflow-y-auto">
+      
+      <div className="flex flex-col justify-between w-full px-4 py-4 overflow-y-auto bg-white shadow-xl lg:w-1/2 sm:px-6 md:px-8 lg:px-12 xl:px-16 sm:py-10 md:py-12 lg:shadow-none">
         <div className="flex flex-col flex-1">
-          <div className="max-w-md w-full mx-auto">
+          <div className="w-full max-w-md mx-auto">
             {/* Header */}
             <div className="mb-8 sm:mb-10">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 text-gray-900 leading-tight">
-                Welcome to <span className="text-deep-indigo">SARTHI</span> Portal
-              </h1>
-              <p className="text-gray-600 text-sm sm:text-base">
+              <div className='flex flex-col items-center'>
+                <img src={sarthiLogo} alt="SARTHI Logo" className='w-40 h-40'/>
+                <h1 className="mb-2 text-2xl font-black leading-tight text-gray-900 sm:text-3xl md:text-4xl">
+                  Welcome to <span className="text-deep-indigo">SARTHI</span> Portal
+                </h1>
+                
+              </div>
+              <p className="text-sm text-gray-600 sm:text-base">
                 Secure login for educational institutions and officials
               </p>
             </div>
@@ -44,8 +52,8 @@ const LoginPage = () => {
             <LoginForm onToast={showToast} />
 
             {/* Additional Info */}
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <p className="text-xs text-gray-500 text-center">
+            <div className="pt-6 mt-8 border-t border-gray-100">
+              <p className="text-xs text-center text-gray-500">
                 Need help? Contact support at{' '}
                 <a href="mailto:support@sarthi.gov.in" className="text-indigo-600 hover:underline">
                   support@sarthi.gov.in
@@ -54,9 +62,9 @@ const LoginPage = () => {
             </div>
           </div>
         </div>
-
+        
         {/* Footer */}
-        <footer className="text-center text-xs text-gray-400 mt-8 pt-6 border-t border-gray-100">
+        <footer className="pt-6 mt-8 text-xs text-center text-gray-400 border-t border-gray-100">
           <p>© 2025 SARTHI National Portal. All rights reserved.</p>
           <p className="mt-1">Ministry of Education, Government of India</p>
           <p className="mt-1 text-[10px]">
