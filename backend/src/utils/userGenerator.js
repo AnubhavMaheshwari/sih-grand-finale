@@ -20,10 +20,6 @@ const generateUserId = (userData, sequenceNumber = null) => {
                     instituteType === 'medical' ? 'MD' : 'IN';
     const randomNumbers = Math.floor(100000 + Math.random() * 900000);
     return `${typeCode}${randomNumbers}`;
-  } else if (role === 'ugc_employee') {
-    const seq = sequenceNumber ? sequenceNumber.toString().padStart(6, '0') : 
-               Math.floor(100000 + Math.random() * 900000).toString().padStart(6, '0');
-    return `UGCM${seq}`;
   } else if (role === 'admin') {
     const randomNumbers = Math.floor(100000 + Math.random() * 900000);
     return `ADMN${randomNumbers}`;
@@ -114,28 +110,7 @@ const generateUniqueUserId = async (UserModel, userData, maxAttempts = 5) => {
   let userId;
   
   while (attempts < maxAttempts) {
-    // For UGC employees, we need to get the next sequence number
-    let sequenceNumber = null;
-    if (userData.role === 'ugc_employee') {
-      // Find the highest UGC employee sequence number
-      const lastUgcUser = await UserModel.findOne(
-        { role: 'ugc_employee', userId: /^UGCM/ },
-        { userId: 1 }
-      ).sort({ createdAt: -1 });
-      
-      if (lastUgcUser && lastUgcUser.userId) {
-        const match = lastUgcUser.userId.match(/UGCM(\d+)/);
-        if (match && match[1]) {
-          sequenceNumber = parseInt(match[1]) + 1;
-        }
-      }
-      
-      if (!sequenceNumber) {
-        sequenceNumber = 1; // Start from 1
-      }
-    }
-    
-    userId = generateUserId(userData, sequenceNumber);
+    userId = generateUserId(userData);
     
     const exists = await userIdExists(UserModel, userId);
     if (!exists) {

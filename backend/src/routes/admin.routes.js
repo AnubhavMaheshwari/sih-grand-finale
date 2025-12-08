@@ -1,10 +1,24 @@
 import express from "express";
-import {
-  getAdminStats,
-  getSystemHealth,
-  getUserManagementStats,
-} from "../controllers/admin.controller.js";
 import { auth, isAdmin } from "../middleware/auth.js";
+import {
+  // User Management
+  createUser,
+  getUsers,
+  getUser,
+  updateUser,
+  deleteUser,
+  regeneratePassword,
+  
+  // Institute Management
+  createInstitute,
+  getInstitutes,
+  getInstitute,
+  updateInstitute,
+  deleteInstitute,
+  
+  // Dashboard Statistics
+  getAdminStats,
+} from "../controllers/admin.controller.js";
 
 const router = express.Router();
 
@@ -12,9 +26,22 @@ const router = express.Router();
 router.use(auth);
 router.use(isAdmin);
 
-// Admin dashboard routes
+// User Management Routes
+router.post("/users", createUser);
+router.get("/users", getUsers);
+router.get("/users/:userId", getUser);
+router.put("/users/:userId", updateUser);
+router.delete("/users/:userId", deleteUser);
+router.post("/users/:userId/regenerate-password", regeneratePassword);
+
+// Institute Management Routes
+router.post("/institutes", createInstitute);
+router.get("/institutes", getInstitutes);
+router.get("/institutes/:instituteId", getInstitute);
+router.put("/institutes/:instituteId", updateInstitute);
+router.delete("/institutes/:instituteId", deleteInstitute);
+
+// Dashboard Statistics Routes
 router.get("/stats", getAdminStats);
-router.get("/system-health", getSystemHealth);
-router.get("/user-stats", getUserManagementStats);
 
 export default router;

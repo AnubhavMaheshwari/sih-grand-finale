@@ -1,7 +1,6 @@
 export const ROLES = {
   ADMIN: "admin",
   INSTITUTE: "institute",
-  UGC_EMPLOYEE: "ugc_employee",
 };
 
 export const JWT_CONFIG = {
@@ -26,4 +25,10 @@ export const SECURITY_CONFIG = {
   MAX_LOGIN_ATTEMPTS: 5,
   LOCKOUT_TIME_MINUTES: 15,
   PASSWORD_HISTORY_COUNT: 3,
+};
+
+export const OTP_CONFIG = {
+  EXPIRY_MINUTES: 10,
+  LENGTH: 6,
+  MAX_ATTEMPTS: 3,
 };

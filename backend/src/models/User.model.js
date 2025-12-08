@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "institute", "ugc_employee"],
+      enum: ["admin", "institute"],
       default: "institute",
     },
     instituteId: {
@@ -43,6 +43,35 @@ const userSchema = new mongoose.Schema(
     generatedPassword: {
       type: String,
       default: "",
+    },
+    // OTP and password reset fields
+    otpCode: {
+      type: String,
+      default: null,
+    },
+    otpExpiresAt: {
+      type: Date,
+      default: null,
+    },
+    passwordResetToken: {
+      type: String,
+      default: null,
+    },
+    passwordResetExpires: {
+      type: Date,
+      default: null,
+    },
+    lastPasswordReset: {
+      type: Date,
+      default: null,
+    },
+    loginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockUntil: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

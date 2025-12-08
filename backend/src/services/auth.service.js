@@ -1,8 +1,8 @@
 import User from "../models/User.model.js";
-import Institute from "../models/Institute.model.js";
 import jwt from "jsonwebtoken";
-import { JWT_CONFIG } from "../config/constants.js";
-import { generateUniqueUserId, generatePassword } from "../utils/userGenerator.js";
+import { JWT_CONFIG, OTP_CONFIG } from "../config/constants.js";
+import { sendOTPEmail, sendPasswordChangedEmail } from "../utils/emailService.js";
+import crypto from "crypto";
 
 export const loginUser = async (userId, password) => {
   const user = await User.findOne({ userId });
@@ -11,11 +11,31 @@ export const loginUser = async (userId, password) => {
     throw new Error("Invalid credentials");
   }
 
+  // Check if account is locked
+  if (user.lockUntil && user.lockUntil > Date.now()) {
+    const lockTime = Math.ceil((user.lockUntil - Date.now()) / 60000); // minutes
+    throw new Error(`Account is locked. Try again in ${lockTime} minute(s)`);
+  }
+
   const isMatch = await user.comparePassword(password);
   
   if (!isMatch) {
+    // Increment login attempts
+    user.loginAttempts += 1;
+    
+    // Lock account after 5 failed attempts
+    if (user.loginAttempts >= 5) {
+      user.lockUntil = Date.now() + 15 * 60 * 1000; // 15 minutes
+    }
+    
+    await user.save();
     throw new Error("Invalid credentials");
   }
+
+  // Reset login attempts on successful login
+  user.loginAttempts = 0;
+  user.lockUntil = null;
+  await user.save();
 
   // Create token payload with user data
   const tokenPayload = {
@@ -59,178 +79,143 @@ export const loginUser = async (userId, password) => {
   };
 };
 
-export const createUser = async (userData) => {
-  const { 
-    role, 
-    instituteId, 
-    instituteName, 
-    instituteType = 'others',
-    fullName, 
-    email
-  } = userData;
+export const forgotPassword = async (email) => {
+  // Find user by email
+  const user = await User.findOne({ email });
   
-  // Always generate User ID and password
-  const finalUserId = await generateUniqueUserId(User, { role, instituteType, instituteId });
-  const generatedPassword = generatePassword();
-  const finalPassword = generatedPassword;
-
-  // Validate institute exists for institute users
-  if (role === "institute") {
-    if (!instituteId || !instituteName) {
-      throw new Error("Institute ID and name are required for institute users");
-    }
-    
-    // Check if institute exists in Institute collection, create if it doesn't
-    let institute = await Institute.findOne({ instituteId });
-    if (!institute) {
-      // Create new institute with basic information
-      institute = await Institute.create({
-        instituteId,
-        name: instituteName,
-        type: "Institute", // Default type
-        location: {
-          city: "Unknown",
-          state: "Unknown"
-        },
-        isActive: true
-      });
-    }
+  if (!user) {
+    throw new Error("No account found with this email address");
   }
 
-  // Create new user
-  const newUser = await User.create({
-    userId: finalUserId,
-    password: finalPassword,
-    role: role || "institute",
-    instituteId: role === "institute" ? instituteId : undefined,
-    instituteName: role === "institute" ? instituteName : undefined,
-    instituteType: role === "institute" ? instituteType : undefined,
-    fullName,
-    email: email || "",
-    generatedPassword: generatedPassword || '', // Store generated password for admin reference
-  });
+  // Check if user is an institute (only institutes can use forgot password)
+  if (user.role !== "institute") {
+    throw new Error("Password reset is only available for institute accounts");
+  }
 
-  // Prepare response
-  const userResponse = {
-    id: newUser._id,
-    userId: newUser.userId,
-    role: newUser.role,
-    fullName: newUser.fullName,
-    email: newUser.email,
-    generatedPassword: generatedPassword || undefined, // Include generated password in response for admin
-  };
+  // Generate 6-digit OTP
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiresAt = new Date(Date.now() + OTP_CONFIG.EXPIRY_MINUTES * 60 * 1000);
 
-  if (newUser.role === "institute") {
-    userResponse.instituteId = newUser.instituteId;
-    userResponse.instituteName = newUser.instituteName;
-    userResponse.instituteType = newUser.instituteType;
+  // Save OTP to user
+  user.otpCode = otpCode;
+  user.otpExpiresAt = otpExpiresAt;
+  await user.save();
+
+  // Send OTP email
+  const emailResult = await sendOTPEmail(email, otpCode);
+  
+  if (!emailResult.success) {
+    throw new Error("Failed to send OTP email. Please try again later.");
   }
 
   return {
-    message: "User created successfully",
-    user: userResponse,
+    message: "OTP sent to your email address",
+    email: email,
+    expiresIn: OTP_CONFIG.EXPIRY_MINUTES,
   };
 };
 
-export const getUsers = async (currentUserRole) => {
-  let query = {};
-  
-  // Admin can see all users
-  // Institute users can only see themselves (handled at controller level)
-  // UGC employees can see all non-admin users
-  if (currentUserRole === "ugc_employee") {
-    query = { role: { $ne: "admin" } };
-  }
-  
-  const users = await User.find(query).select("-password");
-  return users;
-};
-
-export const getUserById = async (userId, currentUserRole, currentUserId) => {
-  const user = await User.findOne({ userId }).select("-password");
+export const verifyOTP = async (email, otpCode) => {
+  // Find user by email
+  const user = await User.findOne({ email });
   
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("Invalid OTP or email");
   }
 
-  // Permission checks
-  if (currentUserRole === "institute" && user.userId !== currentUserId) {
-    throw new Error("Access denied");
+  // Check if OTP exists and is not expired
+  if (!user.otpCode || !user.otpExpiresAt) {
+    throw new Error("OTP not found or expired");
   }
 
-  return user;
-};
-
-export const updateUser = async (userId, updateData, currentUserRole, currentUserId) => {
-  const user = await User.findOne({ userId });
-  
-  if (!user) {
-    throw new Error("User not found");
+  if (user.otpExpiresAt < new Date()) {
+    // Clear expired OTP
+    user.otpCode = null;
+    user.otpExpiresAt = null;
+    await user.save();
+    throw new Error("OTP has expired. Please request a new one.");
   }
 
-  // Permission checks
-  if (currentUserRole === "institute" && user.userId !== currentUserId) {
-    throw new Error("Access denied");
+  // Verify OTP
+  if (user.otpCode !== otpCode) {
+    throw new Error("Invalid OTP");
   }
 
-  // Update allowed fields
-  const allowedUpdates = ["fullName", "email"];
-  if (currentUserRole === "admin") {
-    allowedUpdates.push("role", "instituteId", "instituteName");
-  }
+  // Generate password reset token
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetTokenExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
 
-  Object.keys(updateData).forEach((key) => {
-    if (allowedUpdates.includes(key)) {
-      user[key] = updateData[key];
-    }
-  });
-
+  // Save reset token
+  user.passwordResetToken = resetToken;
+  user.passwordResetExpires = resetTokenExpires;
   await user.save();
-  
-  const userResponse = user.toObject();
-  delete userResponse.password;
-  
-  return userResponse;
+
+  return {
+    message: "OTP verified successfully",
+    resetToken,
+    expiresIn: 30, // minutes
+  };
 };
 
-export const deleteUser = async (userId, currentUserRole) => {
-  if (currentUserRole !== "admin") {
-    throw new Error("Only admin can delete users");
-  }
-
-  const user = await User.findOneAndDelete({ userId });
+export const resetPassword = async (resetToken, newPassword) => {
+  // Find user by reset token
+  const user = await User.findOne({ 
+    passwordResetToken: resetToken,
+    passwordResetExpires: { $gt: new Date() }
+  });
   
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("Invalid or expired reset token");
   }
 
-  return { message: "User deleted successfully" };
-};
-
-export const regeneratePassword = async (userId, currentUserRole) => {
-  if (currentUserRole !== "admin") {
-    throw new Error("Only admin can regenerate passwords");
+  // Validate new password
+  if (newPassword.length < 8) {
+    throw new Error("Password must be at least 8 characters long");
   }
 
-  const user = await User.findOne({ userId });
-  
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  // Generate new password
-  const newPassword = generatePassword();
-  const generatedPassword = newPassword;
-  
-  // Update user password and store generated password
+  // Update password
   user.password = newPassword;
-  user.generatedPassword = generatedPassword;
-  await user.save();
+  user.lastPasswordReset = new Date();
   
+  // Clear OTP and reset token fields
+  user.otpCode = null;
+  user.otpExpiresAt = null;
+  user.passwordResetToken = null;
+  user.passwordResetExpires = null;
+  user.loginAttempts = 0;
+  user.lockUntil = null;
+  
+  await user.save();
+
+  // Send password change confirmation email
+  if (user.email) {
+    await sendPasswordChangedEmail(user.email);
+  }
+
   return {
-    message: "Password regenerated successfully",
-    generatedPassword,
+    message: "Password reset successfully",
     userId: user.userId,
-    fullName: user.fullName,
+    email: user.email,
   };
+};
+
+// Helper function to check if user can request OTP (rate limiting)
+export const canRequestOTP = async (email) => {
+  const user = await User.findOne({ email });
+  
+  if (!user) {
+    return { canRequest: true };
+  }
+
+  // Check if user has made too many OTP requests
+  // This is a simple implementation - in production you might want more sophisticated rate limiting
+  if (user.otpExpiresAt && user.otpExpiresAt > new Date()) {
+    const timeLeft = Math.ceil((user.otpExpiresAt - new Date()) / 60000); // minutes
+    return { 
+      canRequest: false, 
+      message: `Please wait ${timeLeft} minute(s) before requesting a new OTP` 
+    };
+  }
+
+  return { canRequest: true };
 };

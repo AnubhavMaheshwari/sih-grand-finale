@@ -1,21 +1,179 @@
+import * as adminService from "../services/admin.service.js";
+import { successResponse, errorResponse } from "../utils/apiResponse.js";
+import { sendWelcomeEmail } from "../utils/emailService.js";
 import User from "../models/User.model.js";
 import Institute from "../models/Institute.model.js";
 import UploadedDocument from "../models/UploadedDocument.model.js";
-import ParsedDocumentData from "../models/ParsedDocumentData.model.js";
-import { successResponse, errorResponse } from "../utils/apiResponse.js";
 
-// Get admin dashboard statistics
-const getAdminStats = async (req, res) => {
+// User Management Controllers
+export const createUser = async (req, res) => {
   try {
-    // Check if user is admin
-    if (req.user?.role !== "admin") {
-      return errorResponse(res, "Admin access required", 403);
+    const userData = req.body;
+    console.log("Create User Payload:", userData);
+
+    const result = await adminService.createUser(userData);
+    console.log("Create User Result:", result);
+
+    // Send email if user creation was successful and email exists
+    if (result.user.email && result.user.generatedPassword) {
+      // Don't await this to keep response fast, or await if critical
+      try {
+        await sendWelcomeEmail(result.user.email, result.user.userId, result.user.generatedPassword);
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
+      }
     }
 
+    successResponse(res, result, 201);
+  } catch (error) {
+    if (error.message === "UserId already exists" ||
+      error.message === "Institute ID and name are required for institute users" ||
+      error.message === "Institute not found. Please create institute first.") {
+      return errorResponse(res, error.message, 400);
+    }
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+export const getUsers = async (req, res) => {
+  try {
+    const users = await adminService.getUsers();
+    successResponse(res, { users });
+  } catch (error) {
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+export const getUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await adminService.getUserById(userId);
+    successResponse(res, { user });
+  } catch (error) {
+    if (error.message === "User not found") {
+      return errorResponse(res, error.message, 404);
+    }
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const updateData = req.body;
+    const user = await adminService.updateUser(userId, updateData);
+    successResponse(res, { user, message: "User updated successfully" });
+  } catch (error) {
+    if (error.message === "User not found") {
+      return errorResponse(res, error.message, 404);
+    }
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const result = await adminService.deleteUser(userId);
+    successResponse(res, result);
+  } catch (error) {
+    if (error.message === "User not found") {
+      return errorResponse(res, error.message, 404);
+    }
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+export const regeneratePassword = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const result = await adminService.regeneratePassword(userId);
+    successResponse(res, result);
+  } catch (error) {
+    if (error.message === "User not found") {
+      return errorResponse(res, error.message, 404);
+    }
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+// Institute Management Controllers
+export const createInstitute = async (req, res) => {
+  try {
+    const instituteData = req.body;
+    const result = await adminService.createInstitute(instituteData);
+    successResponse(res, result, 201);
+  } catch (error) {
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+export const getInstitutes = async (req, res) => {
+  try {
+    const institutes = await adminService.getInstitutes();
+    successResponse(res, { institutes });
+  } catch (error) {
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+export const getInstitute = async (req, res) => {
+  try {
+    const { instituteId } = req.params;
+    const institute = await adminService.getInstituteById(instituteId);
+    successResponse(res, { institute });
+  } catch (error) {
+    if (error.message === "Institute not found") {
+      return errorResponse(res, error.message, 404);
+    }
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+export const updateInstitute = async (req, res) => {
+  try {
+    const { instituteId } = req.params;
+    const updateData = req.body;
+    const institute = await adminService.updateInstitute(instituteId, updateData);
+    successResponse(res, { institute, message: "Institute updated successfully" });
+  } catch (error) {
+    if (error.message === "Institute not found") {
+      return errorResponse(res, error.message, 404);
+    }
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+export const deleteInstitute = async (req, res) => {
+  try {
+    const { instituteId } = req.params;
+    const result = await adminService.deleteInstitute(instituteId);
+    successResponse(res, result);
+  } catch (error) {
+    if (error.message === "Institute not found") {
+      return errorResponse(res, error.message, 404);
+    }
+    console.error(error);
+    errorResponse(res, "Server error");
+  }
+};
+
+// Dashboard Statistics (keeping existing functions)
+export const getAdminStats = async (req, res) => {
+  try {
     // Get user statistics
     const totalUsers = await User.countDocuments();
     const instituteUsers = await User.countDocuments({ role: "institute" });
-    const ugcEmployees = await User.countDocuments({ role: "ugc_employee" });
     const adminUsers = await User.countDocuments({ role: "admin" });
 
     // Get institute statistics
@@ -61,7 +219,6 @@ const getAdminStats = async (req, res) => {
     const userDistribution = [
       { name: "Admin", value: adminUsers, color: "#4F46E5" },
       { name: "Institute", value: instituteUsers, color: "#10B981" },
-      { name: "UGC Employee", value: ugcEmployees, color: "#3B82F6" },
     ];
 
     // Get institute distribution by category (if available)
@@ -88,7 +245,6 @@ const getAdminStats = async (req, res) => {
       stats: {
         totalUsers,
         totalInstitutes,
-        totalEmployees: ugcEmployees,
         totalDocuments,
         parsedDocuments,
         pendingDocuments,
@@ -106,102 +262,6 @@ const getAdminStats = async (req, res) => {
   } catch (error) {
     console.error("Get admin stats error:", error);
     return errorResponse(res, error.message || "Failed to retrieve admin statistics", 500);
-  }
-};
-
-// Get system health status
-const getSystemHealth = async (req, res) => {
-  try {
-    if (req.user?.role !== "admin") {
-      return errorResponse(res, "Admin access required", 403);
-    }
-
-    // Check database connection
-    const dbStatus = await checkDatabaseHealth();
-    
-    // Check storage availability (simplified)
-    const storageStatus = {
-      status: "healthy",
-      used: "2.4GB",
-      total: "10GB",
-      percentage: 24,
-    };
-
-    // Check recent errors
-    const recentErrors = await UploadedDocument.find({ status: "ERROR" })
-      .sort({ updatedAt: -1 })
-      .limit(5)
-      .select("originalFilename errorDetails updatedAt")
-      .lean();
-
-    return successResponse(res, {
-      health: {
-        database: dbStatus,
-        storage: storageStatus,
-        api: { status: "healthy", responseTime: "120ms" },
-        overall: dbStatus.status === "healthy" ? "healthy" : "degraded",
-      },
-      recentErrors: recentErrors.map(error => ({
-        document: error.originalFilename,
-        error: error.errorDetails?.[0]?.error || "Unknown error",
-        time: formatTimeAgo(error.updatedAt),
-      })),
-      message: "System health status retrieved successfully",
-    });
-  } catch (error) {
-    console.error("Get system health error:", error);
-    return errorResponse(res, error.message || "Failed to retrieve system health", 500);
-  }
-};
-
-// Get user management statistics
-const getUserManagementStats = async (req, res) => {
-  try {
-    if (req.user?.role !== "admin") {
-      return errorResponse(res, "Admin access required", 403);
-    }
-
-    const users = await User.find()
-      .select("fullName email role instituteId createdAt lastLogin")
-      .populate("instituteId", "name")
-      .lean();
-
-    // Calculate user engagement
-    const activeUsers = users.filter(user => {
-      if (!user.lastLogin) return false;
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return new Date(user.lastLogin) > thirtyDaysAgo;
-    }).length;
-
-    const engagementRate = users.length > 0 ? Math.round((activeUsers / users.length) * 100) : 0;
-
-    return successResponse(res, {
-      users: users.map(user => ({
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        institute: user.instituteId?.name || "N/A",
-        createdAt: user.createdAt,
-        lastLogin: user.lastLogin,
-        isActive: user.lastLogin ? new Date(user.lastLogin) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : false,
-      })),
-      stats: {
-        totalUsers: users.length,
-        activeUsers,
-        engagementRate,
-        byRole: {
-          admin: users.filter(u => u.role === "admin").length,
-          institute: users.filter(u => u.role === "institute").length,
-          ugc_employee: users.filter(u => u.role === "ugc_employee").length,
-        },
-      },
-      message: "User management statistics retrieved successfully",
-    });
-  } catch (error) {
-    console.error("Get user management stats error:", error);
-    return errorResponse(res, error.message || "Failed to retrieve user management statistics", 500);
   }
 };
 
@@ -269,33 +329,3 @@ async function getMonthlyGrowthData(sinceDate) {
   
   return monthlyData;
 }
-
-async function checkDatabaseHealth() {
-  try {
-    // Simple database health check
-    const userCount = await User.countDocuments();
-    const instituteCount = await Institute.countDocuments();
-    
-    return {
-      status: "healthy",
-      collections: {
-        users: userCount,
-        institutes: instituteCount,
-        documents: await UploadedDocument.countDocuments(),
-      },
-      lastCheck: new Date(),
-    };
-  } catch (error) {
-    return {
-      status: "unhealthy",
-      error: error.message,
-      lastCheck: new Date(),
-    };
-  }
-}
-
-export {
-  getAdminStats,
-  getSystemHealth,
-  getUserManagementStats,
-};

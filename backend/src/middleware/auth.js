@@ -30,20 +30,6 @@ export const isInstitute = (req, res, next) => {
   next();
 };
 
-export const isUgcEmployee = (req, res, next) => {
-  if (req.user?.role !== "ugc_employee") {
-    return res.status(403).json({ message: "UGC employee access required" });
-  }
-  next();
-};
-
-export const isAdminOrUgc = (req, res, next) => {
-  if (req.user?.role !== "admin" && req.user?.role !== "ugc_employee") {
-    return res.status(403).json({ message: "Admin or UGC employee access required" });
-  }
-  next();
-};
-
 export const isAdminOrInstitute = (req, res, next) => {
   if (req.user?.role !== "admin" && req.user?.role !== "institute") {
     return res.status(403).json({ message: "Admin or institute access required" });
