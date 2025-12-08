@@ -13,12 +13,13 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import UserManagementPage from "./pages/admin/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/admin/AdminInstitutesPage.jsx";
 import PendingRegistrationsPage from "./pages/admin/PendingRegistrationsPage.jsx";
+import InstituteParametersPage from "./pages/admin/InstituteParametersPage.jsx";
 import ReportsManagementPage from "./pages/institute/ReportsManagementPage.jsx";
 
 // Institute pages
 import UploadDocumentPage from "./pages/institute/UploadDocumentPage.jsx";
 import RequestCenterPage from "./pages/institute/RequestCenterPage.jsx";
-import RequestsPage from "./pages/institute/RequestsPage.jsx";
+import ParameterSubmissionPage from "./pages/institute/ParameterSubmissionPage.jsx";
 import AdminLayout from "./components/layout/AdminLayout.jsx";
 import InstituteLayout from "./components/layout/InstituteLayout.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
@@ -96,7 +97,10 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <AdminLayout>
-                  <RequestsPage />
+                  <div className="p-6">
+                    <h1 className="text-2xl font-bold text-gray-900">Requests Management</h1>
+                    <p className="text-gray-600 mt-2">Requests management page coming soon...</p>
+                  </div>
                 </AdminLayout>
               </ProtectedRoute>
             }
@@ -107,6 +111,16 @@ function App() {
               <ProtectedRoute requiredRole="admin">
                 <AdminLayout>
                   <PendingRegistrationsPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/parameters"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <InstituteParametersPage />
                 </AdminLayout>
               </ProtectedRoute>
             }
@@ -139,6 +153,16 @@ function App() {
               <ProtectedRoute requiredRole="institute">
                 <InstituteLayout>
                   <ReportsManagementPage />
+                </InstituteLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parameters"
+            element={
+              <ProtectedRoute requiredRole="institute">
+                <InstituteLayout>
+                  <ParameterSubmissionPage />
                 </InstituteLayout>
               </ProtectedRoute>
             }

@@ -1,194 +1,237 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import YearSelector from "../../components/common/YearSelector.jsx";
-import {
-  UploadCloud,
-  FileText,
-  Eye,
-  Trash2,
-  RefreshCw,
-  Loader2,
-  X,
-  CheckCircle2,
+import { useState, useEffect, useCallback } from "react";
+import { 
+  Save, 
+  FileText, 
+  CheckCircle, 
   AlertCircle,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Trash2,
+  Edit,
+  Database
 } from "lucide-react";
-import documentsApi from "../../api/documents.api.js";
+import instituteDataApi from "../../api/instituteData.api.js";
 
-// FilePreview Component
-function FilePreview({ file, onRemove, isUploading = false }) {
-  const formatFileSize = (bytes) =>
-    bytes > 1024 * 1024
-      ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-      : `${(bytes / 1024).toFixed(1)} KB`;
+function ParameterInput({ 
+  parameter, 
+  value, 
+  onChange, 
+  error
+}) {
+  const { fieldName, label, dataType, notes } = parameter;
+  
+  const renderInput = () => {
+    const inputClass = `w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${
+      error ? "border-red-500" : "border-gray-300"
+    }`;
+    
+    switch (dataType) {
+      case "STRING":
+      case "TEXT":
+        return (
+          <textarea
+            value={value || ""}
+            onChange={(e) => onChange(fieldName, e.target.value)}
+            className={inputClass}
+            rows={dataType === "TEXT" ? 3 : 1}
+            placeholder={`Enter ${label.toLowerCase()}...`}
+          />
+        );
+      
+      case "INTEGER":
+      case "DECIMAL":
+      case "LONG":
+        return (
+          <input
+            type="number"
+            value={value || ""}
+            onChange={(e) => onChange(fieldName, e.target.value)}
+            className={inputClass}
+            placeholder={`Enter ${label.toLowerCase()}...`}
+            step={dataType === "DECIMAL" ? "0.01" : "1"}
+            min="0"
+          />
+        );
+      
+      case "BOOLEAN":
+        return (
+          <select
+            value={value || ""}
+            onChange={(e) => onChange(fieldName, e.target.value === "true")}
+            className={inputClass}
+          >
+            <option value="">Select...</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        );
+      
+      default:
+        return (
+          <input
+            type="text"
+            value={value || ""}
+            onChange={(e) => onChange(fieldName, e.target.value)}
+            className={inputClass}
+            placeholder={`Enter ${label.toLowerCase()}...`}
+          />
+        );
+    }
+  };
 
   return (
-    <div className="flex items-center justify-between p-4 transition-all bg-gray-100 rounded-lg border border-gray-200">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 bg-white rounded-md shadow-sm shrink-0">
-          {isUploading ? (
-            <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-          ) : (
-            <FileText className="w-6 h-6 text-indigo-600" />
-          )}
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-gray-800 truncate max-w-[150px] sm:max-w-xs">
-            {file.name}
-          </p>
-          <p className="text-xs text-gray-500">
-            {formatFileSize(file.size)} · PDF
-            {isUploading && " · Uploading..."}
-          </p>
-        </div>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">
+          {label}
+          {notes && <span className="text-xs text-gray-500 ml-2">({notes})</span>}
+        </label>
       </div>
-      {!isUploading && (
-        <button
-          onClick={() => onRemove(file.name)}
-          className="p-1 transition-colors rounded-full hover:bg-red-50 group"
-          title="Remove file"
-        >
-          <X className="w-4 h-4 text-gray-400 group-hover:text-red-500" />
-        </button>
+      
+      {renderInput()}
+      
+      {error && (
+        <p className="text-sm text-red-600 flex items-center gap-1">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </p>
+      )}
+      <div className="text-xs text-gray-500">
+        Data type: <span className="font-medium">{dataType}</span>
+      </div>
+    </div>
+  );
+}
+
+function ParameterCategorySection({ 
+  title, 
+  parameters, 
+  formData, 
+  errors, 
+  onChange,
+  isExpanded,
+  onToggle
+}) {
+  const filledCount = parameters.filter(p => formData[p.fieldName] !== undefined && formData[p.fieldName] !== "").length;
+  const totalCount = parameters.length;
+
+  return (
+    <div className="border border-gray-200 rounded-xl overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${isExpanded ? 'bg-indigo-100' : 'bg-gray-200'}`}>
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-indigo-600" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-600" />
+            )}
+          </div>
+            <div className="text-left">
+              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              <p className="text-sm text-gray-600">
+                {filledCount} of {totalCount} parameters filled
+              </p>
+            </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-32 bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(filledCount / totalCount) * 100}%` }}
+            />
+          </div>
+          <span className="text-sm font-medium text-gray-700">
+            {Math.round((filledCount / totalCount) * 100)}%
+          </span>
+        </div>
+      </button>
+      
+      {isExpanded && (
+        <div className="p-6 bg-white">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {parameters.map((param) => (
+              <ParameterInput
+                key={param.fieldName}
+                parameter={param}
+                value={formData[param.fieldName]}
+                onChange={onChange}
+                error={errors[param.fieldName]}
+              />
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-// DocumentItem Component
-function DocumentItem({ document, onView, onDelete, onRefresh }) {
-  const formatFileSize = (bytes) =>
-    bytes > 1024 * 1024
-      ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-      : `${(bytes / 1024).toFixed(1)} KB`;
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "UPLOADED":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "PARSING":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "PARSED":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "ERROR":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "UPLOADED":
-        return "Uploaded";
-      case "PARSING":
-        return "Parsing...";
-      case "PARSED":
-        return "Parsed";
-      case "ERROR":
-        return "Error";
-      default:
-        return status;
-    }
-  };
-
-  return (
-    <div className="group flex items-start justify-between p-4 rounded-xl bg-white border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all duration-200">
-      <div className="flex items-start gap-3 flex-1">
-        <div className="bg-indigo-50 p-2 rounded-lg">
-          <FileText className="w-5 h-5 text-indigo-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-gray-800 truncate">
-            {document.originalFilename}
-          </p>
-          <div className="flex flex-wrap items-center gap-2 mt-1.5">
-            <span
-              className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${getStatusColor(
-                document.status
-              )}`}
-            >
-              {getStatusText(document.status)}
-            </span>
-            <span className="text-xs text-gray-500">{document.year}</span>
-            <span className="text-[10px] text-gray-400">
-              • {formatFileSize(document.fileSize)}
-            </span>
-            <span className="text-[10px] text-gray-400">
-              • {formatDate(document.uploadedAt)}
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        {document.status === "PARSED" && (
-          <button
-            onClick={() => onView(document)}
-            className="p-2 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors"
-            title="View PDF"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-        )}
-        {document.status === "ERROR" && (
-          <button
-            onClick={() => onRefresh(document._id)}
-            className="p-2 text-gray-500 hover:bg-yellow-50 hover:text-yellow-600 rounded-lg transition-colors"
-            title="Retry parsing"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-        )}
-        <button
-          onClick={() => onDelete(document._id)}
-          className="p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-          title="Delete document"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-
 const ReportsManagementPage = () => {
-  const [activeTab, setActiveTab] = useState("upload"); // upload or view
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [files, setFiles] = useState({});
+  const [activeTab, setActiveTab] = useState("form"); // form, data
+  const [academicYear, setAcademicYear] = useState(new Date().getFullYear());
+  const [parameterMappings, setParameterMappings] = useState({});
+  const [formData, setFormData] = useState({});
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState(null);
-  const [documents, setDocuments] = useState([]);
-  const [reportYear, setReportYear] = useState(new Date().getFullYear());
-  const [selectedViewYear, setSelectedViewYear] = useState(new Date().getFullYear());
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef(null);
+  const [expandedCategories, setExpandedCategories] = useState({});
+  const [existingData, setExistingData] = useState(null);
+  const [allData, setAllData] = useState([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Load documents on component mount
+  // Load parameter mappings and existing data
   useEffect(() => {
-    loadDocuments();
-  }, []);
+    loadData();
+  }, [academicYear]);
 
-  const loadDocuments = async () => {
+  const loadData = async () => {
     try {
       setIsLoading(true);
-      const response = await documentsApi.getInstituteDocuments();
-      if (response.success) {
-        setDocuments(response.documents || []);
+      
+      // Load parameter mappings
+      const mappingsResponse = await instituteDataApi.getParameterMappings();
+      if (mappingsResponse.success) {
+        setParameterMappings(mappingsResponse.data);
+        
+        // Expand first category by default
+        const categories = Object.keys(mappingsResponse.data);
+        if (categories.length > 0) {
+          const initialExpanded = {};
+          categories.forEach((cat, index) => {
+            initialExpanded[cat] = index === 0; // Expand first category
+          });
+          setExpandedCategories(initialExpanded);
+        }
+      }
+
+      // Load existing data for this year
+      const dataResponse = await instituteDataApi.getMyInstituteData(academicYear);
+      if (dataResponse.success && dataResponse.data) {
+        setExistingData(dataResponse.data);
+        setFormData(dataResponse.data);
       } else {
-        showToast("error", response.error || "Failed to load documents");
-        setDocuments([]);
+        setExistingData(null);
+        setFormData({});
+      }
+
+      // Load all data for the institute
+      const allDataResponse = await instituteDataApi.getMyInstituteData();
+      if (allDataResponse.success) {
+        // The response structure might be different, adjust accordingly
+        if (allDataResponse.data && allDataResponse.data.data) {
+          setAllData(allDataResponse.data.data || []);
+        } else {
+          setAllData(allDataResponse.data || []);
+        }
       }
     } catch (error) {
-      console.error("Error loading documents:", error);
-      showToast("error", "Failed to load documents");
-      setDocuments([]);
+      console.error("Error loading data:", error);
+      showToast("error", "Failed to load data");
     } finally {
       setIsLoading(false);
     }
@@ -199,346 +242,330 @@ const ReportsManagementPage = () => {
     setTimeout(() => setToast(null), 4000);
   }, []);
 
-  const handleFiles = useCallback(
-    (fileList) => {
-      const valid = [];
-      const rejected = [];
-
-      Array.from(fileList).forEach((file) => {
-        const isPdf =
-          file.type === "application/pdf" ||
-          file.name.toLowerCase().endsWith(".pdf");
-        if (!isPdf) {
-          rejected.push(file.name);
-          return;
-        }
-
-        if (!files[file.name]) {
-          valid.push(file);
-        }
+  const handleParameterChange = (fieldName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+    
+    // Clear error for this field
+    if (errors[fieldName]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
       });
+    }
+  };
 
-      if (rejected.length) {
-        showToast(
-          "error",
-          `Only PDF files are allowed. Skipped: ${rejected
-            .slice(0, 3)
-            .join(", ")}${rejected.length > 3 ? "..." : ""}`
-        );
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Basic validation - check required fields
+    Object.values(parameterMappings).flat().forEach(param => {
+      const value = formData[param.fieldName];
+      
+      // For numeric fields, validate they're numbers
+      if (value !== undefined && value !== "" && value !== null) {
+        if (["INTEGER", "DECIMAL", "LONG"].includes(param.dataType)) {
+          const numValue = Number(value);
+          if (isNaN(numValue)) {
+            newErrors[param.fieldName] = "Please enter a valid number";
+          } else if (numValue < 0) {
+            newErrors[param.fieldName] = "Value cannot be negative";
+          }
+        }
+        
+        // For teacher-student ratio, validate format
+        if (param.fieldName === "teacherStudentRatio" && !value.includes(":")) {
+          newErrors[param.fieldName] = "Please use format like '1:30'";
+        }
       }
-
-      if (valid.length) {
-        const newFiles = valid.reduce((acc, file) => {
-          acc[file.name] = file;
-          return acc;
-        }, {});
-        setFiles((prev) => ({ ...prev, ...newFiles }));
-      }
-    },
-    [files, showToast]
-  );
-
-  const handleRemoveFile = useCallback((fileName) => {
-    setFiles((prev) => {
-      const newFiles = { ...prev };
-      delete newFiles[fileName];
-      return newFiles;
     });
-  }, []);
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  const handleUpload = async () => {
-    const selectedFiles = Object.values(files);
-    if (!selectedFiles.length) {
-      showToast("error", "Please select at least one PDF file to upload.");
+  const handleSave = async () => {
+    if (!validateForm()) {
+      showToast("error", "Please fix the errors in the form");
       return;
     }
 
     try {
-      setIsUploading(true);
-      if (selectedFiles.length === 1) {
-        const response = await documentsApi.uploadDocument(
-          selectedFiles[0],
-          reportYear
-        );
-        if (response.success) {
-          showToast("success", "Document uploaded successfully");
-          setFiles({});
-          loadDocuments();
-          setActiveTab("view");
+      setIsSaving(true);
+      
+      // Filter out empty values
+      const dataToSave = Object.keys(formData).reduce((acc, key) => {
+        if (formData[key] !== undefined && formData[key] !== "" && formData[key] !== null) {
+          acc[key] = formData[key];
         }
+        return acc;
+      }, {});
+
+      const response = existingData
+        ? await instituteDataApi.updateMyInstituteData(dataToSave, academicYear)
+        : await instituteDataApi.saveMyInstituteData(dataToSave, academicYear);
+
+      if (response.success) {
+        showToast("success", existingData ? "Data updated successfully" : "Data saved successfully");
+        setExistingData(response.data);
+        loadData(); // Refresh data
       } else {
-        const response = await documentsApi.uploadMultipleDocuments(
-          selectedFiles,
-          reportYear
-        );
-        if (response.success) {
-          showToast("success", "Documents uploaded successfully");
-          setFiles({});
-          loadDocuments();
-          setActiveTab("view");
-        }
+        showToast("error", response.error || "Failed to save data");
       }
     } catch (error) {
-      console.error("Upload error:", error);
-      showToast("error", "Failed to upload documents");
+      console.error("Error saving data:", error);
+      showToast("error", "Failed to save data");
     } finally {
-      setIsUploading(false);
+      setIsSaving(false);
     }
   };
 
-  const handleViewDocument = async (document) => {
-    try {
-      const pdfUrl = await documentsApi.viewDocument(document._id);
-      window.open(pdfUrl, "_blank");
-    } catch (error) {
-      showToast("error", "Failed to view document");
-    }
-  };
-
-  const handleDeleteDocument = async (documentId) => {
-    if (!window.confirm("Are you sure you want to delete this document?")) {
+  const handleDeleteData = async (year) => {
+    if (!confirm(`Are you sure you want to delete data for academic year ${year}?`)) {
       return;
     }
 
     try {
-      const response = await documentsApi.deleteDocument(documentId);
+      setIsDeleting(true);
+      const response = await instituteDataApi.deleteInstituteData(year);
+      
       if (response.success) {
-        showToast("success", "Document deleted successfully");
-        loadDocuments();
+        showToast("success", `Data for ${year} deleted successfully`);
+        loadData(); // Refresh data
+        
+        // If we deleted the current year's data, clear the form
+        if (year === academicYear) {
+          setExistingData(null);
+          setFormData({});
+        }
       } else {
-        showToast("error", response.error || "Failed to delete document");
+        showToast("error", response.error || "Failed to delete data");
       }
     } catch (error) {
-      console.error("Delete error:", error);
-      showToast("error", "Failed to delete document");
+      console.error("Error deleting data:", error);
+      showToast("error", "Failed to delete data");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const handleRefreshDocument = async (documentId) => {
-    try {
-      const response = await documentsApi.retryParsing(documentId);
-      if (response.success) {
-        showToast("success", "Document parsing retried");
-        loadDocuments();
-      } else {
-        showToast("error", response.error || "Failed to retry parsing");
-      }
-    } catch (error) {
-      console.error("Refresh error:", error);
-      showToast("error", "Failed to retry parsing");
+  const handleEditData = (year) => {
+    // Find the data for the selected year
+    const dataToEdit = allData.find(data => data.academicYear === year);
+    if (dataToEdit) {
+      setAcademicYear(year);
+      setExistingData(dataToEdit);
+      setFormData(dataToEdit);
+      setActiveTab("form");
+      showToast("info", `Editing data for academic year ${year}`);
     }
   };
 
-  const renderUploadTab = () => {
-    const totalFiles = Object.keys(files).length;
+  const toggleCategory = (category) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
+  const renderFormTab = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mb-4" />
+          <p className="text-gray-600">Loading parameter form...</p>
+        </div>
+      );
+    }
+
+    const categories = Object.entries(parameterMappings);
+    const totalFilled = Object.values(formData).filter(v => v !== undefined && v !== "" && v !== null).length;
+    const totalParameters = categories.reduce((sum, [_, params]) => sum + params.length, 0);
+    const completionPercentage = Math.round((totalFilled / totalParameters) * 100);
+
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Upload New Report</h1>
-        </div>
-
-        {/* Sample Files Section */}
-        <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-          <h3 className="text-lg font-semibold text-blue-900 mb-3">Download Sample Files</h3>
-          <p className="text-blue-700 mb-4">
-            Download sample files to understand the required format for upload:
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <a
-              href="/sample_data/sample_csv.xlsx"
-              download="sample_data_format.xlsx"
-              className="flex items-center gap-3 px-4 py-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              <div className="p-2 bg-green-100 rounded-lg">
-                <FileText className="w-5 h-5 text-green-600" />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              {/* Year Dropdown 2020-2025 */}
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-gray-500" />
+                <select
+                  value={academicYear}
+                  onChange={(e) => setAcademicYear(parseInt(e.target.value))}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  {[2025, 2024, 2023, 2022, 2021].map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
               </div>
-              <div>
-                <p className="font-medium text-gray-900">Sample Excel Format</p>
-                <p className="text-sm text-gray-600">Download .xlsx template</p>
-              </div>
-            </a>
-            <a
-              href="/sample_data/sample_pdf.pdf"
-              download="sample_report.pdf"
-              className="flex items-center gap-3 px-4 py-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              <div className="p-2 bg-red-100 rounded-lg">
-                <FileText className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Sample PDF Report</p>
-                <p className="text-sm text-gray-600">Download .pdf example</p>
-              </div>
-            </a>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSaving ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Save className="w-5 h-5" />
+                )}
+                {existingData ? "Update Data" : "Save Data"}
+              </button>
+            </div>
           </div>
+
         </div>
 
-        {/* Year Selection */}
-        <div className="mb-6">
-          <YearSelector
-            selectedYear={reportYear}
-            onYearChange={setReportYear}
-          />
+        {/* Parameter Categories */}
+        <div className="space-y-6">
+          {categories.map(([category, parameters]) => (
+            <ParameterCategorySection
+              key={category}
+              title={category}
+              parameters={parameters}
+              formData={formData}
+              errors={errors}
+              onChange={handleParameterChange}
+              isExpanded={expandedCategories[category] || false}
+              onToggle={() => toggleCategory(category)}
+            />
+          ))}
         </div>
 
-        {/* Drag & drop area */}
-        <div
-          className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${
-            isDragOver
-              ? "border-indigo-500 bg-indigo-50"
-              : "border-gray-300 hover:border-indigo-400 hover:bg-gray-50"
-          }`}
-          onDragEnter={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsDragOver(true);
-          }}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onDragLeave={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsDragOver(false);
-          }}
-          onDrop={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsDragOver(false);
-            handleFiles(e.dataTransfer.files);
-          }}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={(e) => handleFiles(e.target.files)}
-            className="hidden"
-            accept="application/pdf,.pdf"
-            multiple
-            disabled={isUploading}
-          />
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="p-4 bg-indigo-100 rounded-full">
-              {isUploading ? (
-                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-              ) : (
-                <UploadCloud className="w-8 h-8 text-indigo-600" />
+        {/* Save Button at Bottom */}
+        <div className="mt-10 pt-6 border-t border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-gray-600">
+                {existingData ? "Data last updated: " : "New data entry for "}
+                {existingData ? new Date(existingData.updatedAt).toLocaleDateString() : academicYear}
+              </p>
+              {existingData?.source && (
+                <p className="text-sm text-gray-500">
+                  Source: {existingData.source.replace("_", " ").toLowerCase()}
+                </p>
               )}
             </div>
-            <div>
-              <p className="text-xl font-medium text-gray-700">
-                {isUploading
-                  ? "Uploading files..."
-                  : "Drag & drop PDFs here"}
-              </p>
-              <p className="text-base text-gray-500 mt-1">
-                or click to browse from your computer
-              </p>
-            </div>
             <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="px-6 py-2.5 text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all"
-              disabled={isUploading}
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Browse Files
+              {isSaving ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Save className="w-5 h-5" />
+              )}
+              {existingData ? "Update Data" : "Save Data"}
             </button>
           </div>
         </div>
-
-        {/* Selected files */}
-        {totalFiles > 0 && (
-          <div className="mt-8">
-            <h3 className="text-base font-semibold text-gray-700 mb-3">
-              Selected Files ({totalFiles})
-            </h3>
-            <div className="space-y-3">
-              {Object.values(files).map((file) => (
-                <FilePreview
-                  key={file.name}
-                  file={file}
-                  onRemove={handleRemoveFile}
-                  isUploading={isUploading}
-                />
-              ))}
-            </div>
-            {!isUploading && (
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={handleUpload}
-                  className="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow-md hover:bg-indigo-700 transition-all hover:scale-[1.02]"
-                >
-                  Upload {totalFiles} Files
-                </button>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     );
   };
 
-  const renderViewTab = () => {
-    const availableYears = [...new Set(documents.map(doc => doc.year))].sort((a, b) => b - a);
-    
-    const filteredDocuments = documents.filter(doc => 
-      selectedViewYear ? doc.year === selectedViewYear : true
-    );
+  const renderDataTab = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mb-4" />
+          <p className="text-gray-600">Loading data...</p>
+        </div>
+      );
+    }
+
+    if (allData.length === 0) {
+      return (
+        <div className="max-w-4xl mx-auto text-center py-12">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Database className="w-10 h-10 text-gray-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">No Data Found</h2>
+          <p className="text-gray-600 mb-6">
+            You haven't submitted any parameter data yet. Use the form tab to enter your institute data.
+          </p>
+          <button
+            onClick={() => setActiveTab("form")}
+            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700"
+          >
+            Go to Form
+          </button>
+        </div>
+      );
+    }
 
     return (
-      <div className="max-w-5xl mx-auto h-full flex flex-col">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Submitted Reports</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <YearSelector
-              selectedYear={selectedViewYear}
-              onYearChange={setSelectedViewYear}
-              availableYears={availableYears}
-            />
-          </div>
+      <div className="max-w-6xl mx-auto">
+
+        <div className="space-y-4">
+          {allData.map((data) => {
+            const lastUpdated = new Date(data.updatedAt).toLocaleDateString();
+            
+            return (
+              <div key={data._id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  {/* Left side: Academic Year */}
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-indigo-50 rounded-xl">
+                      <Calendar className="w-8 h-8 text-indigo-600" />
+                    </div>
+                    <div>
+                      <p className="text-4xl font-bold text-indigo-700">{data.academicYear}</p>
+                      <p className="text-sm text-gray-500 mt-1">Academic Year</p>
+                    </div>
+                  </div>
+                  
+                  {/* Middle: Last Updated and Status */}
+                  <div className="flex-1">
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-sm text-gray-500">Last Updated</p>
+                        <p className="text-base font-medium text-gray-900">{lastUpdated}</p>
+                      </div>
+                      {data.isVerified && (
+                        <div className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                          <CheckCircle className="w-3 h-3" />
+                          Verified
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Right side: Actions */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleEditData(data.academicYear)}
+                      className="px-4 py-2 bg-indigo-50 text-indigo-700 font-medium rounded-lg hover:bg-indigo-100 flex items-center gap-2"
+                      title="Edit data"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteData(data.academicYear)}
+                      disabled={isDeleting}
+                      className="px-4 py-2 bg-red-50 text-red-700 font-medium rounded-lg hover:bg-red-100 flex items-center gap-2 disabled:opacity-50"
+                      title="Delete data"
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {isLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-            <Loader2 className="w-10 h-10 animate-spin mb-3 text-indigo-500" />
-            <p>Fetching your documents...</p>
-          </div>
-        ) : filteredDocuments.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-              <FileText className="w-8 h-8 text-gray-300" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              No documents found
-            </h3>
-            <p className="text-base text-gray-500 max-w-sm mt-2 mb-6">
-              {selectedViewYear 
-                ? `You haven't uploaded any reports for ${selectedViewYear} yet.`
-                : "You haven't uploaded any reports yet."}
-            </p>
-            <button
-              onClick={() => setActiveTab("upload")}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
-            >
-              Upload Document
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pb-10">
-            {filteredDocuments.map((doc) => (
-              <DocumentItem
-                key={doc._id}
-                document={doc}
-                onView={handleViewDocument}
-                onDelete={handleDeleteDocument}
-                onRefresh={handleRefreshDocument}
-              />
-            ))}
-          </div>
-        )}
       </div>
     );
   };
@@ -551,29 +578,29 @@ const ReportsManagementPage = () => {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex space-x-1">
               <button
-                onClick={() => setActiveTab("upload")}
+                onClick={() => setActiveTab("form")}
                 className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
-                  activeTab === "upload"
-                    ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <UploadCloud className="w-4 h-4" />
-                  Upload New Report
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab("view")}
-                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
-                  activeTab === "view"
+                  activeTab === "form"
                     ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
-                  View Submitted Reports
+                  Parameter Form
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("data")}
+                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+                  activeTab === "data"
+                    ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Database className="w-4 h-4" />
+                  Submitted Data
                 </div>
               </button>
             </div>
@@ -581,7 +608,9 @@ const ReportsManagementPage = () => {
         </div>
 
         <main className="h-full overflow-y-auto p-6 scroll-smooth bg-gray-50/50">
-          {activeTab === "upload" ? renderUploadTab() : renderViewTab()}
+          {/* Content */}
+          {activeTab === "form" && renderFormTab()}
+          {activeTab === "data" && renderDataTab()}
         </main>
       </div>
 
@@ -595,7 +624,7 @@ const ReportsManagementPage = () => {
           }}
         >
           {toast.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5" />
+            <CheckCircle className="w-5 h-5" />
           ) : (
             <AlertCircle className="w-5 h-5" />
           )}
