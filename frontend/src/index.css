@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Global font size increase - must come after Tailwind import */
+html {
+  font-size: 125%;
+}
+
 /* Custom Animations */
 @keyframes fade-in-up {
   from {
