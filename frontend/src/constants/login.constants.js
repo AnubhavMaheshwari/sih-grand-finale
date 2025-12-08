@@ -20,21 +20,6 @@ export const ROLE_OPTIONS = [
     }
   },
   {
-    id: 'ugc_employee',
-    label: 'UGC/AICTE Employee',
-    icon: FaUserTie,
-    description: 'Government Officials',
-    color: 'bg-blue-500',
-    hoverColor: 'hover:bg-blue-600',
-    selectedColor: 'ring-2 ring-blue-500 ring-offset-2',
-    idConfig: {
-      label: 'Employee ID',
-      placeholder: 'e.g., UGCM123456',
-      hint: 'Format: Exactly 10 characters (4 letters A-Z, 6 numbers)',
-      maxLength: 10,
-    }
-  },
-  {
     id: 'admin',
     label: 'Admin',
     icon: FaUserShield,
@@ -53,7 +38,6 @@ export const ROLE_OPTIONS = [
 
 export const VALIDATION_PATTERNS = {
   institute: /^[A-Z]{2}[0-9]{6}$/,
-  ugc_employee: /^[A-Z]{4}[0-9]{6}$/,
   admin: /^[A-Z]{4}[0-9]{6}$/,
 };
 

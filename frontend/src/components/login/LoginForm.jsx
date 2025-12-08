@@ -50,7 +50,7 @@ const LoginForm = ({ onToast }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -59,22 +59,20 @@ const LoginForm = ({ onToast }) => {
 
     try {
       const result = await login(userId, password);
-      
+
       if (result.success) {
         onToast('Login successful! Redirecting...', 'success');
-        
+
         // Redirect based on user role
         setTimeout(() => {
           switch (result.user.role) {
             case 'admin':
-              navigate('/admin/dashboard');
+              navigate('/admin/users');
               break;
             case 'institute':
               navigate('/upload');
               break;
-            case 'ugc_employee':
-              navigate('/edu');
-              break;
+
             default:
               navigate('/');
           }
@@ -126,11 +124,10 @@ const LoginForm = ({ onToast }) => {
       <button
         type="submit"
         disabled={isFormDisabled}
-        className={`w-full text-white py-3.5 rounded-lg font-semibold text-base sm:text-lg transition duration-200 shadow-lg ${
-          isFormDisabled
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98]'
-        }`}
+        className={`w-full text-white py-3.5 rounded-lg font-semibold text-base sm:text-lg transition duration-200 shadow-lg ${isFormDisabled
+          ? 'bg-gray-400 cursor-not-allowed'
+          : 'bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98]'
+          }`}
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center">

@@ -6,9 +6,9 @@ import LoginPage from "./pages/LoginPage.jsx";
 import UploadDocumentPage from "./pages/UploadDocumentPage.jsx";
 import FAQPage from "./pages/FAQPage.jsx";
 import ContactUsPage from "./pages/ContactUsPage.jsx";
-import EduRankPage from "./pages/EduRankPage.jsx";
+
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
-import UploadedDataPage from "./pages/UploadedDataPage.jsx";
+import RequestsPage from "./pages/RequestsPage.jsx";
 import AdminDashboardPage from "./pages/AdminDashboardPage.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/AdminInstitutesPage.jsx";
@@ -37,16 +37,6 @@ function App() {
           {/* Protected Application pages */}
           {/* Admin Routes with Sidebar Layout */}
           <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminLayout>
-                  <AdminDashboardPage />
-                </AdminLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/admin/users"
             element={
               <ProtectedRoute requiredRole="admin">
@@ -66,8 +56,25 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Redirect old admin dashboard to new dashboard */}
-          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route
+            path="/admin/requests"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <RequestsPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <Navigate to="/admin/users" replace />
+            }
+          />
+
+          {/* Redirect old admin dashboard to new default */}
+          <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
 
           {/* Institution upload dashboard - Institute users only */}
           <Route
@@ -79,25 +86,7 @@ function App() {
             }
           />
 
-          {/* UGC uploaded-data explorer - UGC employees only */}
-          <Route
-            path="/uploaded-data"
-            element={
-              <ProtectedRoute requiredRole="ugc_employee">
-                <UploadedDataPage />
-              </ProtectedRoute>
-            }
-          />
 
-          {/* EduRank page - UGC employees only */}
-          <Route
-            path="/edu"
-            element={
-              <ProtectedRoute requiredRole="ugc_employee">
-                <EduRankPage />
-              </ProtectedRoute>
-            }
-          />
 
           {/* Public pages */}
           <Route path="/faq" element={<FAQPage />} />
@@ -118,7 +107,7 @@ function App() {
           <Route path="/faq.html" element={<Navigate to="/faq" replace />} />
           <Route path="/contactUs.html" element={<Navigate to="/contact" replace />} />
           <Route path="/index.html" element={<Navigate to="/" replace />} />
-          <Route path="/edu.html" element={<Navigate to="/edu" replace />} />
+
 
           {/* 404 Not Found Page */}
           <Route

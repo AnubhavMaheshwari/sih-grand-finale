@@ -6,21 +6,20 @@ const RoleSelector = ({ selectedRole, onRoleChange, disabled = false }) => {
       <label className="block text-sm font-medium text-gray-700">
         Select Login Type
       </label>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {ROLE_OPTIONS.map((option) => {
           const Icon = option.icon;
           const isSelected = selectedRole === option.id;
-          
+
           return (
             <button
               key={option.id}
               type="button"
               onClick={() => onRoleChange(option.id)}
-              className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${
-                isSelected
+              className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${isSelected
                   ? `${option.selectedColor} border-transparent bg-white shadow-lg`
                   : 'border-gray-200 bg-gray-50 hover:bg-white hover:shadow-md'
-              } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               disabled={disabled}
               aria-pressed={isSelected}
               aria-label={`Login as ${option.label}`}
