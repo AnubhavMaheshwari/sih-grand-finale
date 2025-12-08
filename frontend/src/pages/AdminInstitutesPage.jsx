@@ -24,14 +24,14 @@ const formatCrLabel = (value) => `${formatCr(value)} Cr`;
 
 // Color palette for charts
 const CHART_COLORS = {
-  library: "#2563eb", // blue
-  labs: "#16a34a", // green
-  workshops: "#ca8a04", // yellow
-  otherAssets: "#7c3aed", // purple
-  salaries: "#dc2626", // red
-  maintenance: "#0ea5e9", // cyan
-  capital: "#9333ea", // violet
-  operational: "#f97316", // orange
+  library: "#6366F1", // Indigo
+  labs: "#EC4899", // Pink
+  workshops: "#F59E0B", // Amber
+  otherAssets: "#10B981", // Emerald
+  salaries: "#F43F5E", // Rose
+  maintenance: "#06B6D4", // Cyan
+  capital: "#8B5CF6", // Violet
+  operational: "#F97316", // Orange
 };
 
 const PIE_COLORS = [
