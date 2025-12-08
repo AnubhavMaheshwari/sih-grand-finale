@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   Send,
   ClipboardList,
-  MessageSquareWarning,
   CheckCircle2,
   AlertCircle,
   FileWarning,
@@ -459,19 +458,6 @@ const RequestCenterPage = () => {
                 <div className="flex items-center gap-2">
                   <ClipboardList className="w-4 h-4" />
                   Request Status
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab("queries")}
-                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
-                  activeTab === "queries"
-                    ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <MessageSquareWarning className="w-4 h-4" />
-                  Respond to Queries
                 </div>
               </button>
             </div>

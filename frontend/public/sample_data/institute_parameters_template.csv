@@ -1,0 +1,27 @@
+Parameters,Value,Data Type,Notes
+Teacher-Student Ratio,,STRING,"e.g., 1:30"
+Vacancy in BOYS hostel (UG),,INTEGER,Number of vacant seats
+Vacancy in GIRLS hostel (UG),,INTEGER,Number of vacant seats
+Classroom capacity,,INTEGER,Total seating capacity
+Lift available,,BOOLEAN,Yes/No or True/False
+Placement percentage,,INTEGER,Percentage (0-100)
+Labs facilities,,TEXT,Description of lab facilities
+Students going for higher studies,,INTEGER,Number of students
+Lab equipments,,INTEGER,Number of lab equipment units
+Faculty strength,,INTEGER,Total number of faculty members
+Library resources,,TEXT,Description of library resources
+Financial capacity,,LONG,Financial capacity in INR
+Land area (sqkm),,DECIMAL,Area in square kilometers
+Academic plan,,TEXT,Description of academic plan
+Compliance certificate,,TEXT,Compliance certificate details
+ICT facilities,,TEXT,Description of ICT facilities
+Research environment,,TEXT,Description of research environment
+Program justification,,TEXT,Program justification details
+Qualification of faculties,,TEXT,Faculty qualifications description
+Land ownership and possession,,TEXT,Land ownership details
+Building plan requirement,,TEXT,Building plan details
+Leadership qualifications,,TEXT,Leadership qualifications description
+Budget allocation,,LONG,Budget allocation in INR
+Institutional name norms,,TEXT,Name norms compliance
+Available workshops,,INTEGER,Number of available workshops
+Safety certificates,,TEXT,Safety certificates details

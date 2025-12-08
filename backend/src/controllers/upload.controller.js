@@ -1,36 +1,94 @@
 import UploadedDocument from "../models/UploadedDocument.model.js";
 import { upload, moveToInstituteDirectory } from "../middleware/upload.js";
-import pdfParserService from "../services/pdfParser.service.js";
 import fs from "fs-extra";
-import path from "path";
 import { successResponse, errorResponse } from "../utils/apiResponse.js";
+
+/**
+ * Log helper for consistent logging format in upload controller
+ * @param {string} step - Step description
+ * @param {any} data - Data to log
+ * @param {string} type - Log type (info, success, warning, error)
+ */
+const logUploadStep = (step, data = null, type = 'info') => {
+  const timestamp = new Date().toISOString();
+  const prefix = `[Upload Controller] [${timestamp}]`;
+
+  switch (type) {
+    case 'success':
+      console.log(`✅ ${prefix} ${step}`);
+      break;
+    case 'warning':
+      console.warn(`⚠️ ${prefix} ${step}`);
+      break;
+    case 'error':
+      console.error(`❌ ${prefix} ${step}`);
+      break;
+    default:
+      console.log(`📝 ${prefix} ${step}`);
+  }
+
+  if (data !== null) {
+    console.log(`${prefix} Data:`, typeof data === 'object' ? JSON.stringify(data, null, 2) : data);
+  }
+};
 
 // Handle single file upload
 const uploadSingle = (req, res, next) => {
   upload.single("document")(req, res, async (err) => {
     try {
+      logUploadStep(`Step 1: Starting file upload process`);
+
       if (err) {
+        logUploadStep(`Step 2: Upload error occurred`, err.message, 'error');
         return errorResponse(res, err.message, 400);
       }
 
       if (!req.file) {
+        logUploadStep(`Step 2: No file uploaded`, null, 'error');
         return errorResponse(res, "No file uploaded", 400);
       }
+
+      logUploadStep(`Step 2: File received`, {
+        fileName: req.file.originalname,
+        fileSize: req.file.size,
+        mimeType: req.file.mimetype
+      });
 
       // Get institute ID from authenticated user
       const instituteId = req.user?.instituteId || req.body.instituteId;
       if (!instituteId) {
+        logUploadStep(`Step 3: Institute ID missing`, null, 'error');
         // Clean up temp file
         await fs.remove(req.file.path);
         return errorResponse(res, "Institute ID is required", 400);
       }
 
+      logUploadStep(`Step 3: Institute ID found`, instituteId);
+
       // Get year from request
       const year = parseInt(req.body.year);
       if (!year || year < 2000 || year > new Date().getFullYear() + 1) {
+        logUploadStep(`Step 4: Invalid year`, year, 'error');
         await fs.remove(req.file.path);
         return errorResponse(res, "Valid year is required (2000 - current year + 1)", 400);
       }
+
+      logUploadStep(`Step 4: Year validated`, year);
+
+      // Check file type - accept PDF files only
+      const fileExtension = req.file.originalname.toLowerCase().split('.').pop();
+      const isPdf = fileExtension === 'pdf';
+
+      if (!isPdf) {
+        logUploadStep(`Step 5: Unsupported file type`, fileExtension, 'error');
+        await fs.remove(req.file.path);
+        return errorResponse(res, `Unsupported file type: ${fileExtension}. Please upload PDF files only.`, 400);
+      }
+
+      logUploadStep(`Step 5: File type validated`, {
+        extension: fileExtension,
+        isPdf: isPdf
+      });
 
       // Move file to institute directory
       const fileInfo = await moveToInstituteDirectory(
@@ -39,6 +97,11 @@ const uploadSingle = (req, res, next) => {
         year,
         req.file.originalname
       );
+
+      logUploadStep(`Step 6: File moved to institute directory`, {
+        storedFilename: fileInfo.storedFilename,
+        filePath: fileInfo.filePath
+      });
 
       // Create document record
       const document = new UploadedDocument({
@@ -53,13 +116,18 @@ const uploadSingle = (req, res, next) => {
       });
 
       await document.save();
+      logUploadStep(`Step 7: Document record created`, {
+        documentId: document._id,
+        status: document.status
+      });
 
-      // Start parsing in background (non-blocking)
+      // Start background parsing for PDFs
       setTimeout(() => {
         parseDocument(document._id).catch(console.error);
       }, 100);
 
-      return successResponse(res, {
+      // Prepare response
+      const responseData = {
         document: {
           id: document._id,
           originalFilename: document.originalFilename,
@@ -71,9 +139,13 @@ const uploadSingle = (req, res, next) => {
           fileUrl: document.fileUrl,
         },
         message: "Document uploaded successfully",
-      }, 201);
+      };
+
+      logUploadStep(`Step 8: Upload process completed successfully`, null, 'success');
+
+      return successResponse(res, responseData, 201);
     } catch (error) {
-      console.error("Upload error:", error);
+      logUploadStep(`Step 9: Upload error occurred`, error.message, 'error');
 
       // Clean up temp file if it exists
       if (req.file?.path && await fs.pathExists(req.file.path)) {
@@ -343,7 +415,7 @@ const viewDocument = async (req, res) => {
   }
 };
 
-// Parse document (background job)
+// Parse document (background job) - PDF files only
 const parseDocument = async (documentId) => {
   try {
     const document = await UploadedDocument.findById(documentId);
@@ -356,16 +428,26 @@ const parseDocument = async (documentId) => {
 
     // Check if file exists
     if (!await fs.pathExists(document.filePath)) {
-      throw new Error(`PDF file not found: ${document.filePath}`);
+      throw new Error(`File not found: ${document.filePath}`);
     }
 
-    // Parse PDF using the service
-    const result = await pdfParserService.parseDocument(documentId, document.filePath);
+    // Check file type - we only accept PDF files now
+    const fileExtension = document.originalFilename.toLowerCase().split('.').pop();
 
-    if (result.success) {
-      console.log(`Document ${documentId} parsed successfully`);
+    if (fileExtension === 'pdf') {
+      // For PDF files, mark as PARSED since they're handled by PDF processor separately
+      console.log(`Document ${documentId} is PDF, marking as PARSED`);
+      await UploadedDocument.findByIdAndUpdate(documentId, {
+        status: 'PARSED',
+        parsedAt: new Date(),
+      });
     } else {
-      throw new Error("PDF parsing failed");
+      console.log(`Skipping parsing for unsupported file type: ${fileExtension}`);
+      // Mark as PARSED for other file types (shouldn't happen since we only accept PDFs)
+      await UploadedDocument.findByIdAndUpdate(documentId, {
+        status: 'PARSED',
+        parsedAt: new Date(),
+      });
     }
   } catch (error) {
     console.error(`Error parsing document ${documentId}:`, error);
@@ -387,6 +469,11 @@ const parseDocument = async (documentId) => {
   }
 };
 
+// Parse parameter CSV/Excel file (DEPRECATED - CSV/Excel uploads no longer supported)
+const parseParameterFile = async (req, res) => {
+  return errorResponse(res, "CSV/Excel file uploads are no longer supported. Please use the parameter form for data entry.", 410); // 410 Gone
+};
+
 export {
   uploadSingle,
   uploadMultiple,
@@ -395,4 +482,5 @@ export {
   deleteDocument,
   viewDocument,
   parseDocument,
+  parseParameterFile,
 };

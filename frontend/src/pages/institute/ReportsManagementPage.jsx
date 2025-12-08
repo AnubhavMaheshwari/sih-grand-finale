@@ -1,605 +1,425 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import YearSelector from "../../components/common/YearSelector.jsx";
+import { useState, useEffect, useRef } from 'react';
 import {
-  UploadCloud,
+  Upload,
   FileText,
-  Eye,
   Trash2,
-  RefreshCw,
-  Loader2,
-  X,
-  CheckCircle2,
+  Eye,
+  CheckCircle,
   AlertCircle,
-} from "lucide-react";
-import documentsApi from "../../api/documents.api.js";
-
-// FilePreview Component
-function FilePreview({ file, onRemove, isUploading = false }) {
-  const formatFileSize = (bytes) =>
-    bytes > 1024 * 1024
-      ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-      : `${(bytes / 1024).toFixed(1)} KB`;
-
-  return (
-    <div className="flex items-center justify-between p-4 transition-all bg-gray-100 rounded-lg border border-gray-200">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 bg-white rounded-md shadow-sm shrink-0">
-          {isUploading ? (
-            <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
-          ) : (
-            <FileText className="w-6 h-6 text-indigo-600" />
-          )}
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-gray-800 truncate max-w-[150px] sm:max-w-xs">
-            {file.name}
-          </p>
-          <p className="text-xs text-gray-500">
-            {formatFileSize(file.size)} · PDF
-            {isUploading && " · Uploading..."}
-          </p>
-        </div>
-      </div>
-      {!isUploading && (
-        <button
-          onClick={() => onRemove(file.name)}
-          className="p-1 transition-colors rounded-full hover:bg-red-50 group"
-          title="Remove file"
-        >
-          <X className="w-4 h-4 text-gray-400 group-hover:text-red-500" />
-        </button>
-      )}
-    </div>
-  );
-}
-
-// DocumentItem Component
-function DocumentItem({ document, onView, onDelete, onRefresh }) {
-  const formatFileSize = (bytes) =>
-    bytes > 1024 * 1024
-      ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-      : `${(bytes / 1024).toFixed(1)} KB`;
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "UPLOADED":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "PARSING":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "PARSED":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "ERROR":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "UPLOADED":
-        return "Uploaded";
-      case "PARSING":
-        return "Parsing...";
-      case "PARSED":
-        return "Parsed";
-      case "ERROR":
-        return "Error";
-      default:
-        return status;
-    }
-  };
-
-  return (
-    <div className="group flex items-start justify-between p-4 rounded-xl bg-white border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all duration-200">
-      <div className="flex items-start gap-3 flex-1">
-        <div className="bg-indigo-50 p-2 rounded-lg">
-          <FileText className="w-5 h-5 text-indigo-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-gray-800 truncate">
-            {document.originalFilename}
-          </p>
-          <div className="flex flex-wrap items-center gap-2 mt-1.5">
-            <span
-              className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${getStatusColor(
-                document.status
-              )}`}
-            >
-              {getStatusText(document.status)}
-            </span>
-            <span className="text-xs text-gray-500">{document.year}</span>
-            <span className="text-[10px] text-gray-400">
-              • {formatFileSize(document.fileSize)}
-            </span>
-            <span className="text-[10px] text-gray-400">
-              • {formatDate(document.uploadedAt)}
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        {(document.status === "PARSED" || document.status === "UPLOADED") && (
-          <button
-            onClick={() => onView(document)}
-            className="p-2 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors"
-            title="View Document"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-        )}
-        {document.status === "ERROR" && (
-          <button
-            onClick={() => onRefresh(document._id)}
-            className="p-2 text-gray-500 hover:bg-yellow-50 hover:text-yellow-600 rounded-lg transition-colors"
-            title="Retry parsing"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-        )}
-        <button
-          onClick={() => onDelete(document._id)}
-          className="p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-          title="Delete document"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
+  X,
+  Loader2,
+  History,
+  Filter,
+  Download
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import api from '../../api/axios.config';
 
 const ReportsManagementPage = () => {
-  const [activeTab, setActiveTab] = useState("upload"); // upload or view
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [files, setFiles] = useState({});
-  const [toast, setToast] = useState(null);
+  const [activeTab, setActiveTab] = useState('upload'); // 'upload' or 'view'
+  const [dragActive, setDragActive] = useState(false);
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState([]);
-  const [reportYear, setReportYear] = useState(new Date().getFullYear());
-  const [selectedViewYear, setSelectedViewYear] = useState(new Date().getFullYear());
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const inputRef = useRef(null);
 
-  // Load documents on component mount
+  // Fetch documents on mount or when tab/year changes
   useEffect(() => {
-    loadDocuments();
-  }, []);
+    if (activeTab === 'view') {
+      fetchDocuments();
+    }
+  }, [activeTab, selectedYear]);
 
-  const loadDocuments = async () => {
+  const fetchDocuments = async () => {
     try {
-      setIsLoading(true);
-      const response = await documentsApi.getInstituteDocuments();
-      if (response.success) {
-        setDocuments(response.documents || []);
-      } else {
-        showToast("error", response.error || "Failed to load documents");
-        setDocuments([]);
+      setLoading(true);
+      const response = await api.get(`/upload/institute?year=${selectedYear}`);
+
+      if (response.data.success) {
+        setDocuments(response.data.data.documents || []);
       }
     } catch (error) {
-      console.error("Error loading documents:", error);
-      showToast("error", "Failed to load documents");
-      setDocuments([]);
+      console.error('Error fetching documents:', error);
+      toast.error('Failed to load documents');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const showToast = useCallback((type, message) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 4000);
-  }, []);
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
 
-  const handleFiles = useCallback(
-    (fileList) => {
-      const valid = [];
-      const rejected = [];
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
 
-      Array.from(fileList).forEach((file) => {
-        const isPdf =
-          file.type === "application/pdf" ||
-          file.name.toLowerCase().endsWith(".pdf");
-        if (!isPdf) {
-          rejected.push(file.name);
-          return;
-        }
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
 
-        if (!files[file.name]) {
-          valid.push(file);
-        }
-      });
+  const handleChange = (e) => {
+    e.preventDefault();
+    if (e.target.files && e.target.files[0]) {
+      handleFiles(e.target.files);
+    }
+  };
 
-      if (rejected.length) {
-        showToast(
-          "error",
-          `Only PDF files are allowed. Skipped: ${rejected
-            .slice(0, 3)
-            .join(", ")}${rejected.length > 3 ? "..." : ""}`
-        );
+  const handleFiles = (newFiles) => {
+    const validFiles = Array.from(newFiles).filter(file => {
+      // Validate file type (PDF only)
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      if (!isPdf) {
+        toast.error(`${file.name} is not a PDF file`);
+        return false;
       }
-
-      if (valid.length) {
-        const newFiles = valid.reduce((acc, file) => {
-          acc[file.name] = file;
-          return acc;
-        }, {});
-        setFiles((prev) => ({ ...prev, ...newFiles }));
+      // Validate size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 10MB)`);
+        return false;
       }
-    },
-    [files, showToast]
-  );
-
-  const handleRemoveFile = useCallback((fileName) => {
-    setFiles((prev) => {
-      const newFiles = { ...prev };
-      delete newFiles[fileName];
-      return newFiles;
+      return true;
     });
-  }, []);
+
+    setFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleUpload = async () => {
-    const selectedFiles = Object.values(files);
-    if (!selectedFiles.length) {
-      showToast("error", "Please select at least one PDF file to upload.");
-      return;
-    }
+    if (files.length === 0) return;
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('documents', file);
+    });
+    formData.append('year', selectedYear);
 
     try {
-      setIsUploading(true);
-      if (selectedFiles.length === 1) {
-        const response = await documentsApi.uploadDocument(
-          selectedFiles[0],
-          reportYear
-        );
-        if (response.success) {
-          showToast("success", "Document uploaded successfully");
-          setFiles({});
-          loadDocuments();
-          setActiveTab("view");
-        }
-      } else {
-        const response = await documentsApi.uploadMultipleDocuments(
-          selectedFiles,
-          reportYear
-        );
-        if (response.success) {
-          showToast("success", "Documents uploaded successfully");
-          setFiles({});
-          loadDocuments();
-          setActiveTab("view");
-        }
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
+
+      const response = await api.post('/upload/multiple', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      if (response.data.success) {
+        toast.success(`Successfully uploaded ${files.length} documents`);
+        setFiles([]);
+        setTimeout(() => {
+          setActiveTab('view');
+          setUploadProgress(0);
+        }, 1000);
       }
     } catch (error) {
-      console.error("Upload error:", error);
-      showToast("error", "Failed to upload documents");
+      console.error('Upload error:', error);
+      toast.error(error.response?.data?.message || 'Failed to upload documents');
+      setUploadProgress(0);
     } finally {
-      setIsUploading(false);
+      setUploading(false);
     }
   };
 
-  const handleViewDocument = async (document) => {
-    try {
-      const pdfUrl = await documentsApi.viewDocument(document._id);
-      window.open(pdfUrl, "_blank");
-    } catch (error) {
-      showToast("error", "Failed to view document");
-    }
-  };
-
-  const handleDeleteDocument = async (documentId) => {
-    if (!window.confirm("Are you sure you want to delete this document?")) {
-      return;
-    }
+  const handleDeleteDocument = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
 
     try {
-      const response = await documentsApi.deleteDocument(documentId);
-      if (response.success) {
-        showToast("success", "Document deleted successfully");
-        loadDocuments();
-      } else {
-        showToast("error", response.error || "Failed to delete document");
-      }
+      await api.delete(`/upload/${id}`);
+      toast.success('Document deleted successfully');
+      fetchDocuments();
     } catch (error) {
-      console.error("Delete error:", error);
-      showToast("error", "Failed to delete document");
+      console.error('Delete error:', error);
+      toast.error('Failed to delete document');
     }
   };
 
-  const handleRefreshDocument = async (documentId) => {
+  const handleViewDocument = async (id, filename) => {
     try {
-      const response = await documentsApi.retryParsing(documentId);
-      if (response.success) {
-        showToast("success", "Document parsing retried");
-        loadDocuments();
-      } else {
-        showToast("error", response.error || "Failed to retry parsing");
-      }
+      const response = await api.get(`/upload/${id}/view`, {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename); // or target="_blank" to view
+      document.body.appendChild(link);
+      link.click();
+      link.remove(); // Clean up
+      window.URL.revokeObjectURL(url);
+
+      // Alternatively, open in new tab
+      // window.open(url, '_blank');
     } catch (error) {
-      console.error("Refresh error:", error);
-      showToast("error", "Failed to retry parsing");
+      console.error('View error:', error);
+      toast.error('Failed to view document');
     }
   };
 
-  const renderUploadTab = () => {
-    const totalFiles = Object.keys(files).length;
-    return (
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Upload New Report</h1>
-        </div>
-
-        {/* Sample Files Section */}
-        <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-          <h3 className="text-lg font-semibold text-blue-900 mb-3">Download Sample Files</h3>
-          <p className="text-blue-700 mb-4">
-            Download sample files to understand the required format for upload:
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <a
-              href="/sample_data/sample_csv.xlsx"
-              download="sample_data_format.xlsx"
-              className="flex items-center gap-3 px-4 py-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              <div className="p-2 bg-green-100 rounded-lg">
-                <FileText className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Sample Excel Format</p>
-                <p className="text-sm text-gray-600">Download .xlsx template</p>
-              </div>
-            </a>
-            <a
-              href="/sample_data/sample_pdf.pdf"
-              download="sample_report.pdf"
-              className="flex items-center gap-3 px-4 py-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              <div className="p-2 bg-red-100 rounded-lg">
-                <FileText className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Sample PDF Report</p>
-                <p className="text-sm text-gray-600">Download .pdf example</p>
-              </div>
-            </a>
-          </div>
-        </div>
-
-        {/* Year Selection */}
-        <div className="mb-6">
-          <YearSelector
-            selectedYear={reportYear}
-            onYearChange={setReportYear}
-          />
-        </div>
-
-        {/* Drag & drop area */}
-        <div
-          className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${isDragOver
-              ? "border-indigo-500 bg-indigo-50"
-              : "border-gray-300 hover:border-indigo-400 hover:bg-gray-50"
-            }`}
-          onDragEnter={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsDragOver(true);
-          }}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onDragLeave={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsDragOver(false);
-          }}
-          onDrop={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsDragOver(false);
-            handleFiles(e.dataTransfer.files);
-          }}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={(e) => handleFiles(e.target.files)}
-            className="hidden"
-            accept="application/pdf,.pdf"
-            multiple
-            disabled={isUploading}
-          />
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="p-4 bg-indigo-100 rounded-full">
-              {isUploading ? (
-                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-              ) : (
-                <UploadCloud className="w-8 h-8 text-indigo-600" />
-              )}
-            </div>
-            <div>
-              <p className="text-xl font-medium text-gray-700">
-                {isUploading
-                  ? "Uploading files..."
-                  : "Drag & drop PDFs here"}
-              </p>
-              <p className="text-base text-gray-500 mt-1">
-                or click to browse from your computer
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="px-6 py-2.5 text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all"
-              disabled={isUploading}
-            >
-              Browse Files
-            </button>
-          </div>
-        </div>
-
-        {/* Selected files */}
-        {totalFiles > 0 && (
-          <div className="mt-8">
-            <h3 className="text-base font-semibold text-gray-700 mb-3">
-              Selected Files ({totalFiles})
-            </h3>
-            <div className="space-y-3">
-              {Object.values(files).map((file) => (
-                <FilePreview
-                  key={file.name}
-                  file={file}
-                  onRemove={handleRemoveFile}
-                  isUploading={isUploading}
-                />
-              ))}
-            </div>
-            {!isUploading && (
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={handleUpload}
-                  className="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow-md hover:bg-indigo-700 transition-all hover:scale-[1.02]"
-                >
-                  Upload {totalFiles} Files
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderViewTab = () => {
-    const availableYears = [...new Set(documents.map(doc => doc.year))].sort((a, b) => b - a);
-
-    const filteredDocuments = documents.filter(doc =>
-      selectedViewYear ? doc.year === selectedViewYear : true
-    );
-
-    return (
-      <div className="max-w-5xl mx-auto h-full flex flex-col">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Submitted Reports</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <YearSelector
-              selectedYear={selectedViewYear}
-              onYearChange={setSelectedViewYear}
-              availableYears={availableYears}
-            />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-            <Loader2 className="w-10 h-10 animate-spin mb-3 text-indigo-500" />
-            <p>Fetching your documents...</p>
-          </div>
-        ) : filteredDocuments.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-              <FileText className="w-8 h-8 text-gray-300" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              No documents found
-            </h3>
-            <p className="text-base text-gray-500 max-w-sm mt-2 mb-6">
-              {selectedViewYear
-                ? `You haven't uploaded any reports for ${selectedViewYear} yet.`
-                : "You haven't uploaded any reports yet."}
-            </p>
-            <button
-              onClick={() => setActiveTab("upload")}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
-            >
-              Upload Document
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pb-10">
-            {filteredDocuments.map((doc) => (
-              <DocumentItem
-                key={doc._id}
-                document={doc}
-                onView={handleViewDocument}
-                onDelete={handleDeleteDocument}
-                onRefresh={handleRefreshDocument}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
-    <>
-      <div className="h-full overflow-hidden bg-white">
-        {/* Tab Navigation */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex space-x-1">
+    <div className="p-6 max-w-7xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Report Management</h1>
+          <p className="text-gray-500 mt-2">Upload and manage your institute's reports and documents.</p>
+        </div>
+
+        {/* Year Selector */}
+        <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+          <span className="text-sm font-medium text-gray-700 px-2">Academic Year:</span>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            className="border-none bg-transparent focus:ring-0 text-sm font-semibold text-indigo-600 cursor-pointer"
+          >
+            {[...Array(5)].map((_, i) => {
+              const year = new Date().getFullYear() - i + 1;
+              return <option key={year} value={year}>{year} - {year + 1}</option>;
+            })}
+          </select>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab('upload')}
+            className={`
+              whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
+              ${activeTab === 'upload'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+            `}
+          >
+            <div className="flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              Upload Reports
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('view')}
+            className={`
+              whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
+              ${activeTab === 'view'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+            `}
+          >
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4" />
+              View History
+            </div>
+          </button>
+        </nav>
+      </div>
+
+      {/* Upload Tab Content */}
+      {activeTab === 'upload' && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div
+            className={`
+              relative border-2 border-dashed rounded-xl p-12 text-center transition-all duration-200 ease-in-out
+              ${dragActive ? 'border-indigo-500 bg-indigo-50 scale-[1.01]' : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'}
+              ${uploading ? 'pointer-events-none opacity-50' : ''}
+            `}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <input
+              ref={inputRef}
+              type="file"
+              multiple
+              accept=".pdf" // Changed to only accept PDF
+              onChange={handleChange}
+              className="hidden"
+            />
+
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="p-4 bg-indigo-100 rounded-full text-indigo-600">
+                <Upload className="w-8 h-8" />
+              </div>
+              <div>
+                <p className="text-xl font-semibold text-gray-900">
+                  Click to upload or drag and drop
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  PDF files only (Max 10MB per file)
+                </p>
+              </div>
               <button
-                onClick={() => setActiveTab("upload")}
-                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "upload"
-                    ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                onClick={() => inputRef.current?.click()}
+                className="px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
               >
-                <div className="flex items-center gap-2">
-                  <UploadCloud className="w-4 h-4" />
-                  Upload New Report
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab("view")}
-                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "view"
-                    ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  View Submitted Reports
-                </div>
+                Select Files
               </button>
             </div>
           </div>
-        </div>
 
-        <main className="h-full overflow-y-auto p-6 scroll-smooth bg-gray-50/50">
-          {activeTab === "upload" ? renderUploadTab() : renderViewTab()}
-        </main>
-      </div>
-
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl text-white text-sm font-medium z-50 animate-in fade-in slide-in-from-bottom-4`}
-          style={{
-            backgroundColor:
-              toast.type === "success" ? "#059669" : "#DC2626",
-          }}
-        >
-          {toast.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5" />
-          ) : (
-            <AlertCircle className="w-5 h-5" />
+          {files.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <h3 className="font-semibold text-gray-900">Selected Files ({files.length})</h3>
+                <button
+                  onClick={() => setFiles([])}
+                  className="text-xs text-red-600 hover:text-red-700 font-medium hover:underline"
+                >
+                  Clear All
+                </button>
+              </div>
+              <ul className="divide-y divide-gray-100">
+                {files.map((file, idx) => (
+                  <li key={idx} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-red-100 rounded-lg">
+                        <FileText className="w-5 h-5 text-red-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 truncate max-w-xs">{file.name}</p>
+                        <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeFile(idx)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                <button
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  className={`
+                    flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium text-white shadow-sm transition-all
+                    ${uploading
+                      ? 'bg-indigo-400 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-md'}
+                  `}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Uploading... {uploadProgress}%
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Upload {files.length} Files
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           )}
-          <span className="text-base">{toast.message}</span>
         </div>
       )}
-    </>
+
+      {/* View Tab Content */}
+      {activeTab === 'view' && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
+              <p className="text-gray-500">Loading documents...</p>
+            </div>
+          ) : documents.length === 0 ? (
+            <div className="text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900">No documents found</h3>
+              <p className="text-gray-500 mt-1">Upload documents to see them here.</p>
+              <button
+                onClick={() => setActiveTab('upload')}
+                className="mt-6 text-indigo-600 font-medium hover:underline"
+              >
+                Go to Upload
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {documents.map((doc) => (
+                <div key={doc.id} className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col">
+                  <div className="p-5 flex-1">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="p-2.5 bg-red-50 rounded-lg group-hover:bg-red-100 transition-colors">
+                        <FileText className="w-6 h-6 text-red-600" />
+                      </div>
+                      <div className={`
+                        px-2.5 py-1 rounded-full text-xs font-medium
+                        ${doc.status === 'PARSED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}
+                      `}>
+                        {doc.status}
+                      </div>
+                    </div>
+                    <h3 className="font-semibold text-gray-900 truncate mb-1" title={doc.originalFilename}>
+                      {doc.originalFilename}
+                    </h3>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
+                      <span>{formatFileSize(doc.fileSize)}</span>
+                      <span>•</span>
+                      <span>{new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                    <button
+                      onClick={() => handleViewDocument(doc.id, doc.originalFilename)}
+                      className="text-sm font-medium text-gray-600 hover:text-indigo-600 flex items-center gap-1.5 transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                      View
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDocument(doc.id)}
+                      className="text-sm font-medium text-gray-400 hover:text-red-600 flex items-center gap-1.5 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

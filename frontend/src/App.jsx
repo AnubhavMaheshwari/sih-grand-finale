@@ -13,13 +13,14 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import UserManagementPage from "./pages/admin/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/admin/AdminInstitutesPage.jsx";
 import PendingRegistrationsPage from "./pages/admin/PendingRegistrationsPage.jsx";
+import InstituteParametersPage from "./pages/admin/InstituteParametersPage.jsx";
 import ReportsManagementPage from "./pages/institute/ReportsManagementPage.jsx";
 import AdminRequestsPage from "./pages/admin/AdminRequestsPage.jsx";
 
 // Institute pages
 import UploadDocumentPage from "./pages/institute/UploadDocumentPage.jsx";
 import RequestCenterPage from "./pages/institute/RequestCenterPage.jsx";
-
+import ParameterSubmissionPage from "./pages/institute/ParameterSubmissionPage.jsx";
 import AdminLayout from "./components/layout/AdminLayout.jsx";
 import InstituteLayout from "./components/layout/InstituteLayout.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
@@ -92,7 +93,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/admin/pending-registrations"
             element={
@@ -109,6 +109,16 @@ function App() {
               <ProtectedRoute requiredRole="admin">
                 <AdminLayout>
                   <AdminRequestsPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/parameters"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <InstituteParametersPage />
                 </AdminLayout>
               </ProtectedRoute>
             }
@@ -141,6 +151,16 @@ function App() {
               <ProtectedRoute requiredRole="institute">
                 <InstituteLayout>
                   <ReportsManagementPage />
+                </InstituteLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parameters"
+            element={
+              <ProtectedRoute requiredRole="institute">
+                <InstituteLayout>
+                  <ParameterSubmissionPage />
                 </InstituteLayout>
               </ProtectedRoute>
             }
