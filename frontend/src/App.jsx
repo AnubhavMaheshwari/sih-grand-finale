@@ -117,6 +117,7 @@ function App() {
             }
           />
 
+
           {/* Redirect old admin dashboard to new default */}
           <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
 
