@@ -51,11 +51,22 @@ function App() {
             }
           />
           <Route
+            path="/admin/requests"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <RequestsPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/dashboard"
             element={
               <Navigate to="/admin/users" replace />
             }
           />
+
 
           {/* Redirect old admin dashboard to new default */}
           <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
