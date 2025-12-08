@@ -10,6 +10,7 @@ import UploadedDataPage from "./pages/UploadedDataPage.jsx";
 import AdminDashboardPage from "./pages/AdminDashboardPage.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/AdminInstitutesPage.jsx";
+import AdminContentPage from "./pages/AdminContentPage.jsx";
 import AdminLayout from "./components/layout/AdminLayout.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import PublicRoute from "./components/common/PublicRoute.jsx";
@@ -56,6 +57,16 @@ function App() {
             <ProtectedRoute requiredRole="admin">
               <AdminLayout>
                 <AdminInstitutesPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/content" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLayout>
+                <AdminContentPage />
               </AdminLayout>
             </ProtectedRoute>
           } 
