@@ -1,4 +1,3 @@
-// src/components/Footer.jsx
 import footerLogos from '../../assets/images/footer_logos.png';
 
 function Footer() {

@@ -8,7 +8,6 @@ import FAQPage from "./pages/FAQPage.jsx";
 import ContactUsPage from "./pages/ContactUsPage.jsx";
 import EduRankPage from "./pages/EduRankPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
-import UploadedDataPage from "./pages/UploadedDataPage.jsx";
 import AdminDashboardPage from "./pages/AdminDashboardPage.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/AdminInstitutesPage.jsx";
@@ -24,7 +23,6 @@ function App() {
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       <Router>
         <Routes>
-          {/* The main login page - Public only (redirects if already logged in) */}
           <Route
             path="/"
             element={
@@ -33,9 +31,6 @@ function App() {
               </PublicRoute>
             }
           />
-
-          {/* Protected Application pages */}
-          {/* Admin Routes with Sidebar Layout */}
           <Route
             path="/admin/dashboard"
             element={
@@ -66,7 +61,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Redirect old admin dashboard to new dashboard */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
           {/* Institution upload dashboard - Institute users only */}
@@ -75,16 +69,6 @@ function App() {
             element={
               <ProtectedRoute requiredRole="institute">
                 <UploadDocumentPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* UGC uploaded-data explorer - UGC employees only */}
-          <Route
-            path="/uploaded-data"
-            element={
-              <ProtectedRoute requiredRole="ugc_employee">
-                <UploadedDataPage />
               </ProtectedRoute>
             }
           />

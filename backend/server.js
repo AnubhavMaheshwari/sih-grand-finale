@@ -23,18 +23,38 @@ app.get("/", (req, res) => {
 const createAdminIfNotExists = async () => {
   try {
     const admin = await User.findOne({ role: "admin" });
+    const envAdminId = process.env.ADMIN_USER_ID || DEFAULT_ADMIN.USER_ID;
+    const envAdminPassword = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN.PASSWORD;
+
     if (!admin) {
+      // Create admin if doesn't exist
       await User.create({
-        userId: DEFAULT_ADMIN.USER_ID,
-        password: DEFAULT_ADMIN.PASSWORD,
+        userId: envAdminId,
+        password: envAdminPassword,
         role: "admin",
+        fullName: "System Administrator",
+        email: "admin@sarthi.gov.in"
       });
-      console.log("✔ Admin user created");
+      console.log(`✔ Admin user created with ID: ${envAdminId}`);
     } else {
-      console.log("✔ Admin already exists");
+      // Check if admin credentials match .env file
+      const passwordMatches = await admin.comparePassword(envAdminPassword);
+      const userIdMatches = admin.userId === envAdminId;
+      
+      if (!userIdMatches || !passwordMatches) {
+        // Update admin with .env credentials
+        admin.userId = envAdminId;
+        admin.password = envAdminPassword;
+        admin.fullName = "System Administrator";
+        admin.email = "admin@sarthi.gov.in";
+        await admin.save();
+        console.log(`✔ Admin credentials updated from .env file. New ID: ${envAdminId}`);
+      } else {
+        console.log(`✔ Admin already exists with matching credentials. ID: ${envAdminId}`);
+      }
     }
   } catch (err) {
-    console.error("Admin creation error:", err.message);
+    console.error("Admin configuration error:", err.message);
   }
 };
 

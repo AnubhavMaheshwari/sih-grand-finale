@@ -32,8 +32,6 @@ const Navigation = ({ currentPage, onLogout }) => {
         return [
           { name: "My Dashboard", path: "/edu" },
           { name: "Uploaded Data", path: "/uploaded-data" },
-          { name: "FAQ", path: "/faq" },
-          { name: "Contact Us", path: "/contact" },
         ];
       case "admin":
         return [

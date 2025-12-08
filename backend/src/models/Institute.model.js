@@ -18,6 +18,11 @@ const instituteSchema = new mongoose.Schema(
       enum: ["University", "College", "Institute", "School"],
       default: "Institute",
     },
+    category: {
+      type: String,
+      enum: ["Engineering", "Medical", "Management", "Arts", "Science", "Law", "Pharmacy", "Dental", "Nursing", "Agriculture", "Others"],
+      default: "Others",
+    },
     location: {
       city: {
         type: String,

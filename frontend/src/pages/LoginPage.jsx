@@ -6,6 +6,7 @@ import PromoSection from '../components/login/PromoSection.jsx';
 import sarthiLogo from '../assets/images/sarthiLogo.png';
 import Footer from '../components/layout/Footer.jsx';
 
+
 const LoginPage = () => {
   const { error } = useAuth();
   const [toast, setToast] = useState({ message: '', type: '' });
