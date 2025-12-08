@@ -17,11 +17,21 @@ import {
   Eye,
   Trash2,
   RefreshCw,
+  Send,
+  ClipboardList,
+  Clock,
+  FileCheck,
+  LayoutDashboard,
+  Menu,
+  MessageSquareWarning,
+  FileWarning,
+  ExternalLink,
 } from "lucide-react";
 import documentsApi from "../api/documents.api.js";
 
 const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";
+const LIGHT_INDIGO = "#EEF2FF";
 
 // --- FilePreview Component (PDF only) ---
 function FilePreview({ file, onRemove, isUploading = false }) {
@@ -31,17 +41,20 @@ function FilePreview({ file, onRemove, isUploading = false }) {
       : `${(bytes / 1024).toFixed(1)} KB`;
 
   return (
-    <div className="flex items-center justify-between p-4 transition-all bg-gray-100 rounded-lg">
+    <div className="flex items-center justify-between p-4 transition-all bg-gray-100 rounded-lg border border-gray-200">
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 bg-white rounded-md shadow-sm flex-shrink:0">
+        <div className="flex items-center justify-center w-12 h-12 bg-white rounded-md shadow-sm flex-shrink-0">
           {isUploading ? (
-            <Loader2 className="w-6 h-6 animate-spin" style={{ color: DEEP_INDIGO }} />
+            <Loader2
+              className="w-6 h-6 animate-spin"
+              style={{ color: DEEP_INDIGO }}
+            />
           ) : (
             <FileText className="w-6 h-6" style={{ color: DEEP_INDIGO }} />
           )}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-800 truncate max-w-48 sm:max-w-md">
+          <p className="text-sm font-semibold text-gray-800 truncate max-w-[150px] sm:max-w-xs">
             {file.name}
           </p>
           <p className="text-xs text-gray-500">
@@ -53,10 +66,10 @@ function FilePreview({ file, onRemove, isUploading = false }) {
       {!isUploading && (
         <button
           onClick={() => onRemove(file.name)}
-          className="p-1 transition-colors rounded-full hover:bg-red-50"
+          className="p-1 transition-colors rounded-full hover:bg-red-50 group"
           title="Remove file"
         >
-          <X className="w-4 h-4 text-gray-500 hover:text-red-500" />
+          <X className="w-4 h-4 text-gray-400 group-hover:text-red-500" />
         </button>
       )}
     </div>
@@ -75,23 +88,21 @@ function DocumentItem({ document, onView, onDelete, onRefresh }) {
       day: "numeric",
       month: "short",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 
   const getStatusColor = (status) => {
     switch (status) {
       case "UPLOADED":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 border-blue-200";
       case "PARSING":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "PARSED":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 border-green-200";
       case "ERROR":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 border-red-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
@@ -111,41 +122,35 @@ function DocumentItem({ document, onView, onDelete, onRefresh }) {
   };
 
   return (
-    <div className="flex items-start justify-between p-4 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
+    <div className="group flex items-start justify-between p-4 rounded-xl bg-white border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all duration-200">
       <div className="flex items-start gap-3 flex-1">
-        <FileText className="w-6 h-6 text-indigo-600 mt-1 shrink-0" />
+        <div className="bg-indigo-50 p-2 rounded-lg">
+          <FileText className="w-5 h-5 text-indigo-600" />
+        </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-800 truncate">
+          <p className="text-sm font-bold text-gray-800 truncate">
             {document.originalFilename}
           </p>
-          <div className="flex flex-wrap items-center gap-2 mt-1">
-            <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(document.status)}`}>
+          <div className="flex flex-wrap items-center gap-2 mt-1.5">
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${getStatusColor(
+                document.status
+              )}`}
+            >
               {getStatusText(document.status)}
             </span>
-            <span className="text-xs text-gray-600">
-              Year: <span className="font-medium">{document.year}</span>
-            </span>
-            <span className="text-xs text-gray-600">
-              Size: {formatFileSize(document.fileSize)}
+            <span className="text-xs text-gray-500">{document.year}</span>
+            <span className="text-[10px] text-gray-400">
+              • {formatFileSize(document.fileSize)}
             </span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Uploaded on {formatDate(document.uploadedAt)}
-          </p>
-          {document.parsingStats && (
-            <div className="mt-2 text-xs text-gray-600">
-              <span className="font-medium">Parsing Stats:</span>{" "}
-              {document.parsingStats.sectionsParsed || 0} sections parsed ·{" "}
-              {document.parsingStats.confidenceScore || 0}% confidence
-            </div>
-          )}
         </div>
       </div>
-      <div className="flex items-center gap-2 ml-2">
+      <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
         {document.status === "PARSED" && (
           <button
             onClick={() => onView(document)}
-            className="p-1.5 text-indigo-600 hover:bg-indigo-200 rounded transition-colors"
+            className="p-2 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors"
             title="View PDF"
           >
             <Eye className="w-4 h-4" />
@@ -154,7 +159,7 @@ function DocumentItem({ document, onView, onDelete, onRefresh }) {
         {document.status === "ERROR" && (
           <button
             onClick={() => onRefresh(document._id)}
-            className="p-1.5 text-yellow-600 hover:bg-yellow-200 rounded transition-colors"
+            className="p-2 text-gray-500 hover:bg-yellow-50 hover:text-yellow-600 rounded-lg transition-colors"
             title="Retry parsing"
           >
             <RefreshCw className="w-4 h-4" />
@@ -162,7 +167,7 @@ function DocumentItem({ document, onView, onDelete, onRefresh }) {
         )}
         <button
           onClick={() => onDelete(document._id)}
-          className="p-1.5 text-red-600 hover:bg-red-200 rounded transition-colors"
+          className="p-2 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
           title="Delete document"
         >
           <Trash2 className="w-4 h-4" />
@@ -172,59 +177,151 @@ function DocumentItem({ document, onView, onDelete, onRefresh }) {
   );
 }
 
+// --- Request Item Component ---
+function RequestItem({ request, onDownloadDeficiencyReport }) {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Checking Data Sufficiency":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "Data Sufficient":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "Insufficient Data":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "Pending Report":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "Report Ready":
+        return "bg-indigo-100 text-indigo-800 border-indigo-200";
+      case "Verifying":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  return (
+    <div className="flex flex-col p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
+      <div className="flex justify-between items-start mb-2">
+        <h4 className="font-semibold text-gray-800">
+          {request.type} Request
+        </h4>
+        <span
+          className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${getStatusColor(
+            request.status
+          )}`}
+        >
+          {request.status}
+        </span>
+      </div>
+      <p className="text-xs text-gray-500 mb-3">
+        Submitted on {new Date(request.date).toLocaleDateString()}
+      </p>
+
+      {request.status === "Data Sufficient" && (
+        <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 p-2 rounded border border-green-100">
+          <CheckCircle2 className="w-4 h-4" />
+          <span>Data is sufficient for this request. Report generating...</span>
+        </div>
+      )}
+
+      {request.status === "Insufficient Data" && (
+        <div className="mt-3">
+          <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 p-2 rounded border border-red-100 mb-2">
+            <AlertCircle className="w-4 h-4" />
+            <span>Missing documents detected.</span>
+          </div>
+          <button
+            onClick={() => onDownloadDeficiencyReport(request)}
+            className="w-full py-2 flex items-center justify-center gap-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+          >
+            <FileWarning className="w-4 h-4" /> Download Deficiency Report
+          </button>
+        </div>
+      )}
+
+      {request.status === "Report Ready" && (
+        <button className="mt-2 w-full py-2 flex items-center justify-center gap-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+          <FileCheck className="w-4 h-4" /> View Approval Report
+        </button>
+      )}
+
+      {request.status === "Pending Report" && (
+        <div className="mt-2 text-xs text-blue-600 flex items-center gap-1">
+          <Clock className="w-3 h-3" /> Report expected in 2 days
+        </div>
+      )}
+
+      {request.status === "Verifying" && (
+        <div className="mt-2 text-xs text-purple-600 flex items-center gap-1">
+          <Loader2 className="w-3 h-3 animate-spin" /> Verifying uploaded
+          documents...
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- Main UploadDocumentPage Component ---
 function UploadDocumentPage() {
+  // State for Navigation
+  const [activeTab, setActiveTab] = useState("requests"); // requests, status, queries
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+
+  // Upload/Docs State
   const [isDragOver, setIsDragOver] = useState(false);
   const [files, setFiles] = useState({});
   const [toast, setToast] = useState(null); // {type, message}
-  const [activePanel, setActivePanel] = useState("upload");
   const [documents, setDocuments] = useState([]);
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState({});
+
+  // Request System State (Mocked)
+  const [requests, setRequests] = useState([
+    {
+      id: 101,
+      type: "Student Intake",
+      date: new Date(2023, 10, 15),
+      status: "Report Ready",
+      missingDocs: [],
+      deficiencyReportUrl: null,
+    },
+  ]);
+
+  // Files selected for responding to queries per request
+  const [queryFiles, setQueryFiles] = useState({}); // { [requestId]: File[] }
 
   const fileInputRef = useRef(null);
 
-  // Load documents on component mount
+  // Load documents on component mount + poll when any doc is PARSING
   useEffect(() => {
     loadDocuments();
-    
-    // Set up interval to refresh documents every 10 seconds if any are parsing
+
     const interval = setInterval(() => {
-      const hasParsing = documents.some(doc => doc.status === "PARSING");
+      const hasParsing = documents.some((doc) => doc.status === "PARSING");
       if (hasParsing) {
         loadDocuments();
       }
-    }, 10000);
-    
+    }, 5000);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [documents.length]);
 
   const loadDocuments = async () => {
     try {
       setIsLoading(true);
-      console.log("Loading documents...");
       const response = await documentsApi.getInstituteDocuments();
-      console.log("Full API Response:", response);
-      console.log("Response success:", response.success);
-      console.log("Response documents:", response.documents);
-      console.log("Response keys:", Object.keys(response));
-      
       if (response.success) {
-        // Response structure: { success: true, documents: [], pagination: {}, message: "" }
-        console.log(`Setting ${response.documents?.length || 0} documents`);
         setDocuments(response.documents || []);
       } else {
-        // Handle error response
-        console.log("API returned error:", response.error);
         showToast("error", response.error || "Failed to load documents");
         setDocuments([]);
       }
     } catch (error) {
       console.error("Error loading documents:", error);
-      console.error("Error details:", error.response?.data);
-      showToast("error", error.response?.data?.error || "Failed to load documents");
+      showToast(
+        "error",
+        error.response?.data?.error || "Failed to load documents"
+      );
       setDocuments([]);
     } finally {
       setIsLoading(false);
@@ -292,29 +389,35 @@ function UploadDocumentPage() {
 
     try {
       setIsUploading(true);
-      
       if (selectedFiles.length === 1) {
-        // Single file upload
-        const response = await documentsApi.uploadDocument(selectedFiles[0], reportYear);
+        const response = await documentsApi.uploadDocument(
+          selectedFiles[0],
+          reportYear
+        );
         if (response.success) {
-          showToast("success", response.message || "Document uploaded successfully");
+          showToast("success", "Document uploaded successfully");
           setFiles({});
           loadDocuments();
-          setActivePanel("reports");
+          setActiveTab("dashboard"); // Go back to list
         }
       } else {
-        // Multiple files upload
-        const response = await documentsApi.uploadMultipleDocuments(selectedFiles, reportYear);
+        const response = await documentsApi.uploadMultipleDocuments(
+          selectedFiles,
+          reportYear
+        );
         if (response.success) {
-          showToast("success", response.message || "Documents uploaded successfully");
+          showToast("success", "Documents uploaded successfully");
           setFiles({});
           loadDocuments();
-          setActivePanel("reports");
+          setActiveTab("dashboard");
         }
       }
     } catch (error) {
       console.error("Upload error:", error);
-      showToast("error", error.response?.data?.error || "Failed to upload documents");
+      showToast(
+        "error",
+        error.response?.data?.error || "Failed to upload documents"
+      );
     } finally {
       setIsUploading(false);
     }
@@ -324,7 +427,6 @@ function UploadDocumentPage() {
     if (!window.confirm("Are you sure you want to delete this document?")) {
       return;
     }
-
     try {
       const response = await documentsApi.deleteDocument(documentId);
       if (response.success) {
@@ -332,8 +434,10 @@ function UploadDocumentPage() {
         loadDocuments();
       }
     } catch (error) {
-      console.error("Delete error:", error);
-      showToast("error", error.response?.data?.error || "Failed to delete document");
+      showToast(
+        "error",
+        error.response?.data?.error || "Failed to delete document"
+      );
     }
   };
 
@@ -342,366 +446,617 @@ function UploadDocumentPage() {
       const pdfUrl = await documentsApi.viewDocument(document._id);
       window.open(pdfUrl, "_blank");
     } catch (error) {
-      console.error("View error:", error);
       showToast("error", "Failed to view document");
     }
   };
 
-  const handleRefreshDocument = async (documentId) => {
+  // When institute submits request to UGC/AICTE
+  const handleRequestSubmit = async (type) => {
+    const newRequest = {
+      id: Date.now(),
+      type: type,
+      date: new Date(),
+      status: "Checking Data Sufficiency",
+      missingDocs: [],
+      deficiencyReportUrl: null,
+    };
+
+    setRequests((prev) => [newRequest, ...prev]);
+    showToast("success", `${type} request submitted to UGC/AICTE.`);
+    setActiveTab("status");
+
+    // TODO: Replace with real backend API
+    // const response = await requestsApi.submitRequest(type);
+    // setRequests(response.requests);
+
+    // TEMPORARY: simulate insufficiency + deficiency report
+    setTimeout(() => {
+      setRequests((prev) =>
+        prev.map((req) =>
+          req.id === newRequest.id
+            ? {
+              ...req,
+              status: "Insufficient Data",
+              missingDocs: ["Latest Audit Report", "Faculty List 2024"],
+              deficiencyReportUrl: "/sample-deficiency-report.pdf", // TODO: from backend
+            }
+            : req
+        )
+      );
+    }, 3000);
+  };
+
+  const handleDownloadDeficiencyReport = (request) => {
+    if (!request.deficiencyReportUrl) {
+      showToast("error", "Deficiency report not available yet.");
+      return;
+    }
+    window.open(request.deficiencyReportUrl, "_blank");
+  };
+
+  const handleQueryFilesChange = (requestId, fileList) => {
+    const filesArray = Array.from(fileList || []);
+    setQueryFiles((prev) => ({
+      ...prev,
+      [requestId]: filesArray,
+    }));
+  };
+
+  const handleQueryResponseUpload = async (requestId) => {
+    const filesForRequest = queryFiles[requestId] || [];
+    if (!filesForRequest.length) {
+      showToast("error", "Please select at least one document to upload.");
+      return;
+    }
+
     try {
-      // TODO: Implement retry parsing endpoint
-      showToast("info", "Retry parsing feature coming soon");
+      setIsUploading(true);
+
+      // TODO: call backend API to upload missing docs for this request
+      // const response = await requestsApi.uploadMissingDocs(requestId, filesForRequest);
+      // setRequests(response.requests);
+
+      // TEMPORARY simulation
+      setTimeout(() => {
+        setRequests((prev) =>
+          prev.map((req) =>
+            req.id === requestId ? { ...req, status: "Verifying" } : req
+          )
+        );
+        showToast("success", "Missing documents uploaded. Verifying...");
+        setQueryFiles((prev) => {
+          const clone = { ...prev };
+          delete clone[requestId];
+          return clone;
+        });
+        setIsUploading(false);
+
+        // After verifying, mark as Data Sufficient
+        setTimeout(() => {
+          setRequests((prev) =>
+            prev.map((req) =>
+              req.id === requestId
+                ? { ...req, status: "Data Sufficient", missingDocs: [] }
+                : req
+            )
+          );
+        }, 3000);
+      }, 1500);
     } catch (error) {
-      console.error("Refresh error:", error);
-      showToast("error", "Failed to retry parsing");
+      console.error(error);
+      showToast("error", "Failed to upload query response.");
+      setIsUploading(false);
     }
   };
 
-  const handleDrop = useCallback(
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragOver(false);
-      handleFiles(e.dataTransfer.files);
-    },
-    [handleFiles]
+  // --- Render Helpers ---
+
+  const renderSidebar = () => (
+    <div
+      className={`flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300 ${isSidebarOpen ? "w-64" : "w-20"
+        }`}
+    >
+      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+        {isSidebarOpen && (
+          <span className="font-bold text-lg text-indigo-900">
+            Institute Portal
+          </span>
+        )}
+        <button
+          onClick={() => setSidebarOpen(!isSidebarOpen)}
+          className="p-2 hover:bg-gray-100 rounded-lg"
+        >
+          <Menu className="w-5 h-5 text-gray-600" />
+        </button>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+        <SidebarItem
+          icon={<Send />}
+          label="Submit Request"
+          id="requests"
+        />
+        <SidebarItem
+          icon={<ClipboardList />}
+          label="Track Status"
+          id="status"
+        />
+        <SidebarItem
+          icon={<MessageSquareWarning />}
+          label="Respond to Queries"
+          id="queries"
+        />
+      </nav>
+    </div>
   );
 
-  const dropAreaClasses = `border-2 border-dashed rounded-lg p-8 text-center transition-all ${isDragOver
-      ? "border-indigo-500 bg-indigo-100"
-      : "border-gray-300 hover:border-indigo-500 hover:bg-indigo-50"
-    }`;
+  const SidebarItem = ({ icon, label, id }) => (
+    <button
+      onClick={() => setActiveTab(id)}
+      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === id
+        ? "bg-indigo-50 text-indigo-700"
+        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        }`}
+    >
+      <div
+        className={`${activeTab === id ? "text-indigo-600" : "text-gray-500"
+          }`}
+      >
+        {icon}
+      </div>
+      {isSidebarOpen && <span>{label}</span>}
+    </button>
+  );
 
-  const totalFiles = Object.keys(files).length;
-
-  // Filter documents by year
-  const [documentYearFilter, setDocumentYearFilter] = useState("all");
-  const filteredDocuments = useMemo(() => {
-    if (documentYearFilter === "all") return documents;
-    return documents.filter(doc => String(doc.year) === String(documentYearFilter));
-  }, [documents, documentYearFilter]);
-
-  const yearOptions = useMemo(() => {
-    const set = new Set(documents.map(doc => doc.year));
-    return Array.from(set).sort((a, b) => b - a);
-  }, [documents]);
-
-  // Determine active panel from URL
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const panel = searchParams.get("panel");
-    if (panel === "reports") {
-      setActivePanel("reports");
-    } else if (panel === "insights") {
-      setActivePanel("insights");
-    } else {
-      setActivePanel("upload");
+  const renderContent = () => {
+    switch (activeTab) {
+      case "requests":
+        return renderRequestPanel();
+      case "status":
+        return renderStatusPanel();
+      case "queries":
+        return renderQueryResponsePanel();
+      default:
+        return renderRequestPanel();
     }
-  }, []);
+  };
 
-  const content = (
-    <div className="flex flex-col w-full h-full px-2 py-6 sm:px-4">
-      {/* Right content (cards, upload, reports, insights) */}
-      {activePanel === "upload" && (
-        <section className="flex flex-col h-full p-6 bg-white shadow-lg rounded-xl sm:p-8">
-          <div className="flex items-center justify-between mb-6">
+  const renderUploadPanel = () => {
+    const totalFiles = Object.keys(files).length;
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Upload Reports</h1>
+          <p className="text-gray-500 mt-1">
+            Upload your institute&apos;s annual reports and audit documents.
+          </p>
+        </div>
+
+        {/* Drag & drop area */}
+        <div
+          className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${isDragOver
+            ? "border-indigo-500 bg-indigo-50"
+            : "border-gray-300 hover:border-indigo-400 hover:bg-gray-50"
+            }`}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragOver(true);
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragOver(false);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragOver(false);
+            handleFiles(e.dataTransfer.files);
+          }}
+        >
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={(e) => handleFiles(e.target.files)}
+            className="hidden"
+            accept="application/pdf,.pdf"
+            multiple
+            disabled={isUploading}
+          />
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="p-4 bg-indigo-100 rounded-full">
+              {isUploading ? (
+                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+              ) : (
+                <UploadCloud className="w-8 h-8 text-indigo-600" />
+              )}
+            </div>
             <div>
-              <h2
-                className="text-2xl font-extrabold sm:text-3xl"
-                style={{ color: DEEP_INDIGO }}
-              >
-                Upload Your Reports (PDF)
-              </h2>
-              <p className="max-w-xl mt-2 text-sm text-gray-500">
-                Upload your annual performance reports in PDF format.
-                Once submitted, they will be automatically parsed and
-                available in <span className="font-medium text-indigo-600">My Submitted Reports</span>.
-                The SARTHI AI engine will generate insights from your data.
+              <p className="text-lg font-medium text-gray-700">
+                {isUploading
+                  ? "Uploading files..."
+                  : "Drag & drop PDFs here"}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                or click to browse from your computer
               </p>
             </div>
-
             <button
               type="button"
-              onClick={() => setActivePanel("reports")}
-              className="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-6 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all"
+              disabled={isUploading}
             >
-              View Uploaded Reports
+              Browse Files
             </button>
           </div>
+        </div>
 
-          {/* Year selection */}
-          <div className="flex items-center gap-3 mb-4 text-sm">
-            <span className="text-gray-700">Report Year:</span>
-            <select
-              value={reportYear}
-              onChange={(e) => setReportYear(Number(e.target.value))}
-              className="bg-white border-2 border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 px-3 py-1.5"
-              disabled={isUploading}
-            >
-              {Array.from({ length: 6 }).map((_, idx) => {
-                const y = new Date().getFullYear() - idx;
-                return (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          {/* Drag & drop area */}
-          <div
-            className={dropAreaClasses}
-            onDragEnter={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setIsDragOver(true);
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onDragLeave={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setIsDragOver(false);
-            }}
-            onDrop={handleDrop}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={(e) => handleFiles(e.target.files)}
-              className="hidden"
-              accept="application/pdf,.pdf"
-              multiple
-              disabled={isUploading}
-            />
-            <div className="flex flex-col items-center justify-center space-y-4">
-              {isUploading ? (
-                <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-              ) : (
-                <UploadCloud className="w-10 h-10 text-gray-400" />
-              )}
-              <p className="text-sm text-gray-600 sm:text-base">
-                {isUploading ? "Uploading files..." : "Drag & drop your PDF reports here"}
-              </p>
-              <p className="text-xs text-gray-400">
-                Only <strong>PDF</strong> files are allowed (max 50MB each).
-              </p>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-5 py-2 text-sm font-semibold text-white rounded-md shadow-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: PRIMARY_BLUE }}
-                disabled={isUploading}
-              >
-                {isUploading ? "Uploading..." : "Browse PDF Files"}
-              </button>
-            </div>
-          </div>
-
-          {/* Selected files */}
-          <div className="flex-1 mt-6 space-y-4 overflow-y-auto">
-            {Object.values(files).length === 0 ? (
-              <p className="text-xs italic text-gray-400">
-                No files selected yet. Drag & drop or click "Browse PDF Files" above.
-              </p>
-            ) : (
-              Object.values(files).map((file) => (
+        {/* Selected files */}
+        {totalFiles > 0 && (
+          <div className="mt-8">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              Selected Files ({totalFiles})
+            </h3>
+            <div className="space-y-3">
+              {Object.values(files).map((file) => (
                 <FilePreview
                   key={file.name}
                   file={file}
                   onRemove={handleRemoveFile}
                   isUploading={isUploading}
                 />
-              ))
-            )}
-          </div>
-
-          {totalFiles > 0 && !isUploading && (
-            <div className="pt-4 mt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={handleUpload}
-                className="w-full text-white py-3 rounded-xl font-semibold text-base sm:text-lg shadow-lg transition-transform duration-150 hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: DEEP_INDIGO }}
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Uploading...
-                  </span>
-                ) : (
-                  `Upload All Reports (${totalFiles})`
-                )}
-              </button>
+              ))}
             </div>
-          )}
-        </section>
-      )}
-
-      {activePanel === "reports" && (
-        <section className="flex flex-col h-full p-6 bg-white shadow-lg rounded-xl sm:p-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2
-                className="text-2xl font-bold"
-                style={{ color: DEEP_INDIGO }}
-              >
-                My Submitted Reports
-              </h2>
-              <p className="max-w-xl mt-1 text-sm text-gray-500">
-                Below are the reports submitted by your institute. These
-                are automatically parsed and used by SARTHI for your
-                institution's AI-based insights.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setActivePanel("upload")}
-                className="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
-              >
-                Upload New Report
-              </button>
-              <div className="flex flex-col items-end gap-2">
-                <label className="text-xs text-gray-500">
-                  Filter by year:
-                </label>
-                <select
-                  value={documentYearFilter}
-                  onChange={(e) => setDocumentYearFilter(e.target.value)}
-                  className="px-2 py-1 text-xs bg-white border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="all">All Years</option>
-                  {yearOptions.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 mt-2 space-y-3 overflow-y-auto">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-full text-sm text-center text-gray-500">
-                <Loader2 className="w-10 h-10 mb-2 text-gray-300 animate-spin" />
-                <p>Loading documents...</p>
-              </div>
-            ) : filteredDocuments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-sm text-center text-gray-500">
-                <FileText className="w-10 h-10 mb-2 text-gray-300" />
-                <p>No reports submitted yet for your institute.</p>
+            {!isUploading && (
+              <div className="mt-6 flex justify-end">
                 <button
-                  type="button"
-                  onClick={() => setActivePanel("upload")}
-                  className="px-4 py-2 mt-3 text-xs font-medium text-white rounded-md"
-                  style={{ backgroundColor: PRIMARY_BLUE }}
+                  onClick={handleUpload}
+                  className="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow-md hover:bg-indigo-700 transition-all hover:scale-[1.02]"
                 >
-                  Upload Your First Report
+                  Upload {totalFiles} Files
                 </button>
               </div>
-            ) : (
-              filteredDocuments.map((document) => (
-                <DocumentItem
-                  key={document._id}
-                  document={document}
-                  onView={handleViewDocument}
-                  onDelete={handleDeleteDocument}
-                  onRefresh={handleRefreshDocument}
-                />
-              ))
             )}
           </div>
-        </section>
-      )}
+        )}
+      </div>
+    );
+  };
 
-      {activePanel === "insights" && (
-        <section className="flex flex-col h-full p-6 bg-white shadow-lg rounded-xl sm:p-8">
-          <div className="flex items-center gap-3 mb-4">
-            <BarChart3 className="text-indigo-600 w-7 h-7" />
-            <div>
-              <h2
-                className="text-2xl font-bold"
-                style={{ color: DEEP_INDIGO }}
-              >
-                Insights & AI Dashboard
-              </h2>
-              <p className="max-w-xl mt-1 text-sm text-gray-500">
-                The SARTHI AI engine uses your submitted reports to
-                compute trends, risk areas, and compliance readiness.
-                Access your live dashboard to see institution-specific
-                insights.
-              </p>
-            </div>
-          </div>
-
-          <div className="p-4 mt-4 text-sm text-gray-700 rounded-lg bg-indigo-50">
-            <p className="mb-2">
-              <strong>How it works:</strong>
+  const renderDashboardPanel = () => {
+    return (
+      <div className="max-w-5xl mx-auto h-full flex flex-col">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">My Reports</h1>
+            <p className="text-gray-500 mt-1">
+              Manage all your submitted documents and check their parsing
+              status.
             </p>
-            <ul className="space-y-1 text-xs list-disc list-inside sm:text-sm">
-              <li>
-                Every PDF report you upload (by year) is processed and
-                converted into structured indicators.
-              </li>
-              <li>
-                These indicators feed into your institute's AI
-                dashboard, visible under the performance / EduRank view.
-              </li>
-              <li>
-                Only the reports submitted from your institute are used –
-                you cannot see or affect any other institute's data.
-              </li>
-              <li>
-                Parsing happens automatically after upload. Check the
-                status in "My Submitted Reports".
-              </li>
-            </ul>
           </div>
+          <button
+            onClick={() => setActiveTab("upload")}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm text-sm font-medium"
+          >
+            <UploadCloud className="w-4 h-4" /> Upload New
+          </button>
+        </div>
 
-          <div className="mt-6">
+        {isLoading ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+            <Loader2 className="w-10 h-10 animate-spin mb-3 text-indigo-500" />
+            <p>Fetching your documents...</p>
+          </div>
+        ) : documents.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+              <FileText className="w-8 h-8 text-gray-300" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              No documents found
+            </h3>
+            <p className="text-gray-500 max-w-sm mt-2 mb-6">
+              You haven&apos;t uploaded any reports yet. Upload your first
+              document to get started.
+            </p>
             <button
-              type="button"
-              onClick={() => {
-                window.location.href = "/edu";
-              }}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-lg text-white font-semibold text-sm shadow-md hover:shadow-lg transition-transform hover:scale-[1.01]"
-              style={{ backgroundColor: PRIMARY_BLUE }}
+              onClick={() => setActiveTab("upload")}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
             >
-              Open Performance Dashboard
+              Upload Document
             </button>
           </div>
-        </section>
-      )}
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pb-10">
+            {documents.map((doc) => (
+              <DocumentItem
+                key={doc._id}
+                document={doc}
+                onView={handleViewDocument}
+                onDelete={handleDeleteDocument}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
-      {/* Toast message */}
+  const renderRequestPanel = () => (
+    <div className="max-w-3xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">
+          Submit New Request
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Initiate official requests to UGC/AICTE. Your uploaded documents will
+          be used for verification.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all hover:border-indigo-300 group cursor-pointer"
+          onClick={() => handleRequestSubmit("Student Intake")}
+        >
+          <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition-colors">
+            <CheckCircle2 className="w-6 h-6 text-indigo-600" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">
+            Increase Student Intake
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Request to increase the sanctioned intake for existing programs.
+          </p>
+          <div className="text-indigo-600 text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+            Send Request <Send className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div
+          className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all hover:border-indigo-300 group cursor-pointer"
+          onClick={() => handleRequestSubmit("New Course")}
+        >
+          <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-100 transition-colors">
+            <FileText className="w-6 h-6 text-purple-600" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">
+            Start New Course
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Apply for adding a new course or specialization to your curriculum.
+          </p>
+          <div className="text-purple-600 text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+            Send Request <Send className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div
+          className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all hover:border-indigo-300 group cursor-pointer"
+          onClick={() => handleRequestSubmit("Online Program")}
+        >
+          <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
+            <UploadCloud className="w-6 h-6 text-blue-600" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">
+            New Online Program
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Request approval for starting a new online degree or certification.
+          </p>
+          <div className="text-blue-600 text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+            Send Request <Send className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStatusPanel = () => (
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">
+          Track Request Status
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Monitor the progress of your requests and view data sufficiency
+          reports.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {requests.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-xl">
+            <p className="text-gray-500">No active requests found.</p>
+            <button
+              onClick={() => setActiveTab("requests")}
+              className="text-indigo-600 font-medium mt-2 hover:underline"
+            >
+              Submit a new request
+            </button>
+          </div>
+        ) : (
+          requests.map((req) => (
+            <RequestItem
+              key={req.id}
+              request={req}
+              onDownloadDeficiencyReport={handleDownloadDeficiencyReport}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  const renderInsightsPanel = () => (
+    <div className="max-w-4xl mx-auto text-center py-20">
+      <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6">
+        <BarChart3 className="w-10 h-10 text-indigo-600" />
+      </div>
+      <h2 className="text-2xl font-bold text-gray-900 mb-3">
+        Insights Dashboard
+      </h2>
+      <p className="text-gray-500 max-w-lg mx-auto mb-8">
+        View detailed analytics, compliance readiness, and predictive insights
+        based on your uploaded reports.
+      </p>
+      <button
+        onClick={() => (window.location.href = "/edu")}
+        className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
+      >
+        Go to Performance Dashboard
+      </button>
+    </div>
+  );
+
+  const renderQueryResponsePanel = () => {
+    const pendingQueries = requests.filter(
+      (req) => req.status === "Insufficient Data"
+    );
+
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Respond to Queries
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Upload missing documents to resolve pending queries from UGC/AICTE.
+          </p>
+        </div>
+
+        {pendingQueries.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8 text-green-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              No Pending Queries
+            </h3>
+            <p className="text-gray-500 max-w-sm mx-auto mt-2">
+              Great job! All your requests have sufficient data or are under
+              process.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {pendingQueries.map((req) => (
+              <div
+                key={req.id}
+                className="bg-white p-6 rounded-xl border border-red-200 shadow-sm"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <span className="text-xs font-bold text-red-600 uppercase tracking-wider bg-red-50 px-2 py-1 rounded">
+                      Action Required
+                    </span>
+                    <h3 className="text-lg font-bold text-gray-900 mt-2">
+                      {req.type} Request - Query #{req.id}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Raised on {new Date(req.date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDownloadDeficiencyReport(req)}
+                    className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                  >
+                    <FileWarning className="w-4 h-4" /> View Deficiency Report
+                  </button>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                  <h4 className="text-sm font-semibold text-gray-800 mb-2">
+                    Missing Documents:
+                  </h4>
+                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                    {req.missingDocs?.map((doc, idx) => (
+                      <li key={idx}>{doc}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="border-t border-gray-100 pt-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">
+                    Upload Required Documents
+                  </h4>
+                  <div className="flex gap-4 items-center">
+                    {/* File input for this specific request */}
+                    <label className="flex-1 border border-gray-300 border-dashed rounded-lg p-3 text-sm text-gray-500 hover:bg-gray-50 hover:border-indigo-400 transition-colors text-center cursor-pointer">
+                      Click to select files
+                      <input
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={(e) =>
+                          handleQueryFilesChange(req.id, e.target.files)
+                        }
+                      />
+                    </label>
+
+                    <button
+                      onClick={() => handleQueryResponseUpload(req.id)}
+                      disabled={isUploading}
+                      className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+                    >
+                      {isUploading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <UploadCloud className="w-4 h-4" />
+                      )}
+                      Submit Response
+                    </button>
+                  </div>
+
+                  {queryFiles[req.id]?.length > 0 && (
+                    <p className="mt-2 text-xs text-gray-500 text-left">
+                      Selected files:{" "}
+                      {queryFiles[req.id].map((f) => f.name).join(", ")}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-white">
+        {renderSidebar()}
+        <main className="flex-1 overflow-y-auto p-6 scroll-smooth bg-gray-50/50">
+          {renderContent()}
+        </main>
+      </div>
+
+      {/* Toast */}
       {toast && (
         <div
-          className="fixed flex items-center gap-2 px-4 py-3 text-sm -translate-x-1/2 rounded-lg shadow-2xl bottom-8 left-1/2"
+          className={`fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl text-white text-sm font-medium z-50 animate-in fade-in slide-in-from-bottom-4`}
           style={{
-            backgroundColor: toast.type === "success" ? "#047857" : "#B91C1C",
-            color: "white",
+            backgroundColor:
+              toast.type === "success" ? "#059669" : "#DC2626",
           }}
-          role="alert"
         >
           {toast.type === "success" ? (
             <CheckCircle2 className="w-5 h-5" />
           ) : (
             <AlertCircle className="w-5 h-5" />
           )}
-          <span>{toast.message}</span>
+          {toast.message}
         </div>
       )}
-    </div>
+    </>
   );
-
-  return <InstituteLayout>{content}</InstituteLayout>;
 }
 
 export default UploadDocumentPage;
