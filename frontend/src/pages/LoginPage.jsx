@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import Toast from '../components/common/Toast.jsx';
 import LoginForm from '../components/login/LoginForm.jsx';
 import PromoSection from '../components/login/PromoSection.jsx';
-import sarthiLogo from '../assets/images/sarthiLogo.jpg';
+import sarthiLogo from '../assets/images/sarthiLogo.png';
 import Footer from '../components/layout/Footer.jsx';
 
 const LoginPage = () => {

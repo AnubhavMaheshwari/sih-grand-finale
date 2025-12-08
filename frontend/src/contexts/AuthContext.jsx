@@ -4,7 +4,7 @@ import { authAPI } from "../api/auth.api";
 // Initial state
 const initialState = {
   user: null,
-  token: localStorage.getItem("token") || null,
+  token: sessionStorage.getItem("token") || null,
   loading: true,
   error: null,
 };
@@ -67,13 +67,13 @@ export const AuthProvider = ({ children }) => {
   // Check if user is already logged in on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (token) {
         try {
           // Verify token with backend
           // This would typically be an API call to validate token
           // For now, we'll parse the token to get user info
-          const userData = JSON.parse(localStorage.getItem("user") || "null");
+          const userData = JSON.parse(sessionStorage.getItem("user") || "null");
           if (userData) {
             dispatch({ type: "SET_USER", payload: userData });
           }
@@ -93,18 +93,18 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: "LOGIN_REQUEST" });
     try {
       const response = await authAPI.login(userId, password);
-      
+
       const { token, user } = response.data;
-      
+
       // Store token and user data
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
+
       dispatch({
         type: "LOGIN_SUCCESS",
         payload: { user, token },
       });
-      
+
       return { success: true, user };
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Login failed";
@@ -118,12 +118,12 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = (showToast = true) => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("institutionLoggedIn");
-    localStorage.removeItem("ugcMemberLoggedIn");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("institutionLoggedIn");
+    sessionStorage.removeItem("ugcMemberLoggedIn");
     dispatch({ type: "LOGOUT" });
-    
+
     // Call logout callback if provided
     if (showToast && logoutCallback) {
       logoutCallback();

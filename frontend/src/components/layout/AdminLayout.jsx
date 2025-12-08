@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import Toast from "../common/Toast.jsx";
-import sarthiLogo from "../../assets/images/sarthiLogo.jpg";
+import sarthiLogo from "../../assets/images/sarthiLogo.png";
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
@@ -100,11 +100,10 @@ const AdminLayout = ({ children }) => {
             <button
               key={item.id}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center ${sidebarOpen ? "justify-start px-4" : "justify-center"} py-3 rounded-lg transition-colors ${
-                isActive(item.path)
+              className={`w-full flex items-center ${sidebarOpen ? "justify-start px-4" : "justify-center"} py-3 rounded-lg transition-colors ${isActive(item.path)
                   ? "bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600"
                   : "text-gray-700 hover:bg-gray-100"
-              }`}
+                }`}
             >
               <span className={`flex-shrink-0 ${isActive(item.path) ? "text-indigo-600" : "text-gray-500"}`}>
                 {item.icon}
