@@ -13,12 +13,8 @@ import {
   Users,
   BookOpen,
   Globe,
-  Building,
-  GraduationCap,
-  Award,
 } from "lucide-react";
 
-// RequestItem Component
 function RequestItem({ request, onDownloadDeficiencyReport }) {
   const getStatusColor = (status) => {
     switch (status) {
@@ -279,10 +275,6 @@ const RequestCenterPage = () => {
 
   const renderCreateTab = () => (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Create New Request</h1>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <RequestTypeCard
           type="Student Intake"
@@ -308,9 +300,6 @@ const RequestCenterPage = () => {
 
   const renderStatusTab = () => (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Request Status</h1>
-      </div>
 
       <div className="space-y-4">
         {requests.length === 0 ? (
@@ -343,13 +332,6 @@ const RequestCenterPage = () => {
 
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Respond to Queries</h1>
-          <p className="text-base text-gray-500 mt-1">
-            Upload missing documents to resolve pending queries from UGC/AICTE.
-          </p>
-        </div>
-
         {pendingQueries.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
             <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">

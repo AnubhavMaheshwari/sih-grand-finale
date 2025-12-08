@@ -13,7 +13,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import UserManagementPage from "./pages/admin/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/admin/AdminInstitutesPage.jsx";
 import PendingRegistrationsPage from "./pages/admin/PendingRegistrationsPage.jsx";
-import ReportsManagementPage from "./pages/admin/ReportsManagementPage.jsx";
+import ReportsManagementPage from "./pages/institute/ReportsManagementPage.jsx";
 
 // Institute pages
 import UploadDocumentPage from "./pages/institute/UploadDocumentPage.jsx";
