@@ -18,8 +18,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "fs-extra": "^11.3.2",
@@ -28,7 +30,8 @@
     "multer": "^2.0.2",
     "nodemailer": "^7.0.11",
     "pdf-parse": "^2.4.5",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",

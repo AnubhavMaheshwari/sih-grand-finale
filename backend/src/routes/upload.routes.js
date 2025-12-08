@@ -1,49 +1,61 @@
 import express from "express";
-import {
-  uploadSingle,
-  uploadMultiple,
-  getInstituteDocuments,
-  getDocument,
-  deleteDocument,
-  viewDocument,
-} from "../controllers/upload.controller.js";
 import { auth as authenticate } from "../middleware/auth.js";
+import { successResponse, errorResponse } from "../utils/apiResponse.js";
 
 const router = express.Router();
 
 // Apply authentication middleware to all routes
 router.use(authenticate);
 
-// Upload routes
-router.post("/upload", uploadSingle);
-router.post("/upload/multiple", uploadMultiple);
+// File upload functionality is disabled - use parameter form instead
+router.post("/upload", (req, res) => {
+  return errorResponse(res, "File uploads are no longer supported. Please use the parameter form for data entry.", 410);
+});
 
-// Document management routes
-router.get("/documents", getInstituteDocuments);
-router.get("/documents/:id", getDocument);
-router.delete("/documents/:id", deleteDocument);
-router.get("/documents/:id/view", viewDocument);
+router.post("/upload/multiple", (req, res) => {
+  return errorResponse(res, "File uploads are no longer supported. Please use the parameter form for data entry.", 410);
+});
 
-// Admin routes (for viewing all institute documents)
-router.get("/admin/documents", (req, res, next) => {
-  // Check if user is admin
+// Document management routes - return empty or redirect to form
+router.get("/documents", (req, res) => {
+  return successResponse(res, {
+    documents: [],
+    message: "File uploads are no longer supported. Please use the parameter form for data entry."
+  });
+});
+
+router.get("/documents/:id", (req, res) => {
+  return errorResponse(res, "File uploads are no longer supported. Please use the parameter form for data entry.", 410);
+});
+
+router.delete("/documents/:id", (req, res) => {
+  return errorResponse(res, "File uploads are no longer supported. Please use the parameter form for data entry.", 410);
+});
+
+router.get("/documents/:id/view", (req, res) => {
+  return errorResponse(res, "File uploads are no longer supported. Please use the parameter form for data entry.", 410);
+});
+
+router.post("/documents/:id/parse-parameters", (req, res) => {
+  return errorResponse(res, "File uploads are no longer supported. Please use the parameter form for data entry.", 410);
+});
+
+// Admin routes
+router.get("/admin/documents", (req, res) => {
   if (req.user?.role !== "admin") {
-    return res.status(403).json({
-      success: false,
-      error: "Access denied. Admin privileges required.",
-    });
+    return errorResponse(res, "Access denied. Admin privileges required.", 403);
   }
-  next();
-}, getInstituteDocuments);
+  return successResponse(res, {
+    documents: [],
+    message: "File uploads are no longer supported. Please use the parameter form for data entry."
+  });
+});
 
-router.get("/admin/documents/:id", (req, res, next) => {
+router.get("/admin/documents/:id", (req, res) => {
   if (req.user?.role !== "admin") {
-    return res.status(403).json({
-      success: false,
-      error: "Access denied. Admin privileges required.",
-    });
+    return errorResponse(res, "Access denied. Admin privileges required.", 403);
   }
-  next();
-}, getDocument);
+  return errorResponse(res, "File uploads are no longer supported. Please use the parameter form for data entry.", 410);
+});
 
 export default router;

@@ -1,6 +1,7 @@
 import { PDFParse } from "pdf-parse";
 import fs from "fs-extra";
 import ParsedDocumentData from "../models/ParsedDocumentData.model.js";
+import InstituteData from "../models/InstituteData.model.js";
 import FacultyDetails from "../models/facultydetails.model.js";
 import StudentStrength from "../models/studentstrength.model.js";
 import FinancialResources from "../models/financialresources.model.js";
@@ -19,6 +20,45 @@ class PDFParserService {
       financialResources: /Financial Resources/i,
       sponsoredResearch: /Sponsored Research/i,
       facultyDetails: /Faculty Details/i,
+    };
+    
+    // Parameter mapping patterns for InstituteData model
+    this.parameterPatterns = {
+      // Academic parameters
+      teacherStudentRatio: /teacher.*student.*ratio.*?(\d+:\d+)/i,
+      placementPercentage: /placement.*percentage.*?(\d+)/i,
+      studentsGoingForHigherStudies: /higher.*studies.*?(\d+)/i,
+      
+      // Infrastructure parameters
+      vacancyBoysHostelUG: /boys.*hostel.*vacancy.*?(\d+)/i,
+      vacancyGirlsHostelUG: /girls.*hostel.*vacancy.*?(\d+)/i,
+      classroomCapacity: /classroom.*capacity.*?(\d+)/i,
+      liftAvailable: /lift.*available.*?(yes|no|true|false)/i,
+      landAreaSqKm: /land.*area.*?(\d+(?:\.\d+)?)\s*(?:sq|square).*km/i,
+      
+      // Facilities parameters
+      labsFacilities: /labs.*facilities.*?\n(.*?)(?=\n\w)/is,
+      labEquipments: /lab.*equipments.*?(\d+)/i,
+      facultyStrength: /faculty.*strength.*?(\d+)/i,
+      libraryResources: /library.*resources.*?\n(.*?)(?=\n\w)/is,
+      ictFacilities: /ict.*facilities.*?\n(.*?)(?=\n\w)/is,
+      availableWorkshops: /workshops.*available.*?(\d+)/i,
+      
+      // Administrative parameters
+      academicPlan: /academic.*plan.*?\n(.*?)(?=\n\w)/is,
+      complianceCertificate: /compliance.*certificate.*?\n(.*?)(?=\n\w)/is,
+      researchEnvironment: /research.*environment.*?\n(.*?)(?=\n\w)/is,
+      programJustification: /program.*justification.*?\n(.*?)(?=\n\w)/is,
+      qualificationOfFaculties: /qualification.*faculties.*?\n(.*?)(?=\n\w)/is,
+      landOwnershipAndPossession: /land.*ownership.*?\n(.*?)(?=\n\w)/is,
+      buildingPlanRequirement: /building.*plan.*?\n(.*?)(?=\n\w)/is,
+      leadershipQualifications: /leadership.*qualifications.*?\n(.*?)(?=\n\w)/is,
+      institutionalNameNorms: /institutional.*name.*?\n(.*?)(?=\n\w)/is,
+      safetyCertificates: /safety.*certificates.*?\n(.*?)(?=\n\w)/is,
+      
+      // Financial parameters
+      financialCapacity: /financial.*capacity.*?(\d+(?:,\d+)*)/i,
+      budgetAllocation: /budget.*allocation.*?(\d+(?:,\d+)*)/i,
     };
   }
 
@@ -64,13 +104,23 @@ class PDFParserService {
       // Calculate confidence score
       stats.confidenceScore = this.calculateConfidenceScore(stats);
       
+      // Extract parameter values for InstituteData
+      const extractedParameters = this.extractParameters(text);
+      stats.parametersExtracted = Object.keys(extractedParameters).length;
+      
       // Save parsed data to database
       const savedData = await this.saveParsedData(documentId, parsedData, stats);
+      
+      // Save extracted parameters to InstituteData for verification
+      if (stats.parametersExtracted > 0) {
+        await this.saveExtractedParameters(documentId, extractedParameters, stats.confidenceScore);
+      }
       
       console.log(`PDF parsing completed for document: ${documentId}`);
       return {
         success: true,
         parsedData: savedData,
+        extractedParameters,
         stats,
       };
     } catch (error) {
@@ -221,6 +271,101 @@ class PDFParserService {
     };
   }
 
+  // Extract parameter values from text using patterns
+  extractParameters(text) {
+    const extracted = {};
+    const confidenceScores = {};
+    
+    for (const [paramName, pattern] of Object.entries(this.parameterPatterns)) {
+      try {
+        const match = text.match(pattern);
+        if (match) {
+          let value = match[1] || match[0];
+          
+          // Process value based on parameter type
+          value = this.processParameterValue(paramName, value);
+          
+          if (value !== null && value !== undefined) {
+            extracted[paramName] = value;
+            
+            // Calculate confidence score for this parameter
+            confidenceScores[paramName] = this.calculateParameterConfidence(paramName, match);
+          }
+        }
+      } catch (error) {
+        console.error(`Error extracting parameter ${paramName}:`, error);
+      }
+    }
+    
+    return { extracted, confidenceScores };
+  }
+
+  // Process parameter value based on type
+  processParameterValue(paramName, value) {
+    // Clean up value
+    value = value.toString().trim();
+    
+    // Handle different parameter types
+    switch (paramName) {
+      // Boolean parameters
+      case 'liftAvailable':
+        return /yes|true/i.test(value);
+      
+      // Numeric parameters
+      case 'placementPercentage':
+      case 'studentsGoingForHigherStudies':
+      case 'vacancyBoysHostelUG':
+      case 'vacancyGirlsHostelUG':
+      case 'classroomCapacity':
+      case 'labEquipments':
+      case 'facultyStrength':
+      case 'availableWorkshops':
+        const num = parseInt(value.replace(/,/g, ''));
+        return isNaN(num) ? null : num;
+      
+      // Decimal parameters
+      case 'landAreaSqKm':
+        const decimal = parseFloat(value.replace(/,/g, ''));
+        return isNaN(decimal) ? null : decimal;
+      
+      // Financial parameters (large numbers)
+      case 'financialCapacity':
+      case 'budgetAllocation':
+        const financialNum = parseInt(value.replace(/,/g, ''));
+        return isNaN(financialNum) ? null : financialNum;
+      
+      // Text parameters (already cleaned)
+      default:
+        return value;
+    }
+  }
+
+  // Calculate confidence score for a parameter
+  calculateParameterConfidence(paramName, match) {
+    let confidence = 70; // Base confidence
+    
+    // Increase confidence for exact matches
+    if (match[0].length < 100) {
+      confidence += 10;
+    }
+    
+    // Increase confidence for numeric parameters with valid numbers
+    const numericParams = [
+      'placementPercentage', 'studentsGoingForHigherStudies', 'vacancyBoysHostelUG',
+      'vacancyGirlsHostelUG', 'classroomCapacity', 'labEquipments', 'facultyStrength',
+      'availableWorkshops', 'financialCapacity', 'budgetAllocation'
+    ];
+    
+    if (numericParams.includes(paramName)) {
+      const num = parseInt(match[1]?.replace(/,/g, '') || '0');
+      if (!isNaN(num) && num > 0) {
+        confidence += 15;
+      }
+    }
+    
+    return Math.min(100, confidence);
+  }
+
   calculateConfidenceScore(stats) {
     let score = 0;
     
@@ -232,6 +377,11 @@ class PDFParserService {
     
     // Bonus for data points
     score += Math.min(stats.dataPointsExtracted * 2, 30);
+    
+    // Bonus for parameters extracted
+    if (stats.parametersExtracted) {
+      score += Math.min(stats.parametersExtracted * 3, 30);
+    }
     
     // Cap at 100
     return Math.min(100, score);
@@ -267,6 +417,58 @@ class PDFParserService {
       return parsedDocData;
     } catch (error) {
       console.error("Error saving parsed data:", error);
+      throw error;
+    }
+  }
+
+  // Save extracted parameters to InstituteData for verification
+  async saveExtractedParameters(documentId, extractedData, overallConfidence) {
+    try {
+      const UploadedDocument = (await import("../models/UploadedDocument.model.js")).default;
+      const document = await UploadedDocument.findById(documentId);
+      
+      if (!document) {
+        throw new Error(`Document ${documentId} not found`);
+      }
+      
+      const { extracted, confidenceScores } = extractedData;
+      
+      // Find or create InstituteData record
+      let instituteData = await InstituteData.findOne({
+        instituteId: document.instituteId,
+        academicYear: document.year,
+      });
+      
+      if (!instituteData) {
+        instituteData = new InstituteData({
+          instituteId: document.instituteId,
+          academicYear: document.year,
+          source: "PDF_PARSER",
+        });
+      }
+      
+      // Convert extracted object to Map for InstituteData model
+      const extractedMap = new Map();
+      for (const [key, value] of Object.entries(extracted)) {
+        extractedMap.set(key, value);
+      }
+      
+      // Set extracted parameters
+      await instituteData.setExtractedParameters(
+        extractedMap,
+        "PDF_PARSER",
+        overallConfidence,
+        {
+          extractedBy: "pdf_parser_service",
+          rawSource: documentId,
+          confidenceScores,
+        }
+      );
+      
+      console.log(`Extracted ${extractedMap.size} parameters for verification`);
+      return instituteData;
+    } catch (error) {
+      console.error("Error saving extracted parameters:", error);
       throw error;
     }
   }
