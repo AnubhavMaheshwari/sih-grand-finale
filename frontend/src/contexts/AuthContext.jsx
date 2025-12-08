@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useState } from "react";
+import { createContext, useContext, useReducer, useEffect, useState } from "react";
 import { authAPI } from "../api/auth.api";
 
 // Initial state
@@ -86,10 +86,20 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (userId, password) => {
+  const login = async (userId, password, role = null) => {
     dispatch({ type: "LOGIN_REQUEST" });
     try {
-      const response = await authAPI.login(userId, password);
+      let response;
+      
+      // Use appropriate API based on role
+      if (role === 'admin') {
+        response = await authAPI.adminLogin(userId, password);
+      } else if (role === 'institute') {
+        response = await authAPI.instituteLogin(userId, password);
+      } else {
+        // Fallback to general login for backward compatibility
+        response = await authAPI.login(userId, password);
+      }
 
       const { token, user } = response.data;
 

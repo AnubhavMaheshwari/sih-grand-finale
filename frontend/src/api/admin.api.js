@@ -115,6 +115,22 @@ const adminApi = {
     const response = await axiosInstance.delete(`/admin/documents/${documentId}`);
     return response.data;
   },
+
+  // Registration Approval Functions
+  getPendingRegistrations: async () => {
+    const response = await axiosInstance.get("/admin/pending-registrations");
+    return response;
+  },
+
+  approveRegistration: async (userId) => {
+    const response = await axiosInstance.post(`/admin/approve-registration/${userId}`);
+    return response;
+  },
+
+  rejectRegistration: async (userId, reason) => {
+    const response = await axiosInstance.post(`/admin/reject-registration/${userId}`, { reason });
+    return response;
+  },
 };
 
 export default adminApi;

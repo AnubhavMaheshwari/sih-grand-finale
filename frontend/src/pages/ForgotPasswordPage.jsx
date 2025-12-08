@@ -118,7 +118,6 @@ function ForgotPasswordPage() {
                 placeholder="UGCM123456"
                 onChange={(e) => setUserId(e.target.value)}
                 className="w-full px-3 py-2 border uppercase border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm"
-                maxLength="10"
                 required
               />
             </div>

@@ -122,6 +122,52 @@ export const regeneratePassword = async (req, res) => {
   }
 };
 
+// Registration Approval Controllers
+export const getPendingRegistrations = async (req, res) => {
+  try {
+    const pendingRegistrations = await adminService.getPendingRegistrations();
+    successResponse(res, { pendingRegistrations });
+  } catch (error) {
+    console.error("Get pending registrations error:", error);
+    errorResponse(res, "Server error", 500);
+  }
+};
+
+export const approveRegistration = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const result = await adminService.approveRegistration(userId);
+    successResponse(res, result);
+  } catch (error) {
+    if (error.message === "User not found") {
+      return errorResponse(res, error.message, 404);
+    }
+    if (error.message.includes("already") || error.message.includes("not pending")) {
+      return errorResponse(res, error.message, 400);
+    }
+    console.error("Approve registration error:", error);
+    errorResponse(res, "Server error", 500);
+  }
+};
+
+export const rejectRegistration = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { reason } = req.body;
+    const result = await adminService.rejectRegistration(userId, reason);
+    successResponse(res, result);
+  } catch (error) {
+    if (error.message === "User not found") {
+      return errorResponse(res, error.message, 404);
+    }
+    if (error.message.includes("already") || error.message.includes("not pending")) {
+      return errorResponse(res, error.message, 400);
+    }
+    console.error("Reject registration error:", error);
+    errorResponse(res, "Server error", 500);
+  }
+};
+
 // Institute Management Controllers
 export const createInstitute = async (req, res) => {
   try {

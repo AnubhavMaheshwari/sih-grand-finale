@@ -9,6 +9,11 @@ import {
   deleteUser,
   regeneratePassword,
   
+  // Registration Approval
+  getPendingRegistrations,
+  approveRegistration,
+  rejectRegistration,
+  
   // Institute Management
   createInstitute,
   getInstitutes,
@@ -33,6 +38,11 @@ router.get("/users/:userId", getUser);
 router.put("/users/:userId", updateUser);
 router.delete("/users/:userId", deleteUser);
 router.post("/users/:userId/regenerate-password", regeneratePassword);
+
+// Registration Approval Routes
+router.get("/pending-registrations", getPendingRegistrations);
+router.post("/approve-registration/:userId", approveRegistration);
+router.post("/reject-registration/:userId", rejectRegistration);
 
 // Institute Management Routes
 router.post("/institutes", createInstitute);

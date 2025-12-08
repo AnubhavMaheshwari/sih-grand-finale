@@ -255,3 +255,105 @@ export const deleteInstitute = async (instituteId) => {
 
   return { message: "Institute deleted successfully" };
 };
+
+// Registration Approval Functions
+export const getPendingRegistrations = async () => {
+  const pendingRegistrations = await User.find({ 
+    role: "institute",
+    registrationStatus: "pending"
+  }).select("-password -otpCode -passwordResetToken")
+    .sort({ createdAt: -1 });
+  
+  return pendingRegistrations;
+};
+
+export const approveRegistration = async (userId) => {
+  const user = await User.findOne({ userId });
+  
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Check if user is an institute with pending registration
+  if (user.role !== "institute") {
+    throw new Error("Only institute registrations can be approved");
+  }
+
+  if (user.registrationStatus !== "pending") {
+    throw new Error(`Registration is already ${user.registrationStatus}`);
+  }
+
+  // Update registration status
+  user.registrationStatus = "approved";
+  await user.save();
+
+  // Create Institute record if it doesn't exist
+  let institute = await Institute.findOne({ instituteId: user.instituteId });
+  if (!institute) {
+    institute = await Institute.create({
+      instituteId: user.instituteId,
+      name: user.instituteName,
+      type: "Institute", // Default type from enum
+      category: getInstituteCategory(user.instituteType),
+      location: {
+        city: "Unknown",
+        state: "Unknown"
+      },
+      contact: {
+        email: user.email
+      },
+      isActive: true
+    });
+  }
+
+  // Send approval notification email (to be implemented)
+  // await sendRegistrationApprovedEmail(user.email, user.instituteName, user.userId);
+
+  // Prepare response
+  const userResponse = user.toObject();
+  delete userResponse.password;
+  delete userResponse.otpCode;
+  delete userResponse.passwordResetToken;
+
+  return {
+    message: "Registration approved successfully",
+    user: userResponse,
+    institute: institute,
+  };
+};
+
+export const rejectRegistration = async (userId, reason) => {
+  const user = await User.findOne({ userId });
+  
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Check if user is an institute with pending registration
+  if (user.role !== "institute") {
+    throw new Error("Only institute registrations can be rejected");
+  }
+
+  if (user.registrationStatus !== "pending") {
+    throw new Error(`Registration is already ${user.registrationStatus}`);
+  }
+
+  // Update registration status
+  user.registrationStatus = "rejected";
+  await user.save();
+
+  // Send rejection notification email (to be implemented)
+  // await sendRegistrationRejectedEmail(user.email, user.instituteName, reason);
+
+  // Prepare response
+  const userResponse = user.toObject();
+  delete userResponse.password;
+  delete userResponse.otpCode;
+  delete userResponse.passwordResetToken;
+
+  return {
+    message: "Registration rejected successfully",
+    user: userResponse,
+    reason: reason || "No reason provided",
+  };
+};

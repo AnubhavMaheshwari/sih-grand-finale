@@ -1,18 +1,12 @@
 import { useState, useEffect } from "react";
-import { 
-  Users, 
-  Building2, 
-  UserCog, 
-  UserPlus, 
-  Search, 
-  Filter,
-  Copy,
-  RefreshCw,
-  Trash2,
+import {
+  Users,
+  Building2,
+  UserCog,
+  UserPlus,
   CheckCircle,
   AlertCircle,
   Info,
-  X
 } from "lucide-react";
 import CreateUserForm from "../components/admin/CreateUserForm";
 import SuccessModal from "../components/admin/SuccessModal";
@@ -55,10 +49,7 @@ const UserManagementPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // Note: We need to update the API to get users from /admin/users
-      // For now, using a mock or we need to check the actual API endpoint
       const response = await adminApi.getAllUsers();
-      // Adjust based on actual API response structure
       if (response.users) {
         setUsers(response.users);
       }
@@ -72,7 +63,6 @@ const UserManagementPage = () => {
 
   const handleCreateUser = async (userData) => {
     try {
-      // Prepare data for API (remove instituteId as it will be generated on backend)
       const apiData = {
         instituteName: userData.instituteName,
         instituteType: userData.instituteType,
@@ -81,8 +71,7 @@ const UserManagementPage = () => {
       };
 
       const response = await adminApi.createUser(apiData);
-      
-      // Show success modal with generated credentials
+
       setSuccessData({
         userId: response.user.userId,
         password: response.user.generatedPassword,
@@ -91,10 +80,10 @@ const UserManagementPage = () => {
       });
       setShowCreateForm(false);
       setShowSuccessModal(true);
-      
+
       // Refresh user list
       fetchUsers();
-      
+
       // Reset form
       setNewUser({
         instituteName: "",
@@ -103,7 +92,7 @@ const UserManagementPage = () => {
         email: "",
         instituteId: "",
       });
-      
+
       showToast("Institute user created successfully", "success");
     } catch (error) {
       console.error("Error creating user:", error);
@@ -130,9 +119,29 @@ const UserManagementPage = () => {
 
   const handleCopyPassword = async (userId) => {
     try {
-      // In a real app, we might need to fetch the password or have it stored
-      // For now, we'll show a message
-      showToast("Password copy functionality requires backend support", "info");
+      // Regenerate password and copy it to clipboard
+      const response = await adminApi.resetUserPassword(userId);
+
+      if (response.generatedPassword) {
+        try {
+          // Copy to clipboard
+          await navigator.clipboard.writeText(response.generatedPassword);
+          showToast("Password regenerated and copied to clipboard", "success");
+        } catch (clipboardError) {
+          console.error("Clipboard error:", clipboardError);
+          // Fallback: show password in toast or modal
+          setSuccessData({
+            userId,
+            password: response.generatedPassword,
+            fullName: response.fullName || "User",
+            role: "institute",
+          });
+          setShowSuccessModal(true);
+          showToast("Password regenerated. Please copy from the modal.", "info");
+        }
+      } else {
+        showToast("Failed to regenerate password", "error");
+      }
     } catch (error) {
       console.error("Error copying password:", error);
       showToast("Failed to copy password", "error");
@@ -142,7 +151,7 @@ const UserManagementPage = () => {
   const handleRegeneratePassword = async (userId, userName) => {
     try {
       const response = await adminApi.resetUserPassword(userId);
-      showToast(`Password regenerated for ${userName}`, "success");
+      showToast(`Password regenerated for ${userName}`, 'success');
       // Show new password in a modal or alert
       if (response.generatedPassword) {
         setSuccessData({
@@ -156,6 +165,40 @@ const UserManagementPage = () => {
     } catch (error) {
       console.error("Error regenerating password:", error);
       showToast("Failed to regenerate password", "error");
+    }
+  };
+
+  const handleApproveRegistration = async (userId) => {
+    if (!window.confirm('Are you sure you want to approve this registration?')) {
+      return;
+    }
+
+    try {
+      await adminApi.approveRegistration(userId);
+      showToast('Registration approved successfully', 'success');
+      fetchUsers(); // Refresh the list
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Failed to approve registration', 'error');
+    }
+  };
+
+  const handleRejectRegistration = async (userId) => {
+    const reason = prompt('Please provide a reason for rejecting this registration:');
+    if (!reason || !reason.trim()) {
+      showToast('Please provide a reason for rejection', 'error');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to reject this registration?')) {
+      return;
+    }
+
+    try {
+      await adminApi.rejectRegistration(userId, reason);
+      showToast('Registration rejected successfully', 'success');
+      fetchUsers(); // Refresh the list
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Failed to reject registration', 'error');
     }
   };
 
@@ -254,6 +297,8 @@ const UserManagementPage = () => {
             onDeleteClick={handleDeleteClick}
             onCopyPassword={handleCopyPassword}
             onRegeneratePassword={handleRegeneratePassword}
+            onApproveRegistration={handleApproveRegistration}
+            onRejectRegistration={handleRejectRegistration}
           />
         )}
       </div>
@@ -288,11 +333,10 @@ const UserManagementPage = () => {
 
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`fixed bottom-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg flex items-center ${
-          toast.type === "success" ? "bg-green-50 border border-green-200 text-green-800" :
-          toast.type === "error" ? "bg-red-50 border border-red-200 text-red-800" :
-          "bg-blue-50 border border-blue-200 text-blue-800"
-        }`}>
+        <div className={`fixed bottom-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg flex items-center ${toast.type === "success" ? "bg-green-50 border border-green-200 text-green-800" :
+            toast.type === "error" ? "bg-red-50 border border-red-200 text-red-800" :
+              "bg-blue-50 border border-blue-200 text-blue-800"
+          }`}>
           {toast.type === "success" ? (
             <CheckCircle className="w-5 h-5 mr-3 text-green-600" />
           ) : toast.type === "error" ? (

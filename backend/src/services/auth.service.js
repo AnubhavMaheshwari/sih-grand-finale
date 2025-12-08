@@ -5,10 +5,29 @@ import { sendOTPEmail, sendPasswordChangedEmail } from "../utils/emailService.js
 import crypto from "crypto";
 
 export const loginUser = async (userId, password) => {
-  const user = await User.findOne({ userId });
+  // Escape special regex characters in userId
+  const escapedUserId = userId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  
+  // Try to find user by userId first (case-insensitive)
+  let user = await User.findOne({ 
+    $or: [
+      { userId: { $regex: new RegExp(`^${escapedUserId}$`, 'i') } }, // Case-insensitive match
+      { email: userId } // Also try exact email match
+    ]
+  });
   
   if (!user) {
     throw new Error("Invalid credentials");
+  }
+
+  // Check registration status for institute users
+  if (user.role === "institute") {
+    if (user.registrationStatus === "pending") {
+      throw new Error("Your registration is pending admin approval. Please wait for approval before logging in.");
+    }
+    if (user.registrationStatus === "rejected") {
+      throw new Error("Your registration has been rejected. Please contact support for more information.");
+    }
   }
 
   // Check if account is locked
@@ -70,6 +89,7 @@ export const loginUser = async (userId, password) => {
   if (user.role === "institute") {
     userResponse.instituteId = user.instituteId;
     userResponse.instituteName = user.instituteName;
+    userResponse.registrationStatus = user.registrationStatus;
   }
 
   return {
@@ -219,3 +239,126 @@ export const canRequestOTP = async (email) => {
 
   return { canRequest: true };
 };
+
+// Institute Registration Functions
+export const registerInstitute = async (userData) => {
+  const { instituteName, instituteType, fullName, email, password } = userData;
+  
+  // Check if email already exists
+  const existingUserByEmail = await User.findOne({ email });
+  if (existingUserByEmail) {
+    throw new Error("Email already registered");
+  }
+
+  // Generate institute ID based on type
+  const prefix = getInstitutePrefix(instituteType);
+  const instituteId = `${prefix}${Math.floor(100000 + Math.random() * 900000)}`;
+  
+  // Generate User ID (same as instituteId for institute users)
+  const userId = instituteId;
+
+  // Check if user ID already exists
+  const existingUserById = await User.findOne({ userId });
+  if (existingUserById) {
+    throw new Error("User ID already exists. Please try again.");
+  }
+
+  // Generate 6-digit OTP for registration verification
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiresAt = new Date(Date.now() + OTP_CONFIG.EXPIRY_MINUTES * 60 * 1000);
+
+  // Create new user with pending registration status
+  const newUser = await User.create({
+    userId,
+    password,
+    role: "institute",
+    instituteId,
+    instituteName,
+    instituteType,
+    fullName,
+    email,
+    otpCode,
+    otpExpiresAt,
+    registrationStatus: "pending",
+  });
+
+  // Send OTP email for registration verification
+  const emailResult = await sendOTPEmail(email, otpCode);
+  
+  if (!emailResult.success) {
+    // If email fails, delete the user and throw error
+    await User.findByIdAndDelete(newUser._id);
+    throw new Error("Failed to send OTP email. Please try again later.");
+  }
+
+  // Prepare response (don't include sensitive data)
+  const userResponse = {
+    id: newUser._id,
+    email: newUser.email,
+    fullName: newUser.fullName,
+    instituteName: newUser.instituteName,
+    instituteType: newUser.instituteType,
+    registrationStatus: newUser.registrationStatus,
+    message: "Registration successful. Please check your email for OTP verification.",
+  };
+
+  return {
+    message: "Institute registration successful. OTP sent to email for verification.",
+    user: userResponse,
+    expiresIn: OTP_CONFIG.EXPIRY_MINUTES,
+  };
+};
+
+export const verifyRegistrationOTP = async (email, otpCode) => {
+  // Find user by email
+  const user = await User.findOne({ email });
+  
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Check if registration is already verified/approved
+  if (user.registrationStatus !== "pending") {
+    throw new Error("Registration already verified");
+  }
+
+  // Check if OTP exists and is not expired
+  if (!user.otpCode || !user.otpExpiresAt) {
+    throw new Error("OTP not found or expired");
+  }
+
+  if (user.otpExpiresAt < new Date()) {
+    // Clear expired OTP
+    user.otpCode = null;
+    user.otpExpiresAt = null;
+    await user.save();
+    throw new Error("OTP has expired. Please request a new one.");
+  }
+
+  // Verify OTP
+  if (user.otpCode !== otpCode) {
+    throw new Error("Invalid OTP");
+  }
+
+  // Clear OTP after successful verification
+  user.otpCode = null;
+  user.otpExpiresAt = null;
+  await user.save();
+
+  return {
+    message: "Registration OTP verified successfully. Your account is pending admin approval.",
+    userId: user.userId,
+    email: user.email,
+    registrationStatus: user.registrationStatus,
+  };
+};
+
+// Helper function for institute prefix
+function getInstitutePrefix(instituteType) {
+  switch(instituteType) {
+    case 'engineering': return 'ENGG';
+    case 'management': return 'MGMT';
+    case 'medical': return 'MED';
+    default: return 'INST';
+  }
+}

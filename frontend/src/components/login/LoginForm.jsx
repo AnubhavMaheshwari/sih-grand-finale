@@ -25,23 +25,19 @@ const LoginForm = ({ onToast }) => {
 
   const validateForm = () => {
     if (!userId.trim()) {
-      onToast('Please enter user ID', 'error');
+      onToast('Please enter user ID or email', 'error');
       return false;
     }
 
     const pattern = VALIDATION_PATTERNS[role];
-    if (pattern && !pattern.test(userId.toUpperCase())) {
+    // Only validate if pattern exists (not null)
+    if (pattern && !pattern.test(userId)) {
       onToast('Invalid ID format!', 'error');
       return false;
     }
 
     if (!password.trim()) {
       onToast('Please enter password', 'error');
-      return false;
-    }
-
-    if (password.length < 6) {
-      onToast('Password must be at least 6 characters', 'error');
       return false;
     }
 
@@ -58,7 +54,7 @@ const LoginForm = ({ onToast }) => {
     setIsSubmitting(true);
 
     try {
-      const result = await login(userId, password);
+      const result = await login(userId, password, role);
 
       if (result.success) {
         onToast('Login successful! Redirecting...', 'success');
@@ -70,7 +66,7 @@ const LoginForm = ({ onToast }) => {
               navigate('/admin/users');
               break;
             case 'institute':
-              navigate('/upload');
+              navigate('/reports');
               break;
 
             default:
@@ -105,14 +101,14 @@ const LoginForm = ({ onToast }) => {
 
       <TextInput
         id="userId"
-        label={selectedRoleConfig?.label || 'User ID'}
+        label={role === 'institute' ? 'Institute ID or Email' : selectedRoleConfig?.label || 'User ID'}
         value={userId}
         onChange={setUserId}
-        placeholder={selectedRoleConfig?.placeholder || 'Enter your user ID'}
+        placeholder={role === 'institute' ? 'Enter institute ID or email' : selectedRoleConfig?.placeholder || 'Enter your user ID'}
         disabled={isFormDisabled}
         required={true}
         maxLength={selectedRoleConfig?.maxLength}
-        uppercase={role !== 'admin'}
+        uppercase={false} // Never use uppercase for institute login
       />
 
       <PasswordInput
@@ -140,6 +136,20 @@ const LoginForm = ({ onToast }) => {
           </span>
         ) : 'Login'}
       </button>
+
+      {/* Registration Link */}
+      <div className="pt-4 text-center">
+        <p className="text-sm text-gray-600">
+          Don't have an institute account?{' '}
+          <button
+            type="button"
+            onClick={() => navigate('/register')}
+            className="text-indigo-600 font-medium hover:underline focus:outline-none"
+          >
+            Register your institute
+          </button>
+        </p>
+      </div>
     </form>
   );
 };

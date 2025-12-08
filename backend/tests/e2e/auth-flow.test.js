@@ -19,9 +19,9 @@ describe('End-to-End Auth Flow Tests', () => {
         role: 'institute'
       });
 
-      // 2. Login with old password (should work)
+      // 2. Login with old password (should work) - using institute login endpoint
       const loginResponse = await request(app)
-        .post('/api/auth/login')
+        .post('/api/auth/institute/login')
         .send({
           userId: 'E2ETEST',
           password: 'OldPassword@123'
@@ -71,7 +71,7 @@ describe('End-to-End Auth Flow Tests', () => {
 
       // 7. Verify old password no longer works
       const failedLoginResponse = await request(app)
-        .post('/api/auth/login')
+        .post('/api/auth/institute/login')
         .send({
           userId: 'E2ETEST',
           password: 'OldPassword@123'
@@ -82,7 +82,7 @@ describe('End-to-End Auth Flow Tests', () => {
 
       // 8. Login with new password (should work)
       const newLoginResponse = await request(app)
-        .post('/api/auth/login')
+        .post('/api/auth/institute/login')
         .send({
           userId: 'E2ETEST',
           password: 'NewPassword@456'
@@ -112,7 +112,7 @@ describe('End-to-End Auth Flow Tests', () => {
       // Attempt 5 failed logins
       for (let i = 0; i < 5; i++) {
         const response = await request(app)
-          .post('/api/auth/login')
+          .post('/api/auth/institute/login')
           .send({
             userId: 'LOCKFLOW',
             password: 'WrongPassword'
@@ -122,7 +122,7 @@ describe('End-to-End Auth Flow Tests', () => {
 
       // 6th attempt should be locked
       const lockedResponse = await request(app)
-        .post('/api/auth/login')
+        .post('/api/auth/institute/login')
         .send({
           userId: 'LOCKFLOW',
           password: 'WrongPassword'
@@ -166,7 +166,7 @@ describe('End-to-End Auth Flow Tests', () => {
 
       // Login with new password should work (lockout cleared)
       const loginResponse = await request(app)
-        .post('/api/auth/login')
+        .post('/api/auth/institute/login')
         .send({
           userId: 'LOCKFLOW',
           password: 'NewUnlock@123'
@@ -199,9 +199,9 @@ describe('End-to-End Auth Flow Tests', () => {
       expect(forgotResponse.status).toBe(400);
       expect(forgotResponse.body.message).toBe('Password reset is only available for institute accounts');
 
-      // Admin should still be able to login
+      // Admin should still be able to login - using admin login endpoint
       const loginResponse = await request(app)
-        .post('/api/auth/login')
+        .post('/api/auth/admin/login')
         .send({
           userId: 'ADMINFLOW',
           password: 'Admin@123'

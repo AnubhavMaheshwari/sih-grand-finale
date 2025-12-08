@@ -4,7 +4,12 @@ import SplashScreen from "./components/common/SplashScreen.jsx";
 
 import LandingPage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import VerifyRegistrationPage from "./pages/VerifyRegistrationPage.jsx";
 import UploadDocumentPage from "./pages/UploadDocumentPage.jsx";
+import ReportsManagementPage from "./pages/ReportsManagementPage.jsx";
+import RequestCenterPage from "./pages/RequestCenterPage.jsx";
+import AnalyticsInsightsPage from "./pages/AnalyticsInsightsPage.jsx";
 import FAQPage from "./pages/FAQPage.jsx";
 import ContactUsPage from "./pages/ContactUsPage.jsx";
 import RequestsPage from "./pages/RequestsPage.jsx";
@@ -12,7 +17,9 @@ import RequestsPage from "./pages/RequestsPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/AdminInstitutesPage.jsx";
+import PendingRegistrationsPage from "./pages/PendingRegistrationsPage.jsx";
 import AdminLayout from "./components/layout/AdminLayout.jsx";
+import InstituteLayout from "./components/layout/InstituteLayout.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import PublicRoute from "./components/common/PublicRoute.jsx";
 
@@ -40,6 +47,24 @@ function App() {
             element={
               <PublicRoute>
                 <LoginPage />
+              </PublicRoute>
+            }
+          />
+
+          {/* Registration Pages */}
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <RegisterPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/verify-registration"
+            element={
+              <PublicRoute>
+                <VerifyRegistrationPage />
               </PublicRoute>
             }
           />
@@ -76,6 +101,16 @@ function App() {
             }
           />
           <Route
+            path="/admin/pending-registrations"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <PendingRegistrationsPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/dashboard"
             element={
               <Navigate to="/admin/users" replace />
@@ -95,12 +130,37 @@ function App() {
             }
           />
 
-
-          {/* Public pages */}
-          <Route path="/faq" element={<FAQPage />} />
-          <Route path="/contact" element={<ContactUsPage />} />
-
-          {/* Forgot password page - Public only */}
+          {/* New Institute Routes with InstituteLayout */}
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute requiredRole="institute">
+                <InstituteLayout>
+                  <ReportsManagementPage />
+                </InstituteLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/request"
+            element={
+              <ProtectedRoute requiredRole="institute">
+                <InstituteLayout>
+                  <RequestCenterPage />
+                </InstituteLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute requiredRole="institute">
+                <InstituteLayout>
+                  <AnalyticsInsightsPage />
+                </InstituteLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/forgot-password"
             element={

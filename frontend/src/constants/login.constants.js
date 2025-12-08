@@ -1,4 +1,4 @@
-import { FaBuilding, FaUserTie, FaUserShield } from "react-icons/fa";
+import { FaBuilding, FaUserShield } from "react-icons/fa";
 
 export const PRIMARY_BLUE = "#4F46E5";
 export const DEEP_INDIGO = "#3730A3";
@@ -14,9 +14,9 @@ export const ROLE_OPTIONS = [
     selectedColor: 'ring-2 ring-green-500 ring-offset-2',
     idConfig: {
       label: 'Institute ID',
-      placeholder: 'e.g., AI987654',
-      hint: 'Format: Exactly 8 characters (2 letters A-Z, 6 numbers)',
-      maxLength: 8,
+      placeholder: 'Enter your institute ID',
+      hint: 'Enter your institute ID',
+      maxLength: 100,
     }
   },
   {
@@ -30,15 +30,16 @@ export const ROLE_OPTIONS = [
     idConfig: {
       label: 'Admin User ID',
       placeholder: 'Enter admin credentials',
-      hint: 'Admin credentials are configured in the system',
-      maxLength: 50,
+      hint: 'Enter your admin user ID',
+      maxLength: 100,
     }
   }
 ];
 
 export const VALIDATION_PATTERNS = {
-  institute: /^[A-Z]{2}[0-9]{6}$/,
-  admin: /^[A-Z]{4}[0-9]{6}$/,
+  // Removed strict validation patterns to allow more flexible input
+  institute: null,
+  admin: null,
 };
 
 export const TOAST_CONFIG = {

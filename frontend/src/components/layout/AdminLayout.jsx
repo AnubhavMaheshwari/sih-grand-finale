@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import Toast from "../common/Toast.jsx";
 import sarthiLogo from "../../assets/images/sarthiLogo.png";
-
+import {Users} from "lucide-react";
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,9 +28,7 @@ const AdminLayout = ({ children }) => {
       id: "users",
       label: "User",
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5 0c-.281.023-.562.045-.844.064M15.5 3.5a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
-        </svg>
+       <Users/>
       ),
       path: "/admin/users",
     },

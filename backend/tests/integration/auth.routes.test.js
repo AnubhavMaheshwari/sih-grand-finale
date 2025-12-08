@@ -9,7 +9,7 @@ app.use(express.json());
 app.use('/api', routes);
 
 describe('Auth Routes Integration Tests', () => {
-  describe('POST /api/auth/login', () => {
+  describe('POST /api/auth/login (General)', () => {
     it('should login with valid credentials', async () => {
       await createTestUser(User, {
         userId: 'LOGINTEST',
@@ -59,6 +59,137 @@ describe('Auth Routes Integration Tests', () => {
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
       expect(response.body.message).toBe('User ID and password are required');
+    });
+  });
+
+  describe('POST /api/auth/admin/login', () => {
+    it('should login admin with valid credentials', async () => {
+      await createTestUser(User, {
+        userId: 'ADMINTEST',
+        password: 'Test@123',
+        role: 'admin'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/admin/login')
+        .send({
+          userId: 'ADMINTEST',
+          password: 'Test@123'
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('token');
+      expect(response.body.data.user.userId).toBe('ADMINTEST');
+      expect(response.body.data.user.role).toBe('admin');
+      expect(response.body.data.message).toBe('Login successful');
+    });
+
+    it('should reject institute user trying to use admin login', async () => {
+      await createTestUser(User, {
+        userId: 'INSTITEST',
+        password: 'Test@123',
+        role: 'institute',
+        instituteId: 'INST001',
+        instituteName: 'Test Institute'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/admin/login')
+        .send({
+          userId: 'INSTITEST',
+          password: 'Test@123'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBe('Access denied. Admin credentials required.');
+    });
+
+    it('should return error for invalid admin credentials', async () => {
+      await createTestUser(User, {
+        userId: 'ADMINTEST',
+        password: 'Test@123',
+        role: 'admin'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/admin/login')
+        .send({
+          userId: 'ADMINTEST',
+          password: 'WrongPassword'
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBe('Invalid credentials');
+    });
+  });
+
+  describe('POST /api/auth/institute/login', () => {
+    it('should login institute with valid credentials', async () => {
+      await createTestUser(User, {
+        userId: 'INSTITEST',
+        password: 'Test@123',
+        role: 'institute',
+        instituteId: 'INST001',
+        instituteName: 'Test Institute'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/institute/login')
+        .send({
+          userId: 'INSTITEST',
+          password: 'Test@123'
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('token');
+      expect(response.body.data.user.userId).toBe('INSTITEST');
+      expect(response.body.data.user.role).toBe('institute');
+      expect(response.body.data.user.instituteId).toBe('INST001');
+      expect(response.body.data.message).toBe('Login successful');
+    });
+
+    it('should reject admin user trying to use institute login', async () => {
+      await createTestUser(User, {
+        userId: 'ADMINTEST',
+        password: 'Test@123',
+        role: 'admin'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/institute/login')
+        .send({
+          userId: 'ADMINTEST',
+          password: 'Test@123'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBe('Access denied. Institute credentials required.');
+    });
+
+    it('should return error for invalid institute credentials', async () => {
+      await createTestUser(User, {
+        userId: 'INSTITEST',
+        password: 'Test@123',
+        role: 'institute',
+        instituteId: 'INST001',
+        instituteName: 'Test Institute'
+      });
+
+      const response = await request(app)
+        .post('/api/auth/institute/login')
+        .send({
+          userId: 'INSTITEST',
+          password: 'WrongPassword'
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBe('Invalid credentials');
     });
   });
 

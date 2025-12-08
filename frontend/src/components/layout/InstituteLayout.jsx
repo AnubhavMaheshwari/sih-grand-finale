@@ -35,47 +35,26 @@ const InstituteLayout = ({ children }) => {
 
   const menuItems = [
     {
-      id: "upload",
-      label: "Upload Data",
-      icon: <Upload className="w-5 h-5" />,
-      path: "/upload",
-    },
-    {
       id: "reports",
-      label: "My Submitted Reports",
+      label: "Reports Management",
       icon: <FileText className="w-5 h-5" />,
-      path: "/upload?panel=reports",
+      path: "/reports",
     },
     {
-      id: "insights",
-      label: "Insights & Dashboard",
+      id: "request",
+      label: "Request Center",
+      icon: <Upload className="w-5 h-5" />,
+      path: "/request",
+    },
+    {
+      id: "analytics",
+      label: "Analytics & Insights",
       icon: <BarChart3 className="w-5 h-5" />,
-      path: "/upload?panel=insights",
-    },
-    {
-      id: "faq",
-      label: "FAQ",
-      icon: <HelpCircle className="w-5 h-5" />,
-      path: "/faq",
-    },
-    {
-      id: "contact",
-      label: "Contact Us",
-      icon: <Mail className="w-5 h-5" />,
-      path: "/contact",
+      path: "/analytics",
     },
   ];
 
   const isActive = (path) => {
-    if (path === "/upload") {
-      return location.pathname === "/upload" && !location.search;
-    }
-    if (path === "/upload?panel=reports") {
-      return location.pathname === "/upload" && location.search.includes("panel=reports");
-    }
-    if (path === "/upload?panel=insights") {
-      return location.pathname === "/upload" && location.search.includes("panel=insights");
-    }
     return location.pathname === path;
   };
 
@@ -83,11 +62,10 @@ const InstituteLayout = ({ children }) => {
     const activeItem = menuItems.find(item => isActive(item.path));
     if (activeItem) return activeItem.label;
     
-    if (location.pathname === "/upload") {
-      if (location.search.includes("panel=reports")) return "My Submitted Reports";
-      if (location.search.includes("panel=insights")) return "Insights & Dashboard";
-      return "Upload Data";
-    }
+    // Handle specific page titles
+    if (location.pathname === "/reports") return "Reports Management";
+    if (location.pathname === "/request") return "Request Center";
+    if (location.pathname === "/analytics") return "Analytics & Insights";
     
     return "Institute Dashboard";
   };

@@ -73,6 +73,12 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Registration status for institute users
+    registrationStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
   },
   { timestamps: true }
 );
