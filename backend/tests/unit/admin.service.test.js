@@ -20,9 +20,7 @@ describe('Admin Service', () => {
     describe('createUser', () => {
       it('should create institute user with generated credentials', async () => {
         const userData = {
-          role: 'institute',
-          instituteId: 'INST789012',
-          instituteName: 'Test University',
+          instituteName: 'Test Engineering University',
           instituteType: 'engineering',
           fullName: 'Test Institute Admin',
           email: 'admin@testuniv.edu'
@@ -30,42 +28,48 @@ describe('Admin Service', () => {
 
         const result = await createUser(userData);
         
-        expect(result).toHaveProperty('message', 'User created successfully');
+        expect(result).toHaveProperty('message', 'Institute user created successfully');
         expect(result.user).toHaveProperty('userId');
         expect(result.user.role).toBe('institute');
-        expect(result.user.instituteId).toBe('INST789012');
-        expect(result.user.instituteName).toBe('Test University');
+        expect(result.user.instituteId).toMatch(/^ENGG\d{6}$/);
+        expect(result.user.instituteName).toBe('Test Engineering University');
+        expect(result.user.instituteType).toBe('engineering');
         expect(result.user.generatedPassword).toBeDefined();
+        expect(result.user.fullName).toBe('Test Institute Admin');
+        expect(result.user.email).toBe('admin@testuniv.edu');
         
         // Verify user was saved to database
         const savedUser = await User.findOne({ userId: result.user.userId });
         expect(savedUser).toBeDefined();
         expect(savedUser.instituteType).toBe('engineering');
-      });
-
-      it('should create admin user', async () => {
-        const userData = {
-          role: 'admin',
-          fullName: 'System Admin',
-          email: 'admin@system.com'
-        };
-
-        const result = await createUser(userData);
         
-        expect(result.user.role).toBe('admin');
-        expect(result.user.userId).toMatch(/^ADMN/);
+        // Verify institute was created
+        const savedInstitute = await Institute.findOne({ instituteId: result.user.instituteId });
+        expect(savedInstitute).toBeDefined();
+        expect(savedInstitute.name).toBe('Test Engineering University');
+        expect(savedInstitute.category).toBe('Engineering');
       });
 
-      it('should throw error for institute user without institute details', async () => {
+      it('should throw error for missing required fields', async () => {
         const userData = {
-          role: 'institute',
-          fullName: 'Test User',
-          email: 'test@example.com'
-          // Missing instituteId and instituteName
+          // Missing instituteName, fullName, email
+          instituteType: 'engineering'
         };
 
         await expect(createUser(userData))
-          .rejects.toThrow('Institute ID and name are required for institute users');
+          .rejects.toThrow('Institute name, full name, and email are required');
+      });
+
+      it('should throw error for missing institute type', async () => {
+        const userData = {
+          instituteName: 'Test University',
+          fullName: 'Test User',
+          email: 'test@example.com'
+          // Missing instituteType
+        };
+
+        await expect(createUser(userData))
+          .rejects.toThrow('Institute type is required');
       });
     });
 

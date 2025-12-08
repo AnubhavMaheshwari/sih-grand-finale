@@ -6,53 +6,61 @@ import { sendWelcomeEmail } from "../utils/emailService.js";
 // User Management Functions
 export const createUser = async (userData) => {
   const { 
-    role, 
-    instituteId, 
     instituteName, 
-    instituteType = 'others',
+    instituteType,
     fullName, 
     email
   } = userData;
   
-  // Always generate User ID and password
-  const finalUserId = await generateUniqueUserId(User, { role, instituteType, instituteId });
+  // Validate required fields for institute user creation
+  if (!instituteName || !fullName || !email) {
+    throw new Error("Institute name, full name, and email are required");
+  }
+
+  if (!instituteType) {
+    throw new Error("Institute type is required");
+  }
+
+  // Generate institute ID based on type
+  const prefix = getInstitutePrefix(instituteType);
+  const instituteId = `${prefix}${Math.floor(100000 + Math.random() * 900000)}`;
+  
+  // Generate User ID (same as instituteId for institute users)
+  const finalUserId = instituteId;
   const generatedPassword = generatePassword();
   const finalPassword = generatedPassword;
 
-  // Validate institute exists for institute users
-  if (role === "institute") {
-    if (!instituteId || !instituteName) {
-      throw new Error("Institute ID and name are required for institute users");
-    }
-    
-    // Check if institute exists in Institute collection, create if it doesn't
-    let institute = await Institute.findOne({ instituteId });
-    if (!institute) {
-      // Create new institute with basic information
-      institute = await Institute.create({
-        instituteId,
-        name: instituteName,
-        type: "Institute", // Default type
-        location: {
-          city: "Unknown",
-          state: "Unknown"
-        },
-        isActive: true
-      });
-    }
+  // Check if institute exists in Institute collection, create if it doesn't
+  let institute = await Institute.findOne({ instituteId });
+  if (!institute) {
+    // Create new institute with basic information
+    institute = await Institute.create({
+      instituteId,
+      name: instituteName,
+      type: "Institute", // Default type from enum
+      category: getInstituteCategory(instituteType),
+      location: {
+        city: "Unknown",
+        state: "Unknown"
+      },
+      contact: {
+        email: email
+      },
+      isActive: true
+    });
   }
 
-  // Create new user
+  // Create new user (always institute role for this endpoint)
   const newUser = await User.create({
     userId: finalUserId,
     password: finalPassword,
-    role: role || "institute",
-    instituteId: role === "institute" ? instituteId : undefined,
-    instituteName: role === "institute" ? instituteName : undefined,
-    instituteType: role === "institute" ? instituteType : undefined,
+    role: "institute",
+    instituteId: instituteId,
+    instituteName: instituteName,
+    instituteType: instituteType,
     fullName,
-    email: email || "",
-    generatedPassword: generatedPassword || '', // Store generated password for admin reference
+    email: email,
+    generatedPassword: generatedPassword,
   });
 
   // Prepare response
@@ -62,20 +70,36 @@ export const createUser = async (userData) => {
     role: newUser.role,
     fullName: newUser.fullName,
     email: newUser.email,
-    generatedPassword: generatedPassword || undefined, // Include generated password in response for admin
+    generatedPassword: generatedPassword,
+    instituteId: newUser.instituteId,
+    instituteName: newUser.instituteName,
+    instituteType: newUser.instituteType,
   };
 
-  if (newUser.role === "institute") {
-    userResponse.instituteId = newUser.instituteId;
-    userResponse.instituteName = newUser.instituteName;
-    userResponse.instituteType = newUser.instituteType;
-  }
-
   return {
-    message: "User created successfully",
+    message: "Institute user created successfully",
     user: userResponse,
   };
 };
+
+// Helper functions
+function getInstitutePrefix(instituteType) {
+  switch(instituteType) {
+    case 'engineering': return 'ENGG';
+    case 'management': return 'MGMT';
+    case 'medical': return 'MED';
+    default: return 'INST';
+  }
+}
+
+function getInstituteCategory(instituteType) {
+  switch(instituteType) {
+    case 'engineering': return 'Engineering';
+    case 'management': return 'Management';
+    case 'medical': return 'Medical';
+    default: return 'Others';
+  }
+}
 
 export const getUsers = async () => {
   const users = await User.find().select("-password -otpCode -passwordResetToken");

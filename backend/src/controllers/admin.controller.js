@@ -9,30 +9,49 @@ import UploadedDocument from "../models/UploadedDocument.model.js";
 export const createUser = async (req, res) => {
   try {
     const userData = req.body;
-    console.log("Create User Payload:", userData);
+    console.log("Create Institute User Payload:", userData);
+
+    // Validate required fields
+    if (!userData.instituteName || !userData.fullName || !userData.email) {
+      return errorResponse(res, "Institute name, full name, and email are required", 400);
+    }
+
+    if (!userData.instituteType) {
+      return errorResponse(res, "Institute type is required", 400);
+    }
 
     const result = await adminService.createUser(userData);
-    console.log("Create User Result:", result);
+    console.log("Create Institute User Result:", result);
 
-    // Send email if user creation was successful and email exists
+    // Send welcome email with credentials
     if (result.user.email && result.user.generatedPassword) {
-      // Don't await this to keep response fast, or await if critical
       try {
-        await sendWelcomeEmail(result.user.email, result.user.userId, result.user.generatedPassword);
+        await sendWelcomeEmail(
+          result.user.email, 
+          result.user.userId, 
+          result.user.generatedPassword,
+          result.user.instituteName,
+          result.user.fullName
+        );
+        console.log("Welcome email sent to:", result.user.email);
       } catch (emailError) {
-        console.error("Failed to send email:", emailError);
+        console.error("Failed to send welcome email:", emailError);
+        // Don't fail the request if email fails, just log it
       }
     }
 
     successResponse(res, result, 201);
   } catch (error) {
-    if (error.message === "UserId already exists" ||
-      error.message === "Institute ID and name are required for institute users" ||
-      error.message === "Institute not found. Please create institute first.") {
+    console.error("Create user error:", error);
+    
+    // Handle specific error messages
+    if (error.message.includes("required") || 
+        error.message.includes("Institute") ||
+        error.message.includes("already exists")) {
       return errorResponse(res, error.message, 400);
     }
-    console.error(error);
-    errorResponse(res, "Server error");
+    
+    errorResponse(res, "Server error while creating institute user", 500);
   }
 };
 

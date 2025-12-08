@@ -10,33 +10,36 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendWelcomeEmail = async (email, userId, password) => {
+export const sendWelcomeEmail = async (email, userId, password, instituteName, fullName) => {
   try {
     const mailOptions = {
       from: `SARTHI Portal <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "Welcome to SARTHI Portal - Account Created",
+      subject: `Welcome to SARTHI Portal - ${instituteName || 'Account Created'}`,
       html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #4f46e5;">Welcome to SARTHI Portal</h2>
-            <p>Hello,</p>
-            <p>Your account has been successfully created on the SARTHI Portal.</p>
+            <p>Hello ${fullName || 'User'},</p>
+            <p>Your account has been successfully created for <strong>${instituteName || 'your institute'}</strong> on the SARTHI Portal.</p>
             <p>You can now login using the following credentials:</p>
             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
               <p><strong>User ID:</strong> ${userId}</p>
               <p><strong>Password:</strong> ${password}</p>
+              ${instituteName ? `<p><strong>Institute:</strong> ${instituteName}</p>` : ''}
             </div>
-            <p>Please login and change your password immediately for security purposes.</p>
+            <p><strong>Important:</strong> Please login and change your password immediately for security purposes.</p>
+            <p>You can access the portal at: <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}">${process.env.FRONTEND_URL || 'http://localhost:5173'}</a></p>
+            <p>If you have any questions or need assistance, please contact our support team.</p>
             <p>Best regards,<br>The SARTHI Team</p>
           </div>
         `,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
-    return { success: true, message: "Email sent successfully" };
+    console.log("Welcome email sent to: " + email);
+    return { success: true, message: "Welcome email sent successfully" };
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error sending welcome email:", error);
     return { success: false, error: error.message };
   }
 };
