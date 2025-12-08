@@ -2,11 +2,13 @@ import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
 import SplashScreen from "./components/common/SplashScreen.jsx";
 
+import LandingPage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import UploadDocumentPage from "./pages/UploadDocumentPage.jsx";
 import FAQPage from "./pages/FAQPage.jsx";
 import ContactUsPage from "./pages/ContactUsPage.jsx";
-import RequestsPage from "./pages/RequestsPage";
+import RequestsPage from "./pages/RequestsPage.jsx";
+
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/AdminInstitutesPage.jsx";
@@ -22,14 +24,27 @@ function App() {
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       <Router>
         <Routes>
+          {/* Landing Page - Root Route */}
           <Route
             path="/"
+            element={
+              <PublicRoute>
+                <LandingPage />
+              </PublicRoute>
+            }
+          />
+
+          {/* Login Page */}
+          <Route
+            path="/login"
             element={
               <PublicRoute>
                 <LoginPage />
               </PublicRoute>
             }
           />
+
+          {/* Admin Routes */}
           <Route
             path="/admin/users"
             element={
@@ -46,6 +61,16 @@ function App() {
               <ProtectedRoute requiredRole="admin">
                 <AdminLayout>
                   <AdminInstitutesPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/requests"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <RequestsPage />
                 </AdminLayout>
               </ProtectedRoute>
             }

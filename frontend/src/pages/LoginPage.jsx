@@ -38,12 +38,8 @@ const LoginPage = () => {
             <div className="mb-8 sm:mb-10">
               <div className='flex flex-col items-center'>
                 <img src={sarthiLogo} alt="SARTHI Logo" className='w-40 h-40' />
-                <h1 className="mb-2 text-2xl font-black leading-tight text-gray-900 sm:text-3xl md:text-4xl">
-                  Welcome to <span className="text-deep-indigo">SARTHI</span> Portal
-                </h1>
-
               </div>
-              <p className="text-sm text-gray-600 sm:text-base">
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 text-center mt-4">
                 Secure login for educational institutions and officials
               </p>
             </div>
