@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { 
-  Upload, 
-  FileText, 
-  BarChart3, 
-  HelpCircle, 
-  Mail, 
-  ChevronLeft, 
+import {
+  Upload,
+  FileText,
+  BarChart3,
+  HelpCircle,
+  Mail,
+  ChevronLeft,
   ChevronRight,
   LogOut,
   User
@@ -30,7 +30,7 @@ const InstituteLayout = ({ children }) => {
   const handleLogout = () => {
     logout();
     showToast("Logged out successfully", "success");
-    navigate("/");
+    navigate("/login");
   };
 
   const menuItems = [
@@ -61,12 +61,12 @@ const InstituteLayout = ({ children }) => {
   const getActiveLabel = () => {
     const activeItem = menuItems.find(item => isActive(item.path));
     if (activeItem) return activeItem.label;
-    
+
     // Handle specific page titles
     if (location.pathname === "/reports") return "Reports Management";
     if (location.pathname === "/request") return "Request Center";
     if (location.pathname === "/analytics") return "Analytics & Insights";
-    
+
     return "Institute Dashboard";
   };
 
@@ -110,11 +110,10 @@ const InstituteLayout = ({ children }) => {
                   navigate(item.path);
                 }
               }}
-              className={`w-full flex items-center ${sidebarOpen ? "justify-start px-4" : "justify-center"} py-3 rounded-lg transition-colors ${
-                isActive(item.path)
+              className={`w-full flex items-center ${sidebarOpen ? "justify-start px-4" : "justify-center"} py-3 rounded-lg transition-colors ${isActive(item.path)
                   ? "bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600"
                   : "text-gray-700 hover:bg-gray-100"
-              }`}
+                }`}
             >
               <span className={`shrink-0 ${isActive(item.path) ? "text-indigo-600" : "text-gray-500"}`}>
                 {item.icon}

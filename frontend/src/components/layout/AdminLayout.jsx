@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import Toast from "../common/Toast.jsx";
 import sarthiLogo from "../../assets/images/sarthiLogo.png";
-import {Users} from "lucide-react";
+import { Users } from "lucide-react";
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,7 +20,7 @@ const AdminLayout = ({ children }) => {
   const handleLogout = () => {
     logout();
     showToast("Logged out successfully", "success");
-    navigate("/");
+    navigate("/login");
   };
 
   const menuItems = [
@@ -28,7 +28,7 @@ const AdminLayout = ({ children }) => {
       id: "users",
       label: "User",
       icon: (
-       <Users/>
+        <Users />
       ),
       path: "/admin/users",
     },

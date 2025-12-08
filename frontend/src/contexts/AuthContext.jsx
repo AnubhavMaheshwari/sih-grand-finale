@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: "LOGIN_REQUEST" });
     try {
       let response;
-      
+
       // Use appropriate API based on role
       if (role === 'admin') {
         response = await authAPI.adminLogin(userId, password);
@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Login failed";
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || "Login failed";
       dispatch({
         type: "LOGIN_FAILURE",
         payload: errorMessage,
