@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
     sessionStorage.removeItem("institutionLoggedIn");
-    sessionStorage.removeItem("ugcMemberLoggedIn");
+
     dispatch({ type: "LOGOUT" });
 
     // Call logout callback if provided

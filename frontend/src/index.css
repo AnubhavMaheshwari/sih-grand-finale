@@ -6,10 +6,26 @@
     opacity: 0;
     transform: translate(-50%, 20px);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, 0);
   }
+}
+
+#root {
+  max-width: 100%;
+  /* Allows full width */
+  margin: 0;
+  /* Removes centering margins */
+  text-align: left;
+  /* Optional: Dashboards usually look better left-aligned */
+}
+
+/* Add this if you still see a small gap at the edges */
+body {
+  margin: 0;
+  padding: 0;
 }
 
 .animate-fade-in-up {
@@ -32,9 +48,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -43,6 +61,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -54,9 +73,7 @@
   }
 }
 
-.card {
-  padding: 2em;
-}
+
 
 .read-the-docs {
   color: #888;
