@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Toast from '../components/common/Toast.jsx';
-import adminApi from '../api/admin.api.js';
+import Toast from '../../components/common/Toast.jsx';
+import adminApi from '../../api/admin.api.js';
 
 const PendingRegistrationsPage = () => {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import YearSelector from "../components/common/YearSelector";
+import YearSelector from "../../components/common/YearSelector";
 import {
   UploadCloud,
   FileText,
@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import documentsApi from "../api/documents.api.js";
+import documentsApi from "../../api/documents.api.js";
 
 // FilePreview Component
 function FilePreview({ file, onRemove, isUploading = false }) {

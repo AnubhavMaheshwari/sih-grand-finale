@@ -4,7 +4,7 @@ import {
   useRef,
   useEffect,
 } from "react";
-import InstituteLayout from "../components/layout/InstituteLayout";
+import InstituteLayout from "../../components/layout/InstituteLayout";
 import {
   FileText,
   UploadCloud,
@@ -23,7 +23,7 @@ import {
   MessageSquareWarning,
   FileWarning,
 } from "lucide-react";
-import documentsApi from "../api/documents.api.js";
+import documentsApi from "../../api/documents.api.js";
 
 const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";

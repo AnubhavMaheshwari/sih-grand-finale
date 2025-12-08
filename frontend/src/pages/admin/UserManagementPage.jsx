@@ -5,13 +5,13 @@ import {
   UserCog,
   UserPlus,
 } from "lucide-react";
-import CreateUserForm from "../components/admin/CreateUserForm";
-import SuccessModal from "../components/admin/SuccessModal";
-import UserTable from "../components/admin/UserTable";
-import DeleteConfirmationModal from "../components/admin/DeleteConfirmationModal";
-import Toast from "../components/common/Toast";
-import adminApi from "../api/admin.api";
-import { useAuth } from "../contexts/AuthContext";
+import CreateUserForm from "../../components/admin/CreateUserForm";
+import SuccessModal from "../../components/admin/SuccessModal";
+import UserTable from "../../components/admin/UserTable";
+import DeleteConfirmationModal from "../../components/admin/DeleteConfirmationModal";
+import Toast from "../../components/common/Toast";
+import adminApi from "../../api/admin.api";
+import { useAuth } from "../../contexts/AuthContext";
 
 const UserManagementPage = () => {
   const { user: currentUser } = useAuth();
