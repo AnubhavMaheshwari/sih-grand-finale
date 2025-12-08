@@ -60,7 +60,7 @@ const MovingImageNavbar = () => {
           <img
             src={currentItem.img}
             alt={currentItem.label}
-            className="object-cover w-20 h-20 border border-gray-200 rounded-lg sm:w-30 sm:h-24"
+            className="object-cover w-56 h-20 border border-gray-200 rounded-lg sm:w-56 sm:h-24"
           />
           <div className="flex flex-col">
             <span className="text-base font-semibold text-gray-900 sm:text-lg">
