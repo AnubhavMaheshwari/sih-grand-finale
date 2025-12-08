@@ -4,7 +4,7 @@ import {
   useRef,
   useEffect,
 } from "react";
-import InstituteLayout from "../components/layout/InstituteLayout";
+import InstituteLayout from "../../components/layout/InstituteLayout";
 import {
   FileText,
   UploadCloud,
@@ -23,13 +23,10 @@ import {
   MessageSquareWarning,
   FileWarning,
 } from "lucide-react";
-import documentsApi from "../api/documents.api.js";
+import documentsApi from "../../api/documents.api.js";
 
-const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";
-const LIGHT_INDIGO = "#EEF2FF";
 
-// --- FilePreview Component (PDF only) ---
 function FilePreview({ file, onRemove, isUploading = false }) {
   const formatFileSize = (bytes) =>
     bytes > 1024 * 1024
@@ -444,11 +441,6 @@ function UploadDocumentPage() {
     showToast("success", `${type} request submitted to UGC/AICTE.`);
     setActiveTab("status");
 
-    // TODO: Replace with real backend API
-    // const response = await requestsApi.submitRequest(type);
-    // setRequests(response.requests);
-
-    // TEMPORARY: simulate insufficiency + deficiency report
     setTimeout(() => {
       setRequests((prev) =>
         prev.map((req) =>
@@ -645,65 +637,6 @@ function UploadDocumentPage() {
                 </button>
               </div>
             )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderDashboardPanel = () => {
-    return (
-      <div className="max-w-5xl mx-auto h-full flex flex-col">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Reports</h1>
-            <p className="text-base text-gray-500 mt-1">
-              Manage all your submitted documents and check their parsing
-              status.
-            </p>
-          </div>
-          <button
-            onClick={() => setActiveTab("upload")}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm text-base font-medium"
-          >
-            <UploadCloud className="w-4 h-4" /> Upload New
-          </button>
-        </div>
-
-        {isLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-            <Loader2 className="w-10 h-10 animate-spin mb-3 text-indigo-500" />
-            <p>Fetching your documents...</p>
-          </div>
-        ) : documents.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-              <FileText className="w-8 h-8 text-gray-300" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              No documents found
-            </h3>
-            <p className="text-base text-gray-500 max-w-sm mt-2 mb-6">
-              You haven&apos;t uploaded any reports yet. Upload your first
-              document to get started.
-            </p>
-            <button
-              onClick={() => setActiveTab("upload")}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
-            >
-              Upload Document
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pb-10">
-            {documents.map((doc) => (
-              <DocumentItem
-                key={doc._id}
-                document={doc}
-                onView={handleViewDocument}
-                onDelete={handleDeleteDocument}
-              />
-            ))}
           </div>
         )}
       </div>

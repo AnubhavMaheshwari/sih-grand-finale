@@ -4,16 +4,14 @@ import {
   Building2,
   UserCog,
   UserPlus,
-  CheckCircle,
-  AlertCircle,
-  Info,
 } from "lucide-react";
-import CreateUserForm from "../components/admin/CreateUserForm";
-import SuccessModal from "../components/admin/SuccessModal";
-import UserTable from "../components/admin/UserTable";
-import DeleteConfirmationModal from "../components/admin/DeleteConfirmationModal";
-import adminApi from "../api/admin.api";
-import { useAuth } from "../contexts/AuthContext";
+import CreateUserForm from "../../components/admin/CreateUserForm";
+import SuccessModal from "../../components/admin/SuccessModal";
+import UserTable from "../../components/admin/UserTable";
+import DeleteConfirmationModal from "../../components/admin/DeleteConfirmationModal";
+import Toast from "../../components/common/Toast";
+import adminApi from "../../api/admin.api";
+import { useAuth } from "../../contexts/AuthContext";
 
 const UserManagementPage = () => {
   const { user: currentUser } = useAuth();
@@ -219,6 +217,15 @@ const UserManagementPage = () => {
 
   return (
     <div className="space-y-6">
+      {/* Toast Component */}
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ show: false, message: "", type: "" })}
+        />
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between">
         <div>
@@ -330,23 +337,6 @@ const UserManagementPage = () => {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDeleteConfirm}
       />
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <div className={`fixed bottom-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg flex items-center ${toast.type === "success" ? "bg-green-50 border border-green-200 text-green-800" :
-            toast.type === "error" ? "bg-red-50 border border-red-200 text-red-800" :
-              "bg-blue-50 border border-blue-200 text-blue-800"
-          }`}>
-          {toast.type === "success" ? (
-            <CheckCircle className="w-5 h-5 mr-3 text-green-600" />
-          ) : toast.type === "error" ? (
-            <AlertCircle className="w-5 h-5 mr-3 text-red-600" />
-          ) : (
-            <Info className="w-5 h-5 mr-3 text-blue-600" />
-          )}
-          <span className="font-medium">{toast.message}</span>
-        </div>
-      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import YearSelector from "../components/common/YearSelector";
+import YearSelector from "../../components/common/YearSelector.jsx";
 import {
   UploadCloud,
   FileText,
@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import documentsApi from "../api/documents.api.js";
+import documentsApi from "../../api/documents.api.js";
 
 // FilePreview Component
 function FilePreview({ file, onRemove, isUploading = false }) {
@@ -337,6 +337,42 @@ const ReportsManagementPage = () => {
           <h1 className="text-3xl font-bold text-gray-900">Upload New Report</h1>
         </div>
 
+        {/* Sample Files Section */}
+        <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
+          <h3 className="text-lg font-semibold text-blue-900 mb-3">Download Sample Files</h3>
+          <p className="text-blue-700 mb-4">
+            Download sample files to understand the required format for upload:
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <a
+              href="/sample_data/sample_csv.xlsx"
+              download="sample_data_format.xlsx"
+              className="flex items-center gap-3 px-4 py-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              <div className="p-2 bg-green-100 rounded-lg">
+                <FileText className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Sample Excel Format</p>
+                <p className="text-sm text-gray-600">Download .xlsx template</p>
+              </div>
+            </a>
+            <a
+              href="/sample_data/sample_pdf.pdf"
+              download="sample_report.pdf"
+              className="flex items-center gap-3 px-4 py-3 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              <div className="p-2 bg-red-100 rounded-lg">
+                <FileText className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900">Sample PDF Report</p>
+                <p className="text-sm text-gray-600">Download .pdf example</p>
+              </div>
+            </a>
+          </div>
+        </div>
+
         {/* Year Selection */}
         <div className="mb-6">
           <YearSelector
@@ -462,12 +498,6 @@ const ReportsManagementPage = () => {
               onYearChange={setSelectedViewYear}
               availableYears={availableYears}
             />
-            <button
-              onClick={() => setActiveTab("upload")}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm text-base font-medium"
-            >
-              <UploadCloud className="w-4 h-4" /> Upload New
-            </button>
           </div>
         </div>
 
