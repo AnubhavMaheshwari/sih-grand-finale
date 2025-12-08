@@ -4,7 +4,7 @@ import { authAPI } from "../api/auth.api";
 // Initial state
 const initialState = {
   user: null,
-  token: sessionStorage.getItem("token") || null,
+  token: localStorage.getItem("token") || null,
   loading: true,
   error: null,
 };
@@ -67,13 +67,10 @@ export const AuthProvider = ({ children }) => {
   // Check if user is already logged in on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const token = sessionStorage.getItem("token");
+      const token = localStorage.getItem("token");
       if (token) {
         try {
-          // Verify token with backend
-          // This would typically be an API call to validate token
-          // For now, we'll parse the token to get user info
-          const userData = JSON.parse(sessionStorage.getItem("user") || "null");
+          const userData = JSON.parse(localStorage.getItem("user") || "null");
           if (userData) {
             dispatch({ type: "SET_USER", payload: userData });
           }
@@ -97,8 +94,8 @@ export const AuthProvider = ({ children }) => {
       const { token, user } = response.data;
 
       // Store token and user data
-      sessionStorage.setItem("token", token);
-      sessionStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       dispatch({
         type: "LOGIN_SUCCESS",
@@ -118,9 +115,9 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = (showToast = true) => {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("institutionLoggedIn");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("institutionLoggedIn");
 
     dispatch({ type: "LOGOUT" });
 

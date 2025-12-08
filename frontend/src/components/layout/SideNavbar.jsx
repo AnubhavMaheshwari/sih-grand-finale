@@ -1,7 +1,3 @@
-// src/components/SideNavbar.jsx
-import React from "react";
-
-const PRIMARY_BLUE = "#4F46E5";
 const DEEP_INDIGO = "#3730A3";
 
 const sideNavItems = [

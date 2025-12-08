@@ -51,16 +51,6 @@ function App() {
             }
           />
           <Route
-            path="/admin/requests"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminLayout>
-                  <RequestsPage />
-                </AdminLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/admin/dashboard"
             element={
               <Navigate to="/admin/users" replace />

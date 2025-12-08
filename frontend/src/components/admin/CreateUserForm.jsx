@@ -7,45 +7,39 @@ const CreateUserForm = ({
   newUser, 
   setNewUser 
 }) => {
-  const [localNewUser, setLocalNewUser] = useState(newUser);
+  const [localNewUser, setLocalNewUser] = useState({
+    instituteName: "",
+    instituteType: "engineering",
+    fullName: "",
+    email: "",
+    instituteId: "",
+    ...newUser
+  });
 
   // Update local state when prop changes
   useEffect(() => {
-    setLocalNewUser(newUser);
+    setLocalNewUser(prev => ({
+      ...prev,
+      ...newUser
+    }));
   }, [newUser]);
 
-  // Auto-generate Institute ID when component mounts or role changes to institute
+  // Auto-generate Institute ID when component mounts or institute type changes
   useEffect(() => {
-    if (localNewUser.role === 'institute' && !localNewUser.instituteId) {
-      const prefix = getInstitutePrefix(localNewUser.instituteType);
-      const randomNum = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
-      setLocalNewUser(prev => ({
-        ...prev,
-        instituteId: `${prefix}${randomNum}`
-      }));
-    }
-  }, [localNewUser.role, localNewUser.instituteType]);
+    const prefix = getInstitutePrefix(localNewUser.instituteType);
+    const randomNum = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
+    setLocalNewUser(prev => ({
+      ...prev,
+      instituteId: `${prefix}${randomNum}`
+    }));
+  }, [localNewUser.instituteType]);
 
   const handleChange = (field, value) => {
     const updatedUser = { ...localNewUser, [field]: value };
     
     // Auto-generate Institute ID based on type when institute type changes
-    if (field === 'instituteType' && updatedUser.role === 'institute') {
-      const prefix = getInstitutePrefix(updatedUser.instituteType);
-      const randomNum = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
-      updatedUser.instituteId = `${prefix}${randomNum}`;
-    }
-    
-    // Clear institute fields when role changes from institute to ugc_employee
-    if (field === 'role' && value === 'ugc_employee') {
-      updatedUser.instituteId = '';
-      updatedUser.instituteName = '';
-      updatedUser.instituteType = 'others';
-    }
-    
-    // Auto-generate Institute ID when role changes to institute
-    if (field === 'role' && value === 'institute' && !updatedUser.instituteId) {
-      const prefix = getInstitutePrefix(updatedUser.instituteType);
+    if (field === 'instituteType') {
+      const prefix = getInstitutePrefix(value);
       const randomNum = Math.floor(100000 + Math.random() * 900000);
       updatedUser.instituteId = `${prefix}${randomNum}`;
     }
@@ -85,8 +79,8 @@ const CreateUserForm = ({
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-xl font-bold text-gray-900">Create New User</h3>
-              <p className="text-sm text-gray-500 mt-1">Add a new user to the system</p>
+              <h3 className="text-xl font-bold text-gray-900">Create Institute User</h3>
+              <p className="text-sm text-gray-500 mt-1">Add a new institute user to the system</p>
             </div>
             <button
               onClick={onClose}
@@ -105,18 +99,52 @@ const CreateUserForm = ({
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Role
+                    Institute Type *
                   </label>
                   <select
-                    value={localNewUser.role}
-                    onChange={(e) => handleChange('role', e.target.value)}
+                    value={localNewUser.instituteType}
+                    onChange={(e) => handleChange('instituteType', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition appearance-none bg-white"
+                    required
                   >
-                    <option value="institute">Institute User</option>
-                    <option value="ugc_employee">UGC Employee</option>
+                    <option value="engineering">Engineering</option>
+                    <option value="management">Management</option>
+                    <option value="medical">Medical</option>
+                    <option value="others">Others</option>
                   </select>
                 </div>
                 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Institute Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={localNewUser.instituteName}
+                    onChange={(e) => handleChange('instituteName', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                    placeholder="Enter institute name"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Institute ID
+                  </label>
+                  <input
+                    type="text"
+                    value={localNewUser.instituteId}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-gray-50"
+                    placeholder="Auto-generated based on type"
+                    readOnly
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Auto-generated institute ID for login</p>
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Full Name *
@@ -127,7 +155,7 @@ const CreateUserForm = ({
                     value={localNewUser.fullName}
                     onChange={(e) => handleChange('fullName', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                    placeholder="Enter full name"
+                    placeholder="Enter full name of the user"
                   />
                 </div>
                 
@@ -141,59 +169,18 @@ const CreateUserForm = ({
                     value={localNewUser.email}
                     onChange={(e) => handleChange('email', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                    placeholder="user@example.com"
+                    placeholder="user@institute.edu"
                   />
                 </div>
-              </div>
 
-              {/* Right Column - Institute specific fields */}
-              <div className="space-y-5">
-                {localNewUser.role === "institute" && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Institute Type
-                      </label>
-                      <select
-                        value={localNewUser.instituteType}
-                        onChange={(e) => handleChange('instituteType', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition appearance-none bg-white"
-                      >
-                        <option value="engineering">Engineering</option>
-                        <option value="management">Management</option>
-                        <option value="medical">Medical</option>
-                        <option value="others">Others</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Institute ID
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={localNewUser.instituteId}
-                        onChange={(e) => handleChange('instituteId', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-gray-50"
-                        placeholder="Auto-generated based on type"
-                        readOnly
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Institute Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={localNewUser.instituteName}
-                        onChange={(e) => handleChange('instituteName', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                        placeholder="Enter institute name"
-                      />
-                    </div>
-                  </>
-                )}
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                  <h4 className="text-sm font-medium text-blue-800 mb-2">Note:</h4>
+                  <ul className="text-xs text-blue-700 space-y-1">
+                    <li>• Institute ID and password will be auto-generated</li>
+                    <li>• Welcome email with credentials will be sent to the provided email</li>
+                    <li>• User will need to change password on first login</li>
+                  </ul>
+                </div>
               </div>
             </div>
             
@@ -207,9 +194,9 @@ const CreateUserForm = ({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-md hover:shadow-lg"
+                className="px-5 py-2.5 bg-linear-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-md hover:shadow-lg"
               >
-                Create User
+                Create Institute User
               </button>
             </div>
           </form>

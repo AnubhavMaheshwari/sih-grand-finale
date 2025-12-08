@@ -78,6 +78,7 @@ const LoginForm = ({ onToast }) => {
           }
         }, 1500);
       } else {
+        console.log(result);
         onToast(result.error || 'Login failed!', 'error');
         setIsSubmitting(false);
       }

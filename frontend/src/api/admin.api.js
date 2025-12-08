@@ -28,34 +28,32 @@ const adminApi = {
     if (params.page) queryParams.append("page", params.page);
     if (params.limit) queryParams.append("limit", params.limit);
 
-    const url = `/admin/user-stats${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+    const url = `/admin/users${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
     const response = await axiosInstance.get(url);
     return response.data;
   },
 
-  // Create new user
+  // Create new user (institute user only)
   createUser: async (userData) => {
-    const response = await axiosInstance.post("/auth/register", userData);
+    const response = await axiosInstance.post("/admin/users", userData);
     return response.data;
   },
 
   // Update user
   updateUser: async (userId, userData) => {
-    const response = await axiosInstance.put(`/auth/users/${userId}`, userData);
+    const response = await axiosInstance.put(`/admin/users/${userId}`, userData);
     return response.data;
   },
 
   // Delete user
   deleteUser: async (userId) => {
-    const response = await axiosInstance.delete(`/auth/users/${userId}`);
+    const response = await axiosInstance.delete(`/admin/users/${userId}`);
     return response.data;
   },
 
-  // Reset user password
-  resetUserPassword: async (userId, newPassword) => {
-    const response = await axiosInstance.post(`/auth/users/${userId}/reset-password`, {
-      newPassword,
-    });
+  // Reset user password (regenerate)
+  resetUserPassword: async (userId) => {
+    const response = await axiosInstance.post(`/admin/users/${userId}/regenerate-password`);
     return response.data;
   },
 

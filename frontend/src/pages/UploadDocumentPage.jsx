@@ -21,11 +21,8 @@ import {
   ClipboardList,
   Clock,
   FileCheck,
-  LayoutDashboard,
-  Menu,
   MessageSquareWarning,
   FileWarning,
-  ExternalLink,
 } from "lucide-react";
 import documentsApi from "../api/documents.api.js";
 
@@ -43,7 +40,7 @@ function FilePreview({ file, onRemove, isUploading = false }) {
   return (
     <div className="flex items-center justify-between p-4 transition-all bg-gray-100 rounded-lg border border-gray-200">
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 bg-white rounded-md shadow-sm flex-shrink-0">
+        <div className="flex items-center justify-center w-12 h-12 bg-white rounded-md shadow-sm shrink-0">
           {isUploading ? (
             <Loader2
               className="w-6 h-6 animate-spin"
@@ -264,7 +261,6 @@ function RequestItem({ request, onDownloadDeficiencyReport }) {
 function UploadDocumentPage() {
   // State for Navigation
   const [activeTab, setActiveTab] = useState("requests"); // requests, status, queries
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
 
   // Upload/Docs State
   const [isDragOver, setIsDragOver] = useState(false);
@@ -550,63 +546,6 @@ function UploadDocumentPage() {
   };
 
   // --- Render Helpers ---
-
-  const renderSidebar = () => (
-    <div
-      className={`flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300 ${isSidebarOpen ? "w-64" : "w-20"
-        }`}
-    >
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-        {isSidebarOpen && (
-          <span className="font-bold text-lg text-indigo-900">
-            Institute Portal
-          </span>
-        )}
-        <button
-          onClick={() => setSidebarOpen(!isSidebarOpen)}
-          className="p-2 hover:bg-gray-100 rounded-lg"
-        >
-          <Menu className="w-5 h-5 text-gray-600" />
-        </button>
-      </div>
-
-      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-        <SidebarItem
-          icon={<Send />}
-          label="Submit Request"
-          id="requests"
-        />
-        <SidebarItem
-          icon={<ClipboardList />}
-          label="Track Status"
-          id="status"
-        />
-        <SidebarItem
-          icon={<MessageSquareWarning />}
-          label="Respond to Queries"
-          id="queries"
-        />
-      </nav>
-    </div>
-  );
-
-  const SidebarItem = ({ icon, label, id }) => (
-    <button
-      onClick={() => setActiveTab(id)}
-      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === id
-        ? "bg-indigo-50 text-indigo-700"
-        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-        }`}
-    >
-      <div
-        className={`${activeTab === id ? "text-indigo-600" : "text-gray-500"
-          }`}
-      >
-        {icon}
-      </div>
-      {isSidebarOpen && <span>{label}</span>}
-    </button>
-  );
 
   const renderContent = () => {
     switch (activeTab) {
@@ -1030,10 +969,53 @@ function UploadDocumentPage() {
   };
 
   return (
-    <>
-      <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-white">
-        {renderSidebar()}
-        <main className="flex-1 overflow-y-auto p-6 scroll-smooth bg-gray-50/50">
+    <InstituteLayout>
+      <div className="h-full overflow-hidden bg-white">
+        {/* Tab Navigation */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex space-x-1">
+              <button
+                onClick={() => setActiveTab("requests")}
+                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "requests"
+                    ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Send className="w-4 h-4" />
+                  Submit Request
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("status")}
+                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "status"
+                    ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4" />
+                  Track Status
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("queries")}
+                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "queries"
+                    ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <MessageSquareWarning className="w-4 h-4" />
+                  Respond to Queries
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <main className="h-full overflow-y-auto p-6 scroll-smooth bg-gray-50/50">
           {renderContent()}
         </main>
       </div>
@@ -1055,7 +1037,7 @@ function UploadDocumentPage() {
           {toast.message}
         </div>
       )}
-    </>
+    </InstituteLayout>
   );
 }
 
