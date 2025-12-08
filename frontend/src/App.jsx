@@ -6,7 +6,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import UploadDocumentPage from "./pages/UploadDocumentPage.jsx";
 import FAQPage from "./pages/FAQPage.jsx";
 import ContactUsPage from "./pages/ContactUsPage.jsx";
-
+import RequestsPage from "./pages/RequestsPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/AdminInstitutesPage.jsx";

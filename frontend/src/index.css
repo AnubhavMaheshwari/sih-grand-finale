@@ -36,12 +36,6 @@ body {
   background: linear-gradient(135deg, #3730a3 0%, #4f46e5 100%);
 }
 
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  text-align: center;
-}
-
 .logo {
   height: 6em;
   padding: 1.5em;
