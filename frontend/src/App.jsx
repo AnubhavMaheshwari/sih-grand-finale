@@ -19,7 +19,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* The main login page - Public only (redirects if already logged in) */}
         <Route 
           path="/" 
           element={
@@ -29,8 +28,6 @@ function App() {
           } 
         />
 
-        {/* Protected Application pages */}
-        {/* Admin Routes with Sidebar Layout */}
         <Route 
           path="/admin/dashboard" 
           element={
