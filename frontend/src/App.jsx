@@ -6,18 +6,19 @@ import LandingPage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import VerifyRegistrationPage from "./pages/VerifyRegistrationPage.jsx";
-import UploadDocumentPage from "./pages/UploadDocumentPage.jsx";
-import ReportsManagementPage from "./pages/ReportsManagementPage.jsx";
-import RequestCenterPage from "./pages/RequestCenterPage.jsx";
 import AnalyticsInsightsPage from "./pages/AnalyticsInsightsPage.jsx";
-import FAQPage from "./pages/FAQPage.jsx";
-import ContactUsPage from "./pages/ContactUsPage.jsx";
-import RequestsPage from "./pages/RequestsPage.jsx";
-
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
-import UserManagementPage from "./pages/UserManagementPage.jsx";
-import AdminInstitutesPage from "./pages/AdminInstitutesPage.jsx";
-import PendingRegistrationsPage from "./pages/PendingRegistrationsPage.jsx";
+
+// Admin pages
+import UserManagementPage from "./pages/admin/UserManagementPage.jsx";
+import AdminInstitutesPage from "./pages/admin/AdminInstitutesPage.jsx";
+import PendingRegistrationsPage from "./pages/admin/PendingRegistrationsPage.jsx";
+import ReportsManagementPage from "./pages/admin/ReportsManagementPage.jsx";
+
+// Institute pages
+import UploadDocumentPage from "./pages/institute/UploadDocumentPage.jsx";
+import RequestCenterPage from "./pages/institute/RequestCenterPage.jsx";
+import RequestsPage from "./pages/institute/RequestsPage.jsx";
 import AdminLayout from "./components/layout/AdminLayout.jsx";
 import InstituteLayout from "./components/layout/InstituteLayout.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
@@ -170,13 +171,6 @@ function App() {
               </PublicRoute>
             }
           />
-
-          {/* Redirecting from old HTML paths to new React paths */}
-          <Route path="/uploaddoc.html" element={<Navigate to="/upload" replace />} />
-          <Route path="/faq.html" element={<Navigate to="/faq" replace />} />
-          <Route path="/contactUs.html" element={<Navigate to="/contact" replace />} />
-          <Route path="/index.html" element={<Navigate to="/" replace />} />
-
 
           {/* 404 Not Found Page */}
           <Route
