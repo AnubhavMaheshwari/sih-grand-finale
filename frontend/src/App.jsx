@@ -18,7 +18,7 @@ import ReportsManagementPage from "./pages/institute/ReportsManagementPage.jsx";
 // Institute pages
 import UploadDocumentPage from "./pages/institute/UploadDocumentPage.jsx";
 import RequestCenterPage from "./pages/institute/RequestCenterPage.jsx";
-import RequestsPage from "./pages/institute/RequestsPage.jsx";
+
 import AdminLayout from "./components/layout/AdminLayout.jsx";
 import InstituteLayout from "./components/layout/InstituteLayout.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
@@ -91,16 +91,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/admin/requests"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminLayout>
-                  <RequestsPage />
-                </AdminLayout>
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="/admin/pending-registrations"
             element={
