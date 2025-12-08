@@ -74,12 +74,12 @@ const uploadSingle = (req, res, next) => {
       }, 201);
     } catch (error) {
       console.error("Upload error:", error);
-      
+
       // Clean up temp file if it exists
       if (req.file?.path && await fs.pathExists(req.file.path)) {
-        await fs.remove(req.file.path).catch(() => {});
+        await fs.remove(req.file.path).catch(() => { });
       }
-      
+
       return errorResponse(res, error.message || "Failed to upload document", 500);
     }
   });
@@ -101,7 +101,7 @@ const uploadMultiple = (req, res, next) => {
       if (!instituteId) {
         // Clean up all temp files
         await Promise.all(
-          req.files.map(file => fs.remove(file.path).catch(() => {}))
+          req.files.map(file => fs.remove(file.path).catch(() => { }))
         );
         return errorResponse(res, "Institute ID is required", 400);
       }
@@ -109,7 +109,7 @@ const uploadMultiple = (req, res, next) => {
       const year = parseInt(req.body.year);
       if (!year || year < 2000 || year > new Date().getFullYear() + 1) {
         await Promise.all(
-          req.files.map(file => fs.remove(file.path).catch(() => {}))
+          req.files.map(file => fs.remove(file.path).catch(() => { }))
         );
         return errorResponse(res, "Valid year is required (2000 - current year + 1)", 400);
       }
@@ -172,18 +172,18 @@ const uploadMultiple = (req, res, next) => {
       }, 201);
     } catch (error) {
       console.error("Multiple upload error:", error);
-      
+
       // Clean up all temp files
       if (req.files) {
         await Promise.all(
-          req.files.map(file => 
-            file.path && fs.pathExists(file.path) 
-              ? fs.remove(file.path).catch(() => {}) 
+          req.files.map(file =>
+            file.path && fs.pathExists(file.path)
+              ? fs.remove(file.path).catch(() => { })
               : Promise.resolve()
           )
         );
       }
-      
+
       return errorResponse(res, error.message || "Failed to upload documents", 500);
     }
   });
@@ -194,12 +194,12 @@ const getInstituteDocuments = async (req, res) => {
   try {
     // Get institute ID from user, params, or query (for admin/UGC users)
     let instituteId = req.user?.instituteId || req.params.instituteId;
-    
+
     // If still no instituteId, check query parameters (for admin/UGC users)
     if (!instituteId && req.query.instituteId) {
       instituteId = req.query.instituteId;
     }
-    
+
     // For admin users, if no instituteId specified, return all documents
     const isAdmin = req.user?.role === "admin";
     if (!instituteId && !isAdmin) {
@@ -208,7 +208,7 @@ const getInstituteDocuments = async (req, res) => {
 
     const { year, status, page = 1, limit = 20 } = req.query;
     const query = { status: { $ne: "DELETED" } };
-    
+
     // Only filter by instituteId if specified (admin can see all)
     if (instituteId) {
       query.instituteId = instituteId;
@@ -218,7 +218,7 @@ const getInstituteDocuments = async (req, res) => {
     if (status) query.status = status;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
+
     const documents = await UploadedDocument.find(query)
       .sort({ uploadedAt: -1 })
       .skip(skip)
@@ -259,7 +259,7 @@ const getDocument = async (req, res) => {
     // Check access permissions
     const instituteId = req.user?.instituteId;
     const isAdmin = req.user?.role === "admin";
-    
+
     if (!isAdmin && document.instituteId !== instituteId) {
       return errorResponse(res, "Access denied", 403);
     }
@@ -270,7 +270,7 @@ const getDocument = async (req, res) => {
       lastAccessedAt: new Date(),
     });
 
-    return successResponse(res, { 
+    return successResponse(res, {
       document,
       message: "Document retrieved successfully",
     });
@@ -292,7 +292,7 @@ const deleteDocument = async (req, res) => {
     // Check access permissions
     const instituteId = req.user?.instituteId;
     const isAdmin = req.user?.role === "admin";
-    
+
     if (!isAdmin && document.instituteId !== instituteId) {
       return errorResponse(res, "Access denied", 403);
     }
@@ -300,7 +300,7 @@ const deleteDocument = async (req, res) => {
     // Soft delete
     await document.softDelete(req.user?._id);
 
-    return successResponse(res, { 
+    return successResponse(res, {
       message: "Document deleted successfully",
     });
   } catch (error) {
@@ -321,7 +321,7 @@ const viewDocument = async (req, res) => {
     // Check access permissions
     const instituteId = req.user?.instituteId;
     const isAdmin = req.user?.role === "admin";
-    
+
     if (!isAdmin && document.instituteId !== instituteId) {
       return errorResponse(res, "Access denied", 403);
     }
@@ -330,10 +330,10 @@ const viewDocument = async (req, res) => {
       return errorResponse(res, "File not found on server", 404);
     }
 
-    // Set headers for PDF viewing
-    res.setHeader("Content-Type", "application/pdf");
+    // Set headers for file viewing
+    res.setHeader("Content-Type", document.mimeType || "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${document.originalFilename}"`);
-    
+
     // Stream the file
     const fileStream = fs.createReadStream(document.filePath);
     fileStream.pipe(res);
@@ -361,7 +361,7 @@ const parseDocument = async (documentId) => {
 
     // Parse PDF using the service
     const result = await pdfParserService.parseDocument(documentId, document.filePath);
-    
+
     if (result.success) {
       console.log(`Document ${documentId} parsed successfully`);
     } else {
@@ -369,7 +369,7 @@ const parseDocument = async (documentId) => {
     }
   } catch (error) {
     console.error(`Error parsing document ${documentId}:`, error);
-    
+
     try {
       const document = await UploadedDocument.findById(documentId);
       if (document) {

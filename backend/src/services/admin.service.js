@@ -5,13 +5,13 @@ import { sendWelcomeEmail } from "../utils/emailService.js";
 
 // User Management Functions
 export const createUser = async (userData) => {
-  const { 
-    instituteName, 
+  const {
+    instituteName,
     instituteType,
-    fullName, 
+    fullName,
     email
   } = userData;
-  
+
   // Validate required fields for institute user creation
   if (!instituteName || !fullName || !email) {
     throw new Error("Institute name, full name, and email are required");
@@ -24,7 +24,7 @@ export const createUser = async (userData) => {
   // Generate institute ID based on type
   const prefix = getInstitutePrefix(instituteType);
   const instituteId = `${prefix}${Math.floor(100000 + Math.random() * 900000)}`;
-  
+
   // Generate User ID (same as instituteId for institute users)
   const finalUserId = instituteId;
   const generatedPassword = generatePassword();
@@ -84,7 +84,7 @@ export const createUser = async (userData) => {
 
 // Helper functions
 function getInstitutePrefix(instituteType) {
-  switch(instituteType) {
+  switch (instituteType) {
     case 'engineering': return 'ENGG';
     case 'management': return 'MGMT';
     case 'medical': return 'MED';
@@ -93,7 +93,7 @@ function getInstitutePrefix(instituteType) {
 }
 
 function getInstituteCategory(instituteType) {
-  switch(instituteType) {
+  switch (instituteType) {
     case 'engineering': return 'Engineering';
     case 'management': return 'Management';
     case 'medical': return 'Medical';
@@ -108,7 +108,7 @@ export const getUsers = async () => {
 
 export const getUserById = async (userId) => {
   const user = await User.findOne({ userId }).select("-password -otpCode -passwordResetToken");
-  
+
   if (!user) {
     throw new Error("User not found");
   }
@@ -118,14 +118,14 @@ export const getUserById = async (userId) => {
 
 export const updateUser = async (userId, updateData) => {
   const user = await User.findOne({ userId });
-  
+
   if (!user) {
     throw new Error("User not found");
   }
 
   // Update allowed fields
   const allowedUpdates = ["fullName", "email", "role", "instituteId", "instituteName", "instituteType"];
-  
+
   Object.keys(updateData).forEach((key) => {
     if (allowedUpdates.includes(key)) {
       user[key] = updateData[key];
@@ -133,18 +133,18 @@ export const updateUser = async (userId, updateData) => {
   });
 
   await user.save();
-  
+
   const userResponse = user.toObject();
   delete userResponse.password;
   delete userResponse.otpCode;
   delete userResponse.passwordResetToken;
-  
+
   return userResponse;
 };
 
 export const deleteUser = async (userId) => {
   const user = await User.findOneAndDelete({ userId });
-  
+
   if (!user) {
     throw new Error("User not found");
   }
@@ -154,7 +154,7 @@ export const deleteUser = async (userId) => {
 
 export const regeneratePassword = async (userId) => {
   const user = await User.findOne({ userId });
-  
+
   if (!user) {
     throw new Error("User not found");
   }
@@ -162,12 +162,12 @@ export const regeneratePassword = async (userId) => {
   // Generate new password
   const newPassword = generatePassword();
   const generatedPassword = newPassword;
-  
+
   // Update user password and store generated password
   user.password = newPassword;
   user.generatedPassword = generatedPassword;
   await user.save();
-  
+
   return {
     message: "Password regenerated successfully",
     generatedPassword,
@@ -178,9 +178,9 @@ export const regeneratePassword = async (userId) => {
 
 // Institute Management Functions
 export const createInstitute = async (instituteData) => {
-  const { 
-    name, 
-    type = "Institute", 
+  const {
+    name,
+    type = "Institute",
     category = "Others",
     location = { city: "Unknown", state: "Unknown" },
     establishedYear,
@@ -217,7 +217,7 @@ export const getInstitutes = async () => {
 
 export const getInstituteById = async (instituteId) => {
   const institute = await Institute.findOne({ instituteId });
-  
+
   if (!institute) {
     throw new Error("Institute not found");
   }
@@ -227,14 +227,14 @@ export const getInstituteById = async (instituteId) => {
 
 export const updateInstitute = async (instituteId, updateData) => {
   const institute = await Institute.findOne({ instituteId });
-  
+
   if (!institute) {
     throw new Error("Institute not found");
   }
 
   // Update allowed fields
   const allowedUpdates = ["name", "type", "category", "location", "establishedYear", "accreditation", "contact", "isActive"];
-  
+
   Object.keys(updateData).forEach((key) => {
     if (allowedUpdates.includes(key)) {
       institute[key] = updateData[key];
@@ -242,13 +242,13 @@ export const updateInstitute = async (instituteId, updateData) => {
   });
 
   await institute.save();
-  
+
   return institute;
 };
 
 export const deleteInstitute = async (instituteId) => {
   const institute = await Institute.findOneAndDelete({ instituteId });
-  
+
   if (!institute) {
     throw new Error("Institute not found");
   }
@@ -258,18 +258,18 @@ export const deleteInstitute = async (instituteId) => {
 
 // Registration Approval Functions
 export const getPendingRegistrations = async () => {
-  const pendingRegistrations = await User.find({ 
+  const pendingRegistrations = await User.find({
     role: "institute",
     registrationStatus: "pending"
   }).select("-password -otpCode -passwordResetToken")
     .sort({ createdAt: -1 });
-  
+
   return pendingRegistrations;
 };
 
 export const approveRegistration = async (userId) => {
   const user = await User.findOne({ userId });
-  
+
   if (!user) {
     throw new Error("User not found");
   }
@@ -324,7 +324,7 @@ export const approveRegistration = async (userId) => {
 
 export const rejectRegistration = async (userId, reason) => {
   const user = await User.findOne({ userId });
-  
+
   if (!user) {
     throw new Error("User not found");
   }

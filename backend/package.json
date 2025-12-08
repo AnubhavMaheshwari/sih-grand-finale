@@ -28,7 +28,8 @@
     "multer": "^2.0.2",
     "nodemailer": "^7.0.11",
     "pdf-parse": "^2.4.5",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",

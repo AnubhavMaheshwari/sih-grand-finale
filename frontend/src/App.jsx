@@ -14,6 +14,7 @@ import UserManagementPage from "./pages/admin/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/admin/AdminInstitutesPage.jsx";
 import PendingRegistrationsPage from "./pages/admin/PendingRegistrationsPage.jsx";
 import ReportsManagementPage from "./pages/institute/ReportsManagementPage.jsx";
+import AdminRequestsPage from "./pages/admin/AdminRequestsPage.jsx";
 
 // Institute pages
 import UploadDocumentPage from "./pages/institute/UploadDocumentPage.jsx";
@@ -98,6 +99,16 @@ function App() {
               <ProtectedRoute requiredRole="admin">
                 <AdminLayout>
                   <PendingRegistrationsPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/requests"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <AdminRequestsPage />
                 </AdminLayout>
               </ProtectedRoute>
             }

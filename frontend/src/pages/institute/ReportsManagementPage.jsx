@@ -127,11 +127,11 @@ function DocumentItem({ document, onView, onDelete, onRefresh }) {
         </div>
       </div>
       <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        {document.status === "PARSED" && (
+        {(document.status === "PARSED" || document.status === "UPLOADED") && (
           <button
             onClick={() => onView(document)}
             className="p-2 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors"
-            title="View PDF"
+            title="View Document"
           >
             <Eye className="w-4 h-4" />
           </button>
@@ -383,11 +383,10 @@ const ReportsManagementPage = () => {
 
         {/* Drag & drop area */}
         <div
-          className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${
-            isDragOver
+          className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${isDragOver
               ? "border-indigo-500 bg-indigo-50"
               : "border-gray-300 hover:border-indigo-400 hover:bg-gray-50"
-          }`}
+            }`}
           onDragEnter={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -481,8 +480,8 @@ const ReportsManagementPage = () => {
 
   const renderViewTab = () => {
     const availableYears = [...new Set(documents.map(doc => doc.year))].sort((a, b) => b - a);
-    
-    const filteredDocuments = documents.filter(doc => 
+
+    const filteredDocuments = documents.filter(doc =>
       selectedViewYear ? doc.year === selectedViewYear : true
     );
 
@@ -515,7 +514,7 @@ const ReportsManagementPage = () => {
               No documents found
             </h3>
             <p className="text-base text-gray-500 max-w-sm mt-2 mb-6">
-              {selectedViewYear 
+              {selectedViewYear
                 ? `You haven't uploaded any reports for ${selectedViewYear} yet.`
                 : "You haven't uploaded any reports yet."}
             </p>
@@ -552,11 +551,10 @@ const ReportsManagementPage = () => {
             <div className="flex space-x-1">
               <button
                 onClick={() => setActiveTab("upload")}
-                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
-                  activeTab === "upload"
+                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "upload"
                     ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <UploadCloud className="w-4 h-4" />
@@ -565,11 +563,10 @@ const ReportsManagementPage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("view")}
-                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
-                  activeTab === "view"
+                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${activeTab === "view"
                     ? "bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
