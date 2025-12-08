@@ -49,18 +49,18 @@ export const sendOTPEmail = async (email, otpCode) => {
     const mailOptions = {
       from: `SARTHI Portal <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "SARTHI Portal - Password Reset OTP",
+      subject: "SARTHI Portal - OTP Verification Code",
       html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #4f46e5;">Password Reset Request</h2>
+            <h2 style="color: #4f46e5;">OTP Verification Code</h2>
             <p>Hello,</p>
-            <p>You have requested to reset your password for the SARTHI Portal.</p>
-            <p>Please use the following OTP (One-Time Password) to reset your password:</p>
+            <p>You have requested an OTP for verification on the SARTHI Portal.</p>
+            <p>Please use the following OTP (One-Time Password) to proceed:</p>
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
               <h1 style="color: #4f46e5; font-size: 32px; letter-spacing: 5px; margin: 0;">${otpCode}</h1>
               <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">This OTP is valid for 10 minutes</p>
             </div>
-            <p>If you did not request this password reset, please ignore this email or contact support if you have concerns.</p>
+            <p>If you did not request this verification, please ignore this email or contact support if you have concerns.</p>
             <p>Best regards,<br>The SARTHI Team</p>
           </div>
         `,

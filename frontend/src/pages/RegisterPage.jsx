@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import Toast from '../components/common/Toast.jsx';
 import PromoSection from '../components/login/PromoSection.jsx';
 import sarthiLogo from '../assets/images/sarthiLogo.png';
@@ -18,6 +19,8 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const showToast = (message, type) => {
     setToast({ message, type });
@@ -37,7 +40,7 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validation
     if (formData.password !== formData.confirmPassword) {
       showToast('Passwords do not match', 'error');
@@ -60,11 +63,11 @@ const RegisterPage = () => {
       });
 
       showToast(response.message || 'Registration successful! Please check your email for OTP verification.', 'success');
-      
+
       // Redirect to OTP verification page
       setTimeout(() => {
-        navigate('/verify-registration', { 
-          state: { 
+        navigate('/verify-registration', {
+          state: {
             email: formData.email,
             message: 'Please enter the OTP sent to your email to complete registration.'
           }
@@ -171,15 +174,28 @@ const RegisterPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password *
                 </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                  placeholder="At least 8 characters"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition pr-10"
+                    placeholder="At least 8 characters"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   Password must be at least 8 characters long
                 </p>
@@ -190,15 +206,28 @@ const RegisterPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Confirm Password *
                 </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                  placeholder="Confirm your password"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition pr-10"
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Terms and Conditions */}
@@ -263,7 +292,7 @@ const RegisterPage = () => {
                 </a>
               </p>
               <p className="text-xs text-center text-gray-500 mt-2">
-                Note: After registration, you'll receive an OTP for email verification. 
+                Note: After registration, you'll receive an OTP for email verification.
                 Your account will be pending admin approval before you can login.
               </p>
             </div>

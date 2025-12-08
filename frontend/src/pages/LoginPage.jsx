@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import Toast from '../components/common/Toast.jsx';
 import LoginForm from '../components/login/LoginForm.jsx';
 import PromoSection from '../components/login/PromoSection.jsx';
@@ -9,6 +11,7 @@ import Footer from '../components/layout/Footer.jsx';
 
 const LoginPage = () => {
   const { error } = useAuth();
+  const navigate = useNavigate();
   const [toast, setToast] = useState({ message: '', type: '' });
 
   // Show error toast from auth context
@@ -31,7 +34,16 @@ const LoginPage = () => {
     <div className="flex flex-col min-h-screen font-sans bg-white lg:flex-row lg:bg-transparent">
       {/* Left: Login Form Section */}
 
-      <div className="flex flex-col justify-between w-full px-4 py-4 overflow-y-auto bg-white shadow-xl lg:w-1/2 sm:px-6 md:px-8 lg:px-12 xl:px-16 sm:py-10 md:py-12 lg:shadow-none">
+      <div className="relative flex flex-col justify-between w-full px-4 py-4 overflow-y-auto bg-white shadow-xl lg:w-1/2 sm:px-6 md:px-8 lg:px-12 xl:px-16 sm:py-10 md:py-12 lg:shadow-none">
+
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="absolute top-4 left-4 p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-50 rounded-full transition-all duration-200 z-10"
+          title="Back to Home"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </button>
         <div className="flex flex-col flex-1">
           <div className="w-full max-w-md mx-auto px-2 sm:px-0">
             {/* Header */}

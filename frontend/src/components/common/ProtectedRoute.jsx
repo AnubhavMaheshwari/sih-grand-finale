@@ -2,7 +2,7 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 
-const ProtectedRoute = ({ children, requiredRole = null, redirectTo = "/" }) => {
+const ProtectedRoute = ({ children, requiredRole = null, redirectTo = "/login" }) => {
   const { isAuthenticated, loading, hasRole } = useAuth();
 
   if (loading) {
@@ -35,7 +35,7 @@ const ProtectedRoute = ({ children, requiredRole = null, redirectTo = "/" }) => 
         roleRedirect = "/edu";
         break;
       default:
-        roleRedirect = "/";
+        roleRedirect = "/login";
     }
 
     return <Navigate to={roleRedirect} replace />;

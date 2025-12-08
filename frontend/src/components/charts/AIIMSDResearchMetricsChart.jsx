@@ -37,25 +37,25 @@ const AIIMSDResearchMetricsChart = () => {
           <Line
             type="monotone"
             dataKey="IPR"
-            stroke="#1f77b4"
-            strokeWidth={2}
-            activeDot={{ r: 6 }}
+            stroke="#6366F1"
+            strokeWidth={3}
+            activeDot={{ r: 8 }}
             name="IPR"
           />
           <Line
             type="monotone"
             dataKey="RD"
-            stroke="#ff7f0e"
-            strokeWidth={2}
-            activeDot={{ r: 6 }}
+            stroke="#EC4899"
+            strokeWidth={3}
+            activeDot={{ r: 8 }}
             name="RD"
           />
           <Line
             type="monotone"
             dataKey="WD"
-            stroke="#2ca02c"
-            strokeWidth={2}
-            activeDot={{ r: 6 }}
+            stroke="#10B981"
+            strokeWidth={3}
+            activeDot={{ r: 8 }}
             name="WD"
           />
         </LineChart>

@@ -50,10 +50,10 @@ const AIIMSDPerceptionFSRChart = () => {
             yAxisId="left"
             type="monotone"
             dataKey="PR"
-            stroke="#1f77b4"
-            strokeWidth={2}
+            stroke="#6366F1"
+            strokeWidth={3}
             marker="o"
-            activeDot={{ r: 6 }}
+            activeDot={{ r: 8 }}
             name="Perception (PR)"
           />
 
@@ -62,10 +62,10 @@ const AIIMSDPerceptionFSRChart = () => {
             yAxisId="right"
             type="monotone"
             dataKey="FSR"
-            stroke="#d62728"
-            strokeWidth={2}
+            stroke="#EC4899"
+            strokeWidth={3}
             marker="s"
-            activeDot={{ r: 6 }}
+            activeDot={{ r: 8 }}
             name="Faculty–student ratio (FSR)"
           />
         </LineChart>

@@ -34,21 +34,23 @@ const GraduationPillarsChart = () => {
           <Line
             type="monotone"
             dataKey="GPH"
-            stroke="#1f77b4"
+            stroke="#6366F1"
             activeDot={{ r: 8 }}
-            strokeWidth={2}
+            strokeWidth={3}
           />
           <Line
             type="monotone"
             dataKey="GUE"
-            stroke="#ff7f0e"
-            strokeWidth={2}
+            stroke="#EC4899"
+            activeDot={{ r: 8 }}
+            strokeWidth={3}
           />
           <Line
             type="monotone"
             dataKey="GSS"
-            stroke="#2ca02c"
-            strokeWidth={2}
+            stroke="#8B5CF6"
+            activeDot={{ r: 8 }}
+            strokeWidth={3}
           />
         </LineChart>
       </ResponsiveContainer>

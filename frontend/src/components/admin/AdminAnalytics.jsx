@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line
 } from "recharts";
@@ -18,6 +18,10 @@ const AdminAnalytics = () => {
     documentSuccessRate: 0,
     recentActivity: []
   });
+
+  // Vibrant color palette for charts
+  const COLORS = ['#6366F1', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#06B6D4'];
+
   const [charts, setCharts] = useState({
     userDistribution: [],
     instituteByCategory: [],
@@ -34,9 +38,9 @@ const AdminAnalytics = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await adminApi.getAdminStats();
-      
+
       if (response.success) {
         setStats({
           totalUsers: response.stats?.totalUsers || 0,
@@ -49,10 +53,21 @@ const AdminAnalytics = () => {
           documentSuccessRate: response.stats?.documentSuccessRate || 0,
           recentActivity: response.recentActivity || []
         });
-        
+
+        // Apply attractive colors to charts data
+        const enhancedUserDist = (response.charts?.userDistribution || []).map((item, index) => ({
+          ...item,
+          color: COLORS[index % COLORS.length]
+        }));
+
+        const enhancedInstByCat = (response.charts?.instituteByCategory || []).map((item, index) => ({
+          ...item,
+          fill: COLORS[index % COLORS.length]
+        }));
+
         setCharts({
-          userDistribution: response.charts?.userDistribution || [],
-          instituteByCategory: response.charts?.instituteByCategory || [],
+          userDistribution: enhancedUserDist,
+          instituteByCategory: enhancedInstByCat,
           monthlyGrowth: response.charts?.monthlyGrowth || []
         });
       } else {
@@ -70,8 +85,8 @@ const AdminAnalytics = () => {
   };
 
   // Use real chart data from API
-  const userDistribution = charts.userDistribution.length > 0 
-    ? charts.userDistribution 
+  const userDistribution = charts.userDistribution.length > 0
+    ? charts.userDistribution
     : [{ name: "No Data", value: 1, color: "#9CA3AF" }];
 
   const instituteByCategory = charts.instituteByCategory.length > 0
@@ -100,7 +115,7 @@ const AdminAnalytics = () => {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
             <span>{error}</span>
-            <button 
+            <button
               onClick={fetchAdminData}
               className="ml-auto text-sm font-medium text-red-700 hover:text-red-800"
             >
@@ -168,8 +183,8 @@ const AdminAnalytics = () => {
               <p className="text-sm text-gray-500">Success Rate</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{stats.documentSuccessRate}%</p>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                <div 
-                  className="bg-green-600 h-2 rounded-full" 
+                <div
+                  className="bg-green-600 h-2 rounded-full"
                   style={{ width: `${stats.documentSuccessRate}%` }}
                 ></div>
               </div>
@@ -226,7 +241,7 @@ const AdminAnalytics = () => {
                 <Legend />
                 <Bar dataKey="count" name="Number of Institutes" radius={[4, 4, 0, 0]}>
                   {instituteByCategory.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>
               </BarChart>
@@ -239,7 +254,7 @@ const AdminAnalytics = () => {
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Monthly Growth</h3>
-          <button 
+          <button
             onClick={fetchAdminData}
             className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
           >
@@ -257,9 +272,9 @@ const AdminAnalytics = () => {
               <YAxis stroke="#666" />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="users" name="Total Users" stroke="#4F46E5" strokeWidth={2} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="institutes" name="Total Institutes" stroke="#10B981" strokeWidth={2} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="documents" name="Documents Uploaded" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="users" name="Total Users" stroke="#6366F1" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="institutes" name="Total Institutes" stroke="#10B981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="documents" name="Documents Uploaded" stroke="#8B5CF6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -272,16 +287,14 @@ const AdminAnalytics = () => {
           {stats.recentActivity.map((activity) => (
             <div key={activity.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
               <div className="flex items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  activity.action.includes("Created") ? "bg-green-100" :
-                  activity.action.includes("Updated") ? "bg-blue-100" :
-                  "bg-yellow-100"
-                }`}>
-                  <svg className={`w-5 h-5 ${
-                    activity.action.includes("Created") ? "text-green-600" :
-                    activity.action.includes("Updated") ? "text-blue-600" :
-                    "text-yellow-600"
-                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.action.includes("Created") ? "bg-green-100" :
+                    activity.action.includes("Updated") ? "bg-blue-100" :
+                      "bg-yellow-100"
+                  }`}>
+                  <svg className={`w-5 h-5 ${activity.action.includes("Created") ? "text-green-600" :
+                      activity.action.includes("Updated") ? "text-blue-600" :
+                        "text-yellow-600"
+                    }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
