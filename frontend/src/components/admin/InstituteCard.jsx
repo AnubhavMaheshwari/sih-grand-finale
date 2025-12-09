@@ -4,7 +4,6 @@ const InstituteCard = ({ institute, onViewInsights }) => {
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">{institute.name}</h3>
-          <p className="text-sm text-gray-600 mt-1">{institute.location}</p>
         </div>
         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
           institute.status === "Verified" ? "bg-green-100 text-green-800" :

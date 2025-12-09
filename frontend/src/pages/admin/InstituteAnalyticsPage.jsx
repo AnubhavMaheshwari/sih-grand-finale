@@ -13,7 +13,6 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  LineChart,
   Line,
   PieChart,
   Pie,
@@ -32,6 +31,20 @@ const InstituteAnalyticsPage = () => {
   const [error, setError] = useState(null);
   const [insightsData, setInsightsData] = useState(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
+
+  // Log institute data when it changes
+  useEffect(() => {
+    if (institute) {
+      console.log("Current institute state:", institute);
+    }
+  }, [institute]);
+
+  // Log insights data when it changes
+  useEffect(() => {
+    if (insightsData) {
+      console.log("Current insightsData state:", insightsData);
+    }
+  }, [insightsData]);
 
   // Fetch institute details
   useEffect(() => {
@@ -53,7 +66,13 @@ const InstituteAnalyticsPage = () => {
       // Get institute data
       const response = await adminApi.getInstituteData(instituteId);
       
+      // Log the raw institute data response
+      console.log("Institute Details API Response:", response);
+      console.log("Institute Details Data:", response.data);
+      
       if (response.success) {
+        // Log before setting institute data
+        console.log("Setting institute data to state:", response.data);
         setInstitute(response.data);
       } else {
         setError(response.error || "Failed to load institute details");
@@ -71,8 +90,16 @@ const InstituteAnalyticsPage = () => {
       setInsightsLoading(true);
       const response = await analyticsApi.getInstituteFinancialData(instituteId);
       
+      // Log the raw financial data response
+      console.log("Financial Insights API Response:", response);
+      console.log("Financial Insights Data:", response.data);
+      
       if (response.success) {
         const transformedData = transformFinancialData(response.data);
+        // Log the transformed data
+        console.log("Transformed Financial Data:", transformedData);
+        // Log before setting insights data
+        console.log("Setting insights data to state:", transformedData);
         setInsightsData(transformedData);
       } else {
         setInsightsData(null);

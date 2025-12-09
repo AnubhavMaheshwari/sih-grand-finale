@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import YearSelector from "../../components/common/YearSelector.jsx";
 import adminApi from "../../api/admin.api.js";
-import instituteDataApi from "../../api/instituteData.api.js";
 
 // Institute Parameter Card Component
 function InstituteParameterCard({ institute, parameterData, onView, onVerify }) {

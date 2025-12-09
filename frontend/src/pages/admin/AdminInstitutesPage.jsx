@@ -111,17 +111,7 @@ const AdminInstitutesPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Institute Management
-        </h1>
-        <p className="text-gray-600 mt-2">
-          View and analyze institute data with visual insights
-        </p>
-      </div>
 
-      {/* Error message */}
       {error && (
         <div className="p-4 mb-6 text-sm text-red-700 bg-red-100 rounded-lg">
           <div className="flex items-center">
