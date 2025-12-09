@@ -1,103 +1,50 @@
 import { useState, useEffect } from "react";
+import adminApi from "../../api/admin.api.js";
 
 const InstituteManagement = () => {
   const [institutes, setInstitutes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedInstitute, setSelectedInstitute] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // Mock data - in real app, fetch from API
+  // Fetch real data from API
   useEffect(() => {
-    setTimeout(() => {
-      const mockInstitutes = [
-        {
-          id: "INST001",
-          name: "Indian Institute of Technology Delhi",
-          type: "Engineering",
-          location: "New Delhi, Delhi",
-          established: 1961,
-          status: "Active",
-          users: 5,
-          lastUpdated: "2025-12-05"
-        },
-        {
-          id: "INST002",
-          name: "All India Institute of Medical Sciences",
-          type: "Medical",
-          location: "New Delhi, Delhi",
-          established: 1956,
-          status: "Active",
-          users: 3,
-          lastUpdated: "2025-12-04"
-        },
-        {
-          id: "INST003",
-          name: "Indian Institute of Management Ahmedabad",
-          type: "Management",
-          location: "Ahmedabad, Gujarat",
-          established: 1961,
-          status: "Active",
-          users: 2,
-          lastUpdated: "2025-12-03"
-        },
-        {
-          id: "INST004",
-          name: "National Institute of Technology Trichy",
-          type: "Engineering",
-          location: "Tiruchirappalli, Tamil Nadu",
-          established: 1964,
-          status: "Active",
-          users: 4,
-          lastUpdated: "2025-12-02"
-        },
-        {
-          id: "INST005",
-          name: "Jawaharlal Institute of Postgraduate Medical Education & Research",
-          type: "Medical",
-          location: "Puducherry",
-          established: 1823,
-          status: "Active",
-          users: 2,
-          lastUpdated: "2025-12-01"
-        },
-        {
-          id: "INST006",
-          name: "Indian Institute of Technology Bombay",
-          type: "Engineering",
-          location: "Mumbai, Maharashtra",
-          established: 1958,
-          status: "Active",
-          users: 6,
-          lastUpdated: "2025-11-30"
-        },
-        {
-          id: "INST007",
-          name: "Indian Institute of Management Bangalore",
-          type: "Management",
-          location: "Bangalore, Karnataka",
-          established: 1973,
-          status: "Active",
-          users: 3,
-          lastUpdated: "2025-11-29"
-        },
-        {
-          id: "INST008",
-          name: "University of Delhi",
-          type: "University",
-          location: "New Delhi, Delhi",
-          established: 1922,
-          status: "Active",
-          users: 8,
-          lastUpdated: "2025-11-28"
-        }
-      ];
-      setInstitutes(mockInstitutes);
-      setLoading(false);
-    }, 800);
+    fetchInstitutes();
   }, []);
+
+  const fetchInstitutes = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await adminApi.getAllInstitutes();
+      
+      if (response.success) {
+        // Transform API data to match component format
+        const transformedInstitutes = response.institutes.map(institute => ({
+          id: institute.instituteId,
+          name: institute.name,
+          type: institute.category || institute.type,
+          location: `${institute.location?.city || 'Unknown'}, ${institute.location?.state || 'Unknown'}`,
+          established: institute.establishedYear || 'N/A',
+          status: institute.isActive ? "Active" : "Inactive",
+          users: 0, // This would need to be fetched separately from user data
+          lastUpdated: new Date(institute.updatedAt || institute.createdAt).toISOString().split('T')[0]
+        }));
+        setInstitutes(transformedInstitutes);
+      } else {
+        setError(response.error || "Failed to load institutes");
+      }
+    } catch (err) {
+      console.error("Error fetching institutes:", err);
+      setError(err.response?.data?.error || "Failed to connect to server");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredInstitutes = institutes.filter(institute => {
     const matchesSearch = institute.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,22 +54,40 @@ const InstituteManagement = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ["all", "Engineering", "Medical", "Management", "University"];
+  const categories = ["all", "Engineering", "Medical", "Management", "Arts", "Science", "Law", "Pharmacy", "Dental", "Nursing", "Agriculture", "Others"];
 
   const handleEdit = (institute) => {
     setSelectedInstitute(institute);
     setShowEditModal(true);
   };
 
-  const handleSaveEdit = () => {
-    // In real app, make API call to update institute
-    setShowEditModal(false);
-    setSelectedInstitute(null);
+  const handleSaveEdit = async () => {
+    try {
+      // In real app, make API call to update institute
+      // await adminApi.updateInstitute(selectedInstitute.id, updatedData);
+      setShowEditModal(false);
+      setSelectedInstitute(null);
+      // Refresh the list
+      fetchInstitutes();
+    } catch (err) {
+      console.error("Error updating institute:", err);
+    }
   };
 
-  const handleAddInstitute = () => {
-    // In real app, make API call to add institute
-    setShowAddModal(false);
+  const handleAddInstitute = async () => {
+    try {
+      // In real app, make API call to add institute
+      // await adminApi.createInstitute(newInstituteData);
+      setShowAddModal(false);
+      // Refresh the list
+      fetchInstitutes();
+    } catch (err) {
+      console.error("Error adding institute:", err);
+    }
+  };
+
+  const handleRetry = () => {
+    fetchInstitutes();
   };
 
   if (loading) {
@@ -140,17 +105,49 @@ const InstituteManagement = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Institute Management</h1>
           <p className="text-gray-600">Manage and monitor all registered educational institutions</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Showing {filteredInstitutes.length} of {institutes.length} institutes
+          </p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="mt-4 md:mt-0 bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center"
-        >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add New Institute
-        </button>
+        <div className="flex items-center space-x-3 mt-4 md:mt-0">
+          <button
+            onClick={handleRetry}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition flex items-center"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add New Institute
+          </button>
+        </div>
       </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="p-4 mb-6 text-sm text-red-700 bg-red-100 rounded-lg">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <span>{error}</span>
+            <button
+              onClick={handleRetry}
+              className="ml-auto text-sm font-medium text-red-700 hover:text-red-800"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
@@ -234,6 +231,13 @@ const InstituteManagement = () => {
                       institute.type === "Engineering" ? "bg-blue-100 text-blue-800" :
                       institute.type === "Medical" ? "bg-red-100 text-red-800" :
                       institute.type === "Management" ? "bg-green-100 text-green-800" :
+                      institute.type === "Arts" ? "bg-purple-100 text-purple-800" :
+                      institute.type === "Science" ? "bg-yellow-100 text-yellow-800" :
+                      institute.type === "Law" ? "bg-pink-100 text-pink-800" :
+                      institute.type === "Pharmacy" ? "bg-indigo-100 text-indigo-800" :
+                      institute.type === "Dental" ? "bg-teal-100 text-teal-800" :
+                      institute.type === "Nursing" ? "bg-rose-100 text-rose-800" :
+                      institute.type === "Agriculture" ? "bg-lime-100 text-lime-800" :
                       "bg-gray-100 text-gray-800"
                     }`}>
                       {institute.type}

@@ -71,6 +71,28 @@ const adminApi = {
     return response.data;
   },
 
+  // Get all institutes with their latest data (admin view)
+  getAllInstitutesWithData: async () => {
+    const response = await axiosInstance.get("/institute-data/admin/all-institutes");
+    return response.data;
+  },
+
+  // Get specific institute data
+  getInstituteData: async (instituteId, academicYear = null) => {
+    let url = `/institute-data/${instituteId}/data`;
+    if (academicYear) {
+      url = `/institute-data/${instituteId}/data/${academicYear}`;
+    }
+    const response = await axiosInstance.get(url);
+    return response.data;
+  },
+
+  // Get all data for an institute (multiple years)
+  getAllDataForInstitute: async (instituteId) => {
+    const response = await axiosInstance.get(`/institute-data/${instituteId}/data-all`);
+    return response.data;
+  },
+
   // Create institute
   createInstitute: async (instituteData) => {
     const response = await axiosInstance.post("/admin/institutes", instituteData);

@@ -714,6 +714,88 @@ class InstituteDataService {
   }
 
   /**
+   * Get all institutes with their latest data (admin only)
+   */
+  async getAllInstitutesWithData() {
+    try {
+      // Import User model here to avoid circular dependency
+      const User = (await import("../models/User.model.js")).default;
+      
+      // Get all institute users (approved registration)
+      const instituteUsers = await User.find({
+        role: "institute",
+        registrationStatus: "approved"
+      }).select("instituteId instituteName instituteType fullName email");
+      
+      if (!instituteUsers || instituteUsers.length === 0) {
+        return [];
+      }
+      
+      // Group users by instituteId (in case multiple users per institute)
+      const institutesMap = new Map();
+      
+      for (const user of instituteUsers) {
+        if (!institutesMap.has(user.instituteId)) {
+          institutesMap.set(user.instituteId, {
+            instituteId: user.instituteId,
+            instituteName: user.instituteName,
+            instituteType: user.instituteType,
+            users: [],
+            latestData: null,
+            completenessScore: 0,
+            isVerified: false,
+            lastUpdated: null,
+            uploadedBy: null
+          });
+        }
+        
+        const institute = institutesMap.get(user.instituteId);
+        institute.users.push({
+          fullName: user.fullName,
+          email: user.email
+        });
+      }
+      
+      // Get latest data for each institute
+      const institutes = Array.from(institutesMap.values());
+      
+      const institutesWithData = await Promise.all(
+        institutes.map(async (institute) => {
+          try {
+            // Get all data for this institute
+            const dataResponse = await this.getAllInstituteData(institute.instituteId, 1, 0);
+            
+            if (dataResponse.data && dataResponse.data.length > 0) {
+              const latestData = dataResponse.data[0]; // Already sorted by academicYear descending
+              
+              institute.latestData = latestData;
+              institute.completenessScore = latestData.completenessScore || 0;
+              institute.isVerified = latestData.isVerified || false;
+              institute.lastUpdated = latestData.updatedAt || latestData.createdAt;
+              institute.uploadedBy = latestData.uploadedBy?.fullName || institute.users[0]?.fullName || "Unknown";
+              
+              // Extract location from data if available
+              if (latestData.extractedParameters?.get("location")) {
+                institute.location = latestData.extractedParameters.get("location");
+              }
+            }
+            
+            return institute;
+          } catch (error) {
+            console.error(`Error fetching data for institute ${institute.instituteId}:`, error);
+            return institute; // Return institute without data
+          }
+        })
+      );
+      
+      return institutesWithData;
+    } catch (error) {
+      console.error("Error getting all institutes with data:", error);
+      throw new ApiError(500, "Failed to fetch institutes with data");
+    }
+  }
+
+  /**
    * Get parameter mappings for all 27 parameters
    */
   getParameterMappings() {

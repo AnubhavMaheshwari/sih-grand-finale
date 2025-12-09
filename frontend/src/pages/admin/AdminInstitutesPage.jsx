@@ -1,133 +1,113 @@
-import { useState } from "react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
-  ComposedChart,
-} from "recharts";
-
-// ----------------- HELPERS -----------------
-const formatCr = (value) => (value / 10000000).toFixed(2); // 1 Cr = 1,00,00,000
-const formatCrLabel = (value) => `${formatCr(value)} Cr`;
-
-// Color palette for charts
-const CHART_COLORS = {
-  library: "#6366F1", // Indigo
-  labs: "#EC4899", // Pink
-  workshops: "#F59E0B", // Amber
-  otherAssets: "#10B981", // Emerald
-  salaries: "#F43F5E", // Rose
-  maintenance: "#06B6D4", // Cyan
-  capital: "#8B5CF6", // Violet
-  operational: "#F97316", // Orange
-};
-
-const PIE_COLORS = [
-  CHART_COLORS.library,
-  CHART_COLORS.labs,
-  CHART_COLORS.workshops,
-  CHART_COLORS.otherAssets,
-];
-
-// ---------- RAW DATA BY CATEGORY & YEAR (IN RUPEES, DO NOT CHANGE) ----------
-const capitalByYear = [
-  {
-    year: "2021-22",
-    library: 16159011,
-    labs: 32702870,
-    workshops: 10276185,
-    otherAssets: 116807266,
-  },
-  {
-    year: "2022-23",
-    library: 26960364,
-    labs: 40039505,
-    workshops: 15642801,
-    otherAssets: 205437744,
-  },
-  {
-    year: "2023-24",
-    library: 64619296,
-    labs: 37165334,
-    workshops: 7808673,
-    otherAssets: 117932029,
-  },
-];
-
-const operationalByYear = [
-  {
-    year: "2021-22",
-    salaries: 654305850,
-    maintenance: 270257352,
-  },
-  {
-    year: "2022-23",
-    salaries: 740051982,
-    maintenance: 325776674,
-  },
-  {
-    year: "2023-24",
-    salaries: 892977412,
-    maintenance: 470807984,
-  },
-];
-
-// Capital vs Operational totals (still using original rupee data)
-const capVsOpByYear = capitalByYear.map((capRow, idx) => {
-  const opRow = operationalByYear[idx];
-  const capitalTotal =
-    capRow.library +
-    capRow.labs +
-    capRow.workshops +
-    capRow.otherAssets;
-  const operationalTotal = opRow.salaries + opRow.maintenance;
-
-  return {
-    year: capRow.year,
-    capital: capitalTotal,
-    operational: operationalTotal,
-  };
-});
-
-// Pie chart for 2023–24 capital composition
-const capital2023 = capitalByYear.find((d) => d.year === "2023-24");
-const capital2023Breakdown = [
-  { name: "Library", value: capital2023.library },
-  { name: "Labs", value: capital2023.labs },
-  { name: "Workshops", value: capital2023.workshops },
-  { name: "Other Capital Assets", value: capital2023.otherAssets },
-];
-
-const axisStyles = {
-  x: {
-    stroke: "#111827",
-    tick: { fill: "#374151", fontSize: 12 },
-  },
-  y: {
-    stroke: "#111827",
-    tick: { fill: "#374151", fontSize: 12 },
-  },
-};
-
-const gridStyle = {
-  strokeDasharray: "3 3",
-  stroke: "#E5E7EB",
-};
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import adminApi from "../../api/admin.api.js";
+import InstituteCard from "../../components/admin/InstituteCard.jsx";
 
 const AdminInstitutesPage = () => {
-  const [showCharts, setShowCharts] = useState(false);
+  const navigate = useNavigate();
+  const [institutes, setInstitutes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Fetch institutes data
+  useEffect(() => {
+    fetchInstitutes();
+  }, []);
+
+  const fetchInstitutes = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Get all institutes with their latest data
+      const response = await adminApi.getAllInstitutesWithData();
+      
+      if (response.success) {
+        // Transform the data for display
+        const institutesList = response.data.map(institute => {
+          // Determine location - try to extract from data or use default
+          let location = "Unknown";
+          if (institute.location) {
+            location = institute.location;
+          } else if (institute.latestData?.extractedParameters) {
+            // Handle both Map (from MongoDB) and plain object (from JSON serialization)
+            const extractedParams = institute.latestData.extractedParameters;
+            if (typeof extractedParams.get === 'function') {
+              // It's a Map
+              location = extractedParams.get("location") || "Unknown";
+            } else if (extractedParams.location) {
+              // It's a plain object
+              location = extractedParams.location;
+            }
+          }
+          
+          // Determine status based on data completeness and verification
+          let status = "Inactive";
+          if (institute.latestData) {
+            if (institute.isVerified) {
+              status = "Verified";
+            } else if (institute.completenessScore > 50) {
+              status = "Active";
+            } else {
+              status = "Needs Data";
+            }
+          }
+          
+          // Format upload date
+          let uploadDate = "N/A";
+          if (institute.lastUpdated) {
+            uploadDate = new Date(institute.lastUpdated).toISOString().split('T')[0];
+          }
+          
+          return {
+            id: institute.instituteId,
+            name: institute.instituteName,
+            type: institute.instituteType,
+            location: location,
+            established: "N/A", // Not available in current schema
+            status: status,
+            users: institute.users?.length || 0,
+            lastUpdated: uploadDate,
+            uploadedBy: institute.uploadedBy || "Unknown",
+            uploadDate: uploadDate,
+            hasData: institute.latestData !== null,
+            latestData: institute.latestData,
+            completenessScore: institute.completenessScore || 0,
+            isVerified: institute.isVerified || false,
+          };
+        });
+        
+        setInstitutes(institutesList);
+      } else {
+        setError(response.error || "Failed to load institutes data");
+      }
+    } catch (err) {
+      console.error("Error fetching institutes:", err);
+      setError(err.response?.data?.error || "Failed to connect to server");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewInsights = (institute) => {
+    // Navigate to the analytics page for this institute
+    navigate(`/admin/institutes/${institute.id}/analytics`);
+  };
+
+  const filteredInstitutes = institutes.filter(institute => {
+    return institute.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           institute.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           institute.id.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -137,552 +117,65 @@ const AdminInstitutesPage = () => {
           Institute Management
         </h1>
         <p className="text-gray-600 mt-2">
-          Manage educational institutions
+          View and analyze institute data with visual insights
         </p>
       </div>
 
-      {/* Conditional view */}
-      {!showCharts ? (
-        // -------------------- CARD VIEW --------------------
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                NIT Jamshedpur
-              </h2>
-              <p className="text-gray-600 mt-2">
-                Capital & operational expenditure analysis (last 3
-                years).
-              </p>
-            </div>
-
+      {/* Error message */}
+      {error && (
+        <div className="p-4 mb-6 text-sm text-red-700 bg-red-100 rounded-lg">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <span>{error}</span>
             <button
-              onClick={() => setShowCharts(true)}
-              className="mt-6 inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
+              onClick={fetchInstitutes}
+              className="ml-auto text-sm font-medium text-red-700 hover:text-red-800"
             >
-              View Charts
+              Retry
             </button>
           </div>
         </div>
-      ) : (
-        // -------------------- CHARTS VIEW --------------------
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                NIT Jamshedpur – Expenditure Overview
-              </h2>
-              <p className="text-gray-600 mt-1">
-                Annual capital & operational expenditure for the
-                previous 3 years. (Y-axis in ₹ Crores)
-              </p>
-            </div>
+      )}
 
-            {/* Cross button to go back */}
-            <button
-              onClick={() => setShowCharts(false)}
-              className="ml-4 rounded-full border border-gray-200 w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition"
-              aria-label="Close charts"
-            >
-              ×
-            </button>
+      {/* Search bar */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search institutes by name, location, or ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <div className="absolute left-3 top-2.5">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
+        </div>
+      </div>
 
-          {/* CHART GRID */}
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* 1. Library – Bar (in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                Library Capital Expenditure
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Amount in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={capitalByYear}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid {...gridStyle} />
-                  <XAxis
-                    dataKey="year"
-                    stroke={axisStyles.x.stroke}
-                    tick={axisStyles.x.tick}
-                  />
-                  <YAxis
-                    stroke={axisStyles.y.stroke}
-                    tick={axisStyles.y.tick}
-                    tickFormatter={formatCrLabel}
-                    label={{
-                      value: "₹ (Crores)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#4b5563",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="library"
-                    name="Library"
-                    fill={CHART_COLORS.library}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+      {/* Institutes Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {filteredInstitutes.map((institute) => (
+          <InstituteCard
+            key={institute.id}
+            institute={institute}
+            onViewInsights={handleViewInsights}
+          />
+        ))}
+      </div>
 
-            {/* 2. New Equipment & Software – Grouped Bar (in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                New Equipment & Software for Labs
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Amount in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={capitalByYear}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid {...gridStyle} />
-                  <XAxis
-                    dataKey="year"
-                    stroke={axisStyles.x.stroke}
-                    tick={axisStyles.x.tick}
-                  />
-                  <YAxis
-                    stroke={axisStyles.y.stroke}
-                    tick={axisStyles.y.tick}
-                    tickFormatter={formatCrLabel}
-                    label={{
-                      value: "₹ (Crores)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#4b5563",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="labs"
-                    name="Labs & Software"
-                    fill={CHART_COLORS.labs}
-                    barSize={40}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* 3. Engineering Workshops – Line Chart (in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                Engineering Workshops
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Amount in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={capitalByYear}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid {...gridStyle} />
-                  <XAxis
-                    dataKey="year"
-                    stroke={axisStyles.x.stroke}
-                    tick={axisStyles.x.tick}
-                  />
-                  <YAxis
-                    stroke={axisStyles.y.stroke}
-                    tick={axisStyles.y.tick}
-                    tickFormatter={formatCrLabel}
-                    label={{
-                      value: "₹ (Crores)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#4b5563",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="workshops"
-                    name="Workshops"
-                    stroke={CHART_COLORS.workshops}
-                    strokeWidth={2}
-                    dot
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* 4. Other Capital Assets – Area Chart (in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                Other Capital Assets
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Amount in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={capitalByYear}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid {...gridStyle} />
-                  <XAxis
-                    dataKey="year"
-                    stroke={axisStyles.x.stroke}
-                    tick={axisStyles.x.tick}
-                  />
-                  <YAxis
-                    stroke={axisStyles.y.stroke}
-                    tick={axisStyles.y.tick}
-                    tickFormatter={formatCrLabel}
-                    label={{
-                      value: "₹ (Crores)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#4b5563",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="otherAssets"
-                    name="Other Capital Assets"
-                    stroke={CHART_COLORS.otherAssets}
-                    fill={CHART_COLORS.otherAssets + "33"}
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* 5. Capital – Stacked Bar by Category (in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                Capital Expenditure by Category (Stacked)
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Amount in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={capitalByYear}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid {...gridStyle} />
-                  <XAxis
-                    dataKey="year"
-                    stroke={axisStyles.x.stroke}
-                    tick={axisStyles.x.tick}
-                  />
-                  <YAxis
-                    stroke={axisStyles.y.stroke}
-                    tick={axisStyles.y.tick}
-                    tickFormatter={formatCrLabel}
-                    label={{
-                      value: "₹ (Crores)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#4b5563",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="library"
-                    stackId="cap"
-                    name="Library"
-                    fill={CHART_COLORS.library}
-                  />
-                  <Bar
-                    dataKey="labs"
-                    stackId="cap"
-                    name="Labs"
-                    fill={CHART_COLORS.labs}
-                  />
-                  <Bar
-                    dataKey="workshops"
-                    stackId="cap"
-                    name="Workshops"
-                    fill={CHART_COLORS.workshops}
-                  />
-                  <Bar
-                    dataKey="otherAssets"
-                    stackId="cap"
-                    name="Other Assets"
-                    fill={CHART_COLORS.otherAssets}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* 6. Salaries – Area Chart (in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                Salaries (Teaching & Non-Teaching)
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Amount in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={operationalByYear}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid {...gridStyle} />
-                  <XAxis
-                    dataKey="year"
-                    stroke={axisStyles.x.stroke}
-                    tick={axisStyles.x.tick}
-                  />
-                  <YAxis
-                    stroke={axisStyles.y.stroke}
-                    tick={axisStyles.y.tick}
-                    tickFormatter={formatCrLabel}
-                    label={{
-                      value: "₹ (Crores)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#4b5563",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="salaries"
-                    name="Salaries"
-                    stroke={CHART_COLORS.salaries}
-                    fill={CHART_COLORS.salaries + "33"}
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* 7. Maintenance – Line Chart (in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                Maintenance of Academic Infrastructure & Consumables
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Amount in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={operationalByYear}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid {...gridStyle} />
-                  <XAxis
-                    dataKey="year"
-                    stroke={axisStyles.x.stroke}
-                    tick={axisStyles.x.tick}
-                  />
-                  <YAxis
-                    stroke={axisStyles.y.stroke}
-                    tick={axisStyles.y.tick}
-                    tickFormatter={formatCrLabel}
-                    label={{
-                      value: "₹ (Crores)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#4b5563",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="maintenance"
-                    name="Maintenance"
-                    stroke={CHART_COLORS.maintenance}
-                    strokeWidth={2}
-                    dot
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* 8. Operational – Stacked Area (in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                Operational Expenditure (Stacked)
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Amount in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={operationalByYear}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid {...gridStyle} />
-                  <XAxis
-                    dataKey="year"
-                    stroke={axisStyles.x.stroke}
-                    tick={axisStyles.x.tick}
-                  />
-                  <YAxis
-                    stroke={axisStyles.y.stroke}
-                    tick={axisStyles.y.tick}
-                    tickFormatter={formatCrLabel}
-                    label={{
-                      value: "₹ (Crores)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#4b5563",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="salaries"
-                    stackId="op"
-                    name="Salaries"
-                    stroke={CHART_COLORS.salaries}
-                    fill={CHART_COLORS.salaries + "33"}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="maintenance"
-                    stackId="op"
-                    name="Maintenance"
-                    stroke={CHART_COLORS.maintenance}
-                    fill={CHART_COLORS.maintenance + "33"}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* 9. Capital vs Operational – Composed Chart (Bar + Line, in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                Capital vs Operational – Year-wise Comparison
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Amount in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart
-                  data={capVsOpByYear}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid {...gridStyle} />
-                  <XAxis
-                    dataKey="year"
-                    stroke={axisStyles.x.stroke}
-                    tick={axisStyles.x.tick}
-                  />
-                  <YAxis
-                    stroke={axisStyles.y.stroke}
-                    tick={axisStyles.y.tick}
-                    tickFormatter={formatCrLabel}
-                    label={{
-                      value: "₹ (Crores)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fill: "#4b5563",
-                      fontSize: 11,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="capital"
-                    name="Capital"
-                    fill={CHART_COLORS.capital}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="operational"
-                    name="Operational"
-                    stroke={CHART_COLORS.operational}
-                    strokeWidth={2}
-                    dot
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* 10. 2023–24 Capital Composition – Pie (labels in Cr) */}
-            <div className="h-72 border rounded-lg p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">
-                2023–24 Capital Expenditure Composition
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                Values shown in ₹ Crores
-              </p>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Tooltip
-                    formatter={(value) => formatCrLabel(value)}
-                    wrapperStyle={{ fontSize: "12px" }}
-                  />
-                  <Legend />
-                  <Pie
-                    data={capital2023Breakdown}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label={(entry) =>
-                      `${entry.name} (${formatCrLabel(entry.value)})`
-                    }
-                  >
-                    {capital2023Breakdown.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={PIE_COLORS[index % PIE_COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+      {/* No results message */}
+      {filteredInstitutes.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3 className="mt-4 text-lg font-medium text-gray-900">No institutes found</h3>
+          <p className="mt-1 text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
         </div>
       )}
     </div>

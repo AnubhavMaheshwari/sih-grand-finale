@@ -2,9 +2,7 @@ import instituteDataService from "../services/instituteData.service.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { ApiError } from "../utils/apiResponse.js";
 
-/**
- * Controller for institute parameter data operations
- */
+
 class InstituteDataController {
   /**
    * Get institute data for a specific year
@@ -562,6 +560,28 @@ class InstituteDataController {
       return res
         .status(200)
         .json(new ApiResponse(200, result, "All extracted parameters rejected successfully"));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get all institutes with their latest data (admin only)
+   */
+  async getAllInstitutesWithData(req, res, next) {
+    try {
+      const user = req.user;
+
+      // Only admins can access this endpoint
+      if (user.role !== "admin") {
+        throw new ApiError(403, "Only admin users can access all institutes data");
+      }
+
+      const institutes = await instituteDataService.getAllInstitutesWithData();
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, institutes, "All institutes data retrieved successfully"));
     } catch (error) {
       next(error);
     }

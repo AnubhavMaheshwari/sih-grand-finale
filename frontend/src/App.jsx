@@ -14,6 +14,7 @@ import UserManagementPage from "./pages/admin/UserManagementPage.jsx";
 import AdminInstitutesPage from "./pages/admin/AdminInstitutesPage.jsx";
 import PendingRegistrationsPage from "./pages/admin/PendingRegistrationsPage.jsx";
 import InstituteParametersPage from "./pages/admin/InstituteParametersPage.jsx";
+import InstituteAnalyticsPage from "./pages/admin/InstituteAnalyticsPage.jsx";
 import ReportsManagementPage from "./pages/institute/ReportsManagementPage.jsx";
 
 // Institute pages
@@ -121,6 +122,16 @@ function App() {
               <ProtectedRoute requiredRole="admin">
                 <AdminLayout>
                   <InstituteParametersPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/institutes/:instituteId/analytics"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <InstituteAnalyticsPage />
                 </AdminLayout>
               </ProtectedRoute>
             }

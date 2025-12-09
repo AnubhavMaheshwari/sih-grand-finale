@@ -66,4 +66,7 @@ router.get("/:instituteId/stats/completeness", instituteDataController.getComple
 // Get change history for any institute
 router.get("/:instituteId/history", instituteDataController.getChangeHistory);
 
+// Get all institutes with their latest data (admin only)
+router.get("/admin/all-institutes", instituteDataController.getAllInstitutesWithData);
+
 export default router;
