@@ -66,7 +66,7 @@ const AdminLayout = ({ children }) => {
             {sidebarOpen ? (
               <div className="flex items-center space-x-3">
                 <img src={sarthiLogo} alt="SARTHI Logo" className="w-10 h-10 rounded-lg" />
-                <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
+                <h1 className="text-xl font-bold text-gray-800">UGC/AICTE Panel</h1>
               </div>
             ) : (
               <img src={sarthiLogo} alt="SARTHI Logo" className="w-10 h-10 rounded-lg mx-auto" />
@@ -106,8 +106,8 @@ const AdminLayout = ({ children }) => {
           <div className="flex items-center">
             {sidebarOpen && (
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-900">SARTHI Admin</p>
-                <p className="text-xs text-gray-500">Administrator</p>
+                <p className="text-sm font-medium text-gray-900">UGC/AICTE</p>
+                <p className="text-xs text-gray-500">Regulatory Authority</p>
               </div>
             )}
           </div>
@@ -134,11 +134,11 @@ const AdminLayout = ({ children }) => {
               <h2 className="text-lg font-semibold text-gray-800">
                 {menuItems.find(item => isActive(item.path))?.label || "Dashboard"}
               </h2>
-              <p className="text-sm text-gray-600">Administration Panel</p>
+              <p className="text-sm text-gray-600">UGC/AICTE Portal</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
-                Welcome, <span className="font-semibold">{user?.fullName || "Admin"}</span>
+                Welcome, <span className="font-semibold">{user?.fullName || "UGC/AICTE"}</span>
               </div>
 
               {/* Profile Dropdown */}

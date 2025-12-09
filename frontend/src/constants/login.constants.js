@@ -21,16 +21,16 @@ export const ROLE_OPTIONS = [
   },
   {
     id: 'admin',
-    label: 'Admin',
+    label: 'UGC/AICTE',
     icon: FaUserShield,
-    description: 'System Administrator',
+    description: 'Regulatory Authority',
     color: 'bg-purple-500',
     hoverColor: 'hover:bg-purple-600',
     selectedColor: 'ring-2 ring-purple-500 ring-offset-2',
     idConfig: {
-      label: 'Admin User ID',
-      placeholder: 'Enter admin credentials',
-      hint: 'Enter your admin user ID',
+      label: 'UGC/AICTE User ID',
+      placeholder: 'Enter UGC/AICTE credentials',
+      hint: 'Enter your UGC/AICTE user ID',
       maxLength: 100,
     }
   }

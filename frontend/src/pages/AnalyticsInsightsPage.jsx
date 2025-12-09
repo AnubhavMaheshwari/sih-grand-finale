@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import YearSelector from "../components/common/YearSelector";
 import instituteDataApi from "../api/instituteData.api.js";
+import { formatIndianCurrency } from "../utils/currencyFormatter.js";
 import {
   BarChart3,
   TrendingUp,
@@ -8,7 +9,7 @@ import {
   Building,
   GraduationCap,
   BookOpen,
-  DollarSign,
+  IndianRupee,
   Download,
   Calendar,
   CheckCircle,
@@ -116,10 +117,21 @@ function YearComparisonChart({ allData, selectedYear }) {
     const data = allData.find(d => d.academicYear == year);
     if (!data) return 0;
 
-    const totalParams = 27;
-    const filledParams = Object.values(data).filter(v =>
-      v !== undefined && v !== "" && v !== null &&
-      typeof v !== 'object' && !['_id', 'instituteId', 'academicYear', 'createdAt', 'updatedAt', 'isVerified', 'source', 'uploadedBy', 'verifiedBy'].includes(v)
+    const totalParams = 26;
+    const allParamFields = [
+      "teacherStudentRatio", "placementPercentage", "studentsGoingForHigherStudies",
+      "vacancyBoysHostelUG", "vacancyGirlsHostelUG", "classroomCapacity", "liftAvailable", "landAreaSqKm",
+      "labsFacilities", "labEquipments", "facultyStrength", "libraryResources", "ictFacilities", "availableWorkshops",
+      "academicPlan", "complianceCertificate", "researchEnvironment", "programJustification",
+      "qualificationOfFaculties", "landOwnershipAndPossession", "buildingPlanRequirement",
+      "leadershipQualifications", "institutionalNameNorms", "safetyCertificates",
+      "financialCapacity", "budgetAllocation"
+    ];
+
+    const filledParams = allParamFields.filter(field =>
+      data[field] !== undefined &&
+      data[field] !== "" &&
+      data[field] !== null
     ).length;
 
     return Math.round((filledParams / totalParams) * 100);
@@ -274,10 +286,24 @@ const AnalyticsInsightsPage = () => {
   const calculateMetrics = () => {
     if (!selectedData) return null;
 
-    const totalParams = 27;
-    const filledParams = Object.values(selectedData).filter(v =>
-      v !== undefined && v !== "" && v !== null &&
-      typeof v !== 'object' && !['_id', 'instituteId', 'academicYear', 'createdAt', 'updatedAt', 'isVerified', 'source', 'uploadedBy', 'verifiedBy'].includes(v)
+    const totalParams = 26; // Actual count: 3 Academic + 5 Infrastructure + 6 Facilities + 10 Administrative + 2 Financial
+
+    // Get all parameter field names
+    const allParamFields = [
+      "teacherStudentRatio", "placementPercentage", "studentsGoingForHigherStudies",
+      "vacancyBoysHostelUG", "vacancyGirlsHostelUG", "classroomCapacity", "liftAvailable", "landAreaSqKm",
+      "labsFacilities", "labEquipments", "facultyStrength", "libraryResources", "ictFacilities", "availableWorkshops",
+      "academicPlan", "complianceCertificate", "researchEnvironment", "programJustification",
+      "qualificationOfFaculties", "landOwnershipAndPossession", "buildingPlanRequirement",
+      "leadershipQualifications", "institutionalNameNorms", "safetyCertificates",
+      "financialCapacity", "budgetAllocation"
+    ];
+
+    // Count only filled parameter fields
+    const filledParams = allParamFields.filter(field =>
+      selectedData[field] !== undefined &&
+      selectedData[field] !== "" &&
+      selectedData[field] !== null
     ).length;
 
     const completionPercentage = Math.round((filledParams / totalParams) * 100);
@@ -366,16 +392,11 @@ const AnalyticsInsightsPage = () => {
               Visualize your institute's parameter data and track progress
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <YearSelector
-              selectedYear={selectedYear || "all"}
-              onYearChange={setSelectedYear}
-              availableYears={availableYears}
-            />
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
-              <Download className="w-4 h-4" /> Export Report
-            </button>
-          </div>
+          <YearSelector
+            selectedYear={selectedYear || "all"}
+            onYearChange={setSelectedYear}
+            availableYears={availableYears}
+          />
         </div>
 
         {/* Metrics Grid */}
@@ -534,7 +555,7 @@ const AnalyticsInsightsPage = () => {
           <div className="p-6 bg-amber-50 rounded-xl border border-amber-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-amber-100 rounded-lg">
-                <DollarSign className="w-5 h-5 text-amber-600" />
+                <IndianRupee className="w-5 h-5 text-amber-600" />
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">Financial</h3>
@@ -545,13 +566,13 @@ const AnalyticsInsightsPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Financial Capacity</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {selectedData?.financialCapacity ? `₹${selectedData.financialCapacity.toLocaleString()} Cr` : "N/A"}
+                  {formatIndianCurrency(selectedData?.financialCapacity)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Budget Allocation</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {selectedData?.budgetAllocation ? `₹${selectedData.budgetAllocation.toLocaleString()} Cr` : "N/A"}
+                  {formatIndianCurrency(selectedData?.budgetAllocation)}
                 </p>
               </div>
             </div>

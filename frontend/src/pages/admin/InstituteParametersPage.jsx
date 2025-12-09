@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { 
-  Search, 
-  Filter, 
-  CheckCircle, 
-  XCircle, 
-  Eye, 
+import {
+  Search,
+  Filter,
+  CheckCircle,
+  XCircle,
+  Eye,
   Download,
   BarChart3,
   Calendar,
@@ -54,11 +54,11 @@ function InstituteParameterCard({ institute, parameterData, onView, onVerify }) 
       'WEB_FORM': { color: 'bg-blue-100 text-blue-800', label: 'Web Form' },
       'CSV_UPLOAD': { color: 'bg-purple-100 text-purple-800', label: 'CSV Upload' },
       'PDF_PARSER': { color: 'bg-red-100 text-red-800', label: 'PDF Parser' },
-      'ADMIN_VERIFICATION': { color: 'bg-green-100 text-green-800', label: 'Admin Verified' }
+      'ADMIN_VERIFICATION': { color: 'bg-green-100 text-green-800', label: 'UGC/AICTE Verified' }
     };
-    
+
     const sourceInfo = sourceMap[source] || { color: 'bg-gray-100 text-gray-800', label: source };
-    
+
     return (
       <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${sourceInfo.color}`}>
         {sourceInfo.label}
@@ -84,7 +84,7 @@ function InstituteParameterCard({ institute, parameterData, onView, onVerify }) 
                 </p>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {getStatusBadge(parameterData.isVerified)}
               {getSourceBadge(parameterData.source)}
@@ -96,7 +96,7 @@ function InstituteParameterCard({ institute, parameterData, onView, onVerify }) 
               </span>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
@@ -126,7 +126,7 @@ function InstituteParameterCard({ institute, parameterData, onView, onVerify }) 
             )}
           </div>
         </div>
-        
+
         {isExpanded && (
           <div className="mt-6 pt-6 border-t border-gray-200">
             <h4 className="text-sm font-semibold text-gray-900 mb-3">Parameter Summary</h4>
@@ -156,7 +156,7 @@ function InstituteParameterCard({ institute, parameterData, onView, onVerify }) 
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-4">
               <h5 className="text-sm font-medium text-gray-700 mb-2">Sample Parameters:</h5>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -196,25 +196,25 @@ const InstituteParametersPage = () => {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      
+
       // Load all institute parameter data for the selected year
       const response = await adminApi.getAllInstituteData(academicYear);
-      
+
       if (response.success && response.data) {
         setInstituteData(response.data.data || []);
-        
+
         // Load institute details for each data entry
         const instituteIds = [...new Set(response.data.data.map(item => item.instituteId))];
         const institutePromises = instituteIds.map(id => adminApi.getInstituteById(id));
         const instituteResults = await Promise.allSettled(institutePromises);
-        
+
         const instituteMap = {};
         instituteResults.forEach((result, index) => {
           if (result.status === 'fulfilled' && result.value.success) {
             instituteMap[instituteIds[index]] = result.value.data;
           }
         });
-        
+
         setInstitutes(instituteMap);
       }
     } catch (error) {
@@ -238,7 +238,7 @@ const InstituteParametersPage = () => {
     try {
       setIsVerifying(true);
       const response = await adminApi.verifyInstituteData(dataId);
-      
+
       if (response.success) {
         showToast("success", "Institute data verified successfully");
         loadData(); // Refresh data
@@ -299,11 +299,11 @@ const InstituteParametersPage = () => {
     try {
       // Create CSV data
       const csvRows = [];
-      
+
       // Header row
       const headers = ['Institute ID', 'Institute Name', 'Academic Year', 'Status', 'Completeness', 'Source', 'Last Updated'];
       csvRows.push(headers.join(','));
-      
+
       // Data rows
       instituteData.forEach(data => {
         const institute = institutes[data.instituteId];
@@ -318,7 +318,7 @@ const InstituteParametersPage = () => {
         ];
         csvRows.push(row.map(cell => `"${cell}"`).join(','));
       });
-      
+
       // Create and download CSV file
       const csvContent = csvRows.join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -330,7 +330,7 @@ const InstituteParametersPage = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      
+
       showToast("success", "Data exported successfully");
     } catch (error) {
       console.error("Error exporting data:", error);
@@ -342,24 +342,24 @@ const InstituteParametersPage = () => {
   const filteredData = instituteData.filter(data => {
     const institute = institutes[data.instituteId];
     const instituteName = institute?.instituteName || institute?.name || '';
-    
+
     // Search filter
-    if (searchQuery && !instituteName.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !data.instituteId.toLowerCase().includes(searchQuery.toLowerCase())) {
+    if (searchQuery && !instituteName.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !data.instituteId.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
-    
+
     // Status filter
     if (statusFilter !== 'all') {
       if (statusFilter === 'verified' && !data.isVerified) return false;
       if (statusFilter === 'pending' && data.isVerified) return false;
     }
-    
+
     // Source filter
     if (sourceFilter !== 'all' && data.source !== sourceFilter) {
       return false;
     }
-    
+
     return true;
   });
 
@@ -367,7 +367,7 @@ const InstituteParametersPage = () => {
     total: instituteData.length,
     verified: instituteData.filter(d => d.isVerified).length,
     pending: instituteData.filter(d => !d.isVerified).length,
-    averageCompleteness: instituteData.length > 0 
+    averageCompleteness: instituteData.length > 0
       ? Math.round(instituteData.reduce((sum, d) => sum + d.completeness, 0) / instituteData.length)
       : 0
   };
@@ -409,7 +409,7 @@ const InstituteParametersPage = () => {
                 </div>
                 <p className="text-2xl font-bold text-gray-900 mt-2">{stats.total}</p>
               </div>
-              
+
               <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-gray-600">Verified</h3>
@@ -417,7 +417,7 @@ const InstituteParametersPage = () => {
                 </div>
                 <p className="text-2xl font-bold text-gray-900 mt-2">{stats.verified}</p>
               </div>
-              
+
               <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-gray-600">Pending</h3>
@@ -425,7 +425,7 @@ const InstituteParametersPage = () => {
                 </div>
                 <p className="text-2xl font-bold text-gray-900 mt-2">{stats.pending}</p>
               </div>
-              
+
               <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-gray-600">Avg. Completeness</h3>
@@ -451,7 +451,7 @@ const InstituteParametersPage = () => {
                     />
                   </div>
                 </div>
-                
+
                 {/* Status Filter */}
                 <div className="flex items-center gap-2">
                   <Filter className="w-5 h-5 text-gray-400" />
@@ -465,7 +465,7 @@ const InstituteParametersPage = () => {
                     <option value="pending">Pending Only</option>
                   </select>
                 </div>
-                
+
                 {/* Source Filter */}
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-gray-400" />

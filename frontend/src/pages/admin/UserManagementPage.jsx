@@ -276,7 +276,7 @@ const UserManagementPage = () => {
               <h3 className="text-2xl font-bold text-gray-900">
                 {users.filter(u => u.role === "admin").length}
               </h3>
-              <p className="text-sm text-gray-600">Admin Users</p>
+              <p className="text-sm text-gray-600">UGC/AICTE Users</p>
             </div>
           </div>
         </div>

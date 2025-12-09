@@ -2,8 +2,8 @@ const AdminDashboardPage = () => {
   return (
     <div className="space-y-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome to the admin control panel.</p>
+        <h1 className="text-3xl font-bold text-gray-900">UGC/AICTE Dashboard</h1>
+        <p className="text-gray-600 mt-2">Manage and oversee institutional compliance</p>
       </div>
 
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-96 flex flex-col items-center justify-center text-gray-400">

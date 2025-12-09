@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, BookOpen, Globe, Upload } from "lucide-react";
 import requestApi from "../../api/request.api.js";
-import adminApi from "../../api/admin.api.js";
+import instituteDataApi from "../../api/instituteData.api.js";
 
 const SubmitRequestPage = () => {
     const navigate = useNavigate();
@@ -47,25 +47,18 @@ const SubmitRequestPage = () => {
     const fetchAvailableYears = async () => {
         try {
             setLoadingYears(true);
-            const user = JSON.parse(localStorage.getItem("user"));
+            const years = await instituteDataApi.getAvailableYears();
 
-            if (!user || !user.instituteId) {
-                setError("Institute information not found");
-                return;
-            }
-
-            const response = await adminApi.getInstituteData(user.instituteId);
-
-            if (response && response.data) {
-                const years = response.data.map((item) => item.year).sort((a, b) => b - a);
+            if (years && years.length > 0) {
                 setAvailableYears(years);
-
-                if (years.length === 0) {
-                    setError("Please submit institute data for at least one year before creating a request");
-                }
+                setError(null);
+            } else {
+                setAvailableYears([]);
+                setError("Please submit institute data for at least one year before creating a request");
             }
         } catch (err) {
             console.error("Error fetching years:", err);
+            setAvailableYears([]);
             setError("Unable to fetch available years. Please ensure you have submitted data.");
         } finally {
             setLoadingYears(false);
