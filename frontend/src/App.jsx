@@ -23,6 +23,8 @@ import AdminRequestsPage from "./pages/admin/AdminRequestsPage.jsx";
 import UploadDocumentPage from "./pages/institute/UploadDocumentPage.jsx";
 import RequestCenterPage from "./pages/institute/RequestCenterPage.jsx";
 import ParameterSubmissionPage from "./pages/institute/ParameterSubmissionPage.jsx";
+import SubmitRequestPage from "./pages/institute/SubmitRequestPage.jsx";
+import MyRequestsPage from "./pages/institute/MyRequestsPage.jsx";
 import AdminLayout from "./components/layout/AdminLayout.jsx";
 import InstituteLayout from "./components/layout/InstituteLayout.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
@@ -203,6 +205,26 @@ function App() {
               <ProtectedRoute requiredRole="institute">
                 <InstituteLayout>
                   <AnalyticsInsightsPage />
+                </InstituteLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institute/submit-request"
+            element={
+              <ProtectedRoute requiredRole="institute">
+                <InstituteLayout>
+                  <SubmitRequestPage />
+                </InstituteLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institute/my-requests"
+            element={
+              <ProtectedRoute requiredRole="institute">
+                <InstituteLayout>
+                  <MyRequestsPage />
                 </InstituteLayout>
               </ProtectedRoute>
             }

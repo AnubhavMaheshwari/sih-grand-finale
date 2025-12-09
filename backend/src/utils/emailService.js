@@ -108,3 +108,50 @@ export const sendPasswordChangedEmail = async (email) => {
     return { success: false, error: error.message };
   }
 };
+
+export const sendRequestReviewEmail = async (email, requestData, status, comments) => {
+  try {
+    const statusText = status === "approved" ? "Approved" : "Rejected";
+    const statusColor = status === "approved" ? "#10b981" : "#ef4444";
+
+    const mailOptions = {
+      from: `SARTHI Portal <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `SARTHI Portal - Request ${statusText}: ${requestData.title}`,
+      html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #4f46e5;">Request ${statusText}</h2>
+            <p>Hello,</p>
+            <p>Your request has been reviewed and <strong style="color: ${statusColor};">${statusText.toLowerCase()}</strong>.</p>
+            
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p><strong>Request ID:</strong> ${requestData.requestId}</p>
+              <p><strong>Title:</strong> ${requestData.title}</p>
+              <p><strong>Type:</strong> ${requestData.requestType}</p>
+              <p><strong>Status:</strong> <span style="color: ${statusColor};">${statusText}</span></p>
+            </div>
+            
+            ${comments ? `
+            <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <p style="margin: 0;"><strong>Review Comments:</strong></p>
+              <p style="margin: 10px 0 0 0;">${comments}</p>
+            </div>
+            ` : ''}
+            
+            <p>You can view the full details of your request by logging into the SARTHI Portal.</p>
+            <p><a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/institute/my-requests" style="background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View My Requests</a></p>
+            
+            <p>If you have any questions, please contact our support team.</p>
+            <p>Best regards,<br>The SARTHI Team</p>
+          </div>
+        `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Request review email sent to: ${email}`);
+    return { success: true, message: "Request review email sent successfully" };
+  } catch (error) {
+    console.error("Error sending request review email:", error);
+    return { success: false, error: error.message };
+  }
+};

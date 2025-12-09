@@ -9,7 +9,9 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  User
+  User,
+  Send,
+  FileCheck
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import Toast from "../common/Toast.jsx";
@@ -41,10 +43,16 @@ const InstituteLayout = ({ children }) => {
       path: "/reports",
     },
     {
-      id: "request",
-      label: "Request Center",
-      icon: <Upload className="w-5 h-5" />,
-      path: "/request",
+      id: "submit-request",
+      label: "Submit Request",
+      icon: <Send className="w-5 h-5" />,
+      path: "/institute/submit-request",
+    },
+    {
+      id: "my-requests",
+      label: "My Requests",
+      icon: <FileCheck className="w-5 h-5" />,
+      path: "/institute/my-requests",
     },
     {
       id: "analytics",
@@ -111,8 +119,8 @@ const InstituteLayout = ({ children }) => {
                 }
               }}
               className={`w-full flex items-center ${sidebarOpen ? "justify-start px-4" : "justify-center"} py-3 rounded-lg transition-colors ${isActive(item.path)
-                  ? "bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600"
-                  : "text-gray-700 hover:bg-gray-100"
+                ? "bg-indigo-50 text-indigo-700 border-l-4 border-indigo-600"
+                : "text-gray-700 hover:bg-gray-100"
                 }`}
             >
               <span className={`shrink-0 ${isActive(item.path) ? "text-indigo-600" : "text-gray-500"}`}>
