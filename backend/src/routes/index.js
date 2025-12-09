@@ -7,6 +7,7 @@ import analyticsRoutes from "./analytics.routes.js";
 import adminRoutes from "./admin.routes.js";
 import instituteRoutes from "./institute.routes.js";
 import instituteDataRoutes from "./instituteData.routes.js";
+import requestRoutes from "./request.routes.js";
 
 const router = express.Router();
 
@@ -18,5 +19,6 @@ router.use("/analytics", analyticsRoutes);
 router.use("/admin", adminRoutes);
 router.use("/institute", instituteRoutes);
 router.use("/institute-data", instituteDataRoutes);
+router.use("/requests", requestRoutes);
 
 export default router;

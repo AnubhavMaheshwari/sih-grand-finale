@@ -4,6 +4,7 @@ import adminApi from "../../api/admin.api.js";
 import analyticsApi from "../../api/analytics.api.js";
 import FloatingInstituteChatbot from "../../components/chatbot/FloatingInstituteChatbot.jsx";
 import { transformFinancialData } from "../../utils/chartUtils.js";
+import { formatInstituteName } from "../../utils/instituteNameFormatter.js";
 import {
   ResponsiveContainer,
   BarChart,
@@ -53,6 +54,7 @@ const InstituteAnalyticsPage = ({ instituteId: propInstituteId, embedded = false
   useEffect(() => {
     if (instituteId) {
       fetchInstituteDetails();
+      fetchInstituteProfile(); // Get basic info (name, type, location)
     }
   }, [instituteId]);
 
@@ -87,6 +89,28 @@ const InstituteAnalyticsPage = ({ instituteId: propInstituteId, embedded = false
       setError(err.response?.data?.error || "Failed to connect to server");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchInstituteProfile = async () => {
+    try {
+      // Get basic institute profile (name, type, location) - doesn't require year-specific data
+      const profileResponse = await adminApi.getInstituteProfile(instituteId);
+      console.log("Institute Profile Response:", profileResponse);
+
+      if (profileResponse.success && profileResponse.institute) {
+        // Merge profile data with existing institute data (handle null state)
+        setInstitute(prev => ({
+          ...(prev || {}),
+          instituteName: profileResponse.institute.instituteName,
+          name: profileResponse.institute.name,
+          instituteType: profileResponse.institute.category,
+          location: profileResponse.institute.location,
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching institute profile:", err);
+      // Don't set error here, just log it - profile is optional
     }
   };
 
@@ -170,7 +194,7 @@ const InstituteAnalyticsPage = ({ instituteId: propInstituteId, embedded = false
                 ← Back to Institutes
               </button>
               <h1 className="text-3xl font-bold text-gray-900">
-                {institute?.instituteName || institute?.name || "Institute"} - Analytics Insights
+                {formatInstituteName(institute?.instituteName || institute?.name) || `Institute ${instituteId}`}
               </h1>
               <p className="text-gray-600 mt-2">
                 Financial and operational analysis with visual charts
@@ -218,55 +242,97 @@ const InstituteAnalyticsPage = ({ instituteId: propInstituteId, embedded = false
           {/* Charts grid */}
           {!insightsLoading && insightsData && insightsData.capitalByYear && insightsData.capitalByYear.length > 0 && (
             <div className="space-y-6">
-              {/* Capital vs Operational Comparison */}
-              <div className="border rounded-lg p-4">
-                <h3 className="font-semibold text-gray-800 mb-4">
-                  Capital vs Operational Expenditure Comparison
-                </h3>
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart
-                      data={insightsData.capVsOpByYear || []}
-                      margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-                    >
-                      <CartesianGrid {...gridStyle} />
-                      <XAxis
-                        dataKey="year"
-                        stroke={axisStyles.x.stroke}
-                        tick={axisStyles.x.tick}
-                      />
-                      <YAxis
-                        stroke={axisStyles.y.stroke}
-                        tick={axisStyles.y.tick}
-                        tickFormatter={formatCrLabel}
-                        label={{
-                          value: "₹ (Crores)",
-                          angle: -90,
-                          position: "insideLeft",
-                          fill: "#4b5563",
-                          fontSize: 11,
-                        }}
-                      />
-                      <Tooltip
-                        formatter={(value) => formatCrLabel(value)}
-                        wrapperStyle={{ fontSize: "12px" }}
-                      />
-                      <Legend />
-                      <Bar
-                        dataKey="capital"
-                        name="Capital"
-                        fill={CHART_COLORS.capital}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="operational"
-                        name="Operational"
-                        stroke={CHART_COLORS.operational}
-                        strokeWidth={2}
-                        dot
-                      />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+              {/* Capital vs Operational Expenditure - Split into two charts */}
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Capital Expenditure Chart */}
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-800 mb-4">
+                    Capital Expenditure by Year
+                  </h3>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={insightsData.capVsOpByYear || []}
+                        margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
+                      >
+                        <CartesianGrid {...gridStyle} />
+                        <XAxis
+                          dataKey="year"
+                          stroke={axisStyles.x.stroke}
+                          tick={axisStyles.x.tick}
+                        />
+                        <YAxis
+                          stroke={axisStyles.y.stroke}
+                          tick={axisStyles.y.tick}
+                          tickFormatter={formatCrLabel}
+                          label={{
+                            value: "₹ (Crores)",
+                            angle: -90,
+                            position: "insideLeft",
+                            fill: "#4b5563",
+                            fontSize: 11,
+                          }}
+                        />
+                        <Tooltip
+                          formatter={(value) => formatCrLabel(value)}
+                          wrapperStyle={{ fontSize: "12px" }}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="capital"
+                          name="Capital"
+                          fill={CHART_COLORS.capital}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Operational Expenditure Chart */}
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-800 mb-4">
+                    Operational Expenditure by Year
+                  </h3>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        data={insightsData.capVsOpByYear || []}
+                        margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
+                      >
+                        <CartesianGrid {...gridStyle} />
+                        <XAxis
+                          dataKey="year"
+                          stroke={axisStyles.x.stroke}
+                          tick={axisStyles.x.tick}
+                        />
+                        <YAxis
+                          stroke={axisStyles.y.stroke}
+                          tick={axisStyles.y.tick}
+                          tickFormatter={formatCrLabel}
+                          label={{
+                            value: "₹ (Crores)",
+                            angle: -90,
+                            position: "insideLeft",
+                            fill: "#4b5563",
+                            fontSize: 11,
+                          }}
+                        />
+                        <Tooltip
+                          formatter={(value) => formatCrLabel(value)}
+                          wrapperStyle={{ fontSize: "12px" }}
+                        />
+                        <Legend />
+                        <Area
+                          type="monotone"
+                          dataKey="operational"
+                          name="Operational"
+                          stroke={CHART_COLORS.operational}
+                          fill={CHART_COLORS.operational + "33"}
+                          strokeWidth={2}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
 
@@ -415,7 +481,7 @@ const InstituteAnalyticsPage = ({ instituteId: propInstituteId, embedded = false
       </div>
 
       {/* Floating Chatbot Component - Only show if not embedded */}
-      {!embedded && <FloatingInstituteChatbot instituteData={institute} />}
+      {!embedded && <FloatingInstituteChatbot instituteData={{ ...institute, instituteId, insightsData }} />}
     </div>
   );
 };
