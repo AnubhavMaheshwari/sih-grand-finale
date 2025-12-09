@@ -30,7 +30,8 @@ const AdminInstitutesPage = () => {
   const handleCompare = () => {
     if (selectedInstitutes.size < 2) return;
     const ids = Array.from(selectedInstitutes).join(",");
-    navigate(`/admin/compare?ids=${ids}`);
+    // Open in new tab
+    window.open(`/admin/compare?ids=${ids}`, '_blank');
   };
 
   // Fetch institutes data
