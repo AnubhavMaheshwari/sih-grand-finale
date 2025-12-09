@@ -379,7 +379,7 @@ const AnalyticsInsightsPage = () => {
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <MetricCard
             title="Data Completion"
             value={`${metrics?.completionPercentage || 0}%`}
@@ -393,13 +393,6 @@ const AnalyticsInsightsPage = () => {
             icon={Calendar}
             color="bg-indigo-500"
             subtitle="Selected period"
-          />
-          <MetricCard
-            title="Verification Status"
-            value={selectedData?.isVerified ? "Verified" : "Pending"}
-            icon={selectedData?.isVerified ? CheckCircle : AlertCircle}
-            color={selectedData?.isVerified ? "bg-emerald-500" : "bg-amber-500"}
-            subtitle={metrics?.lastUpdated}
           />
           <MetricCard
             title="Data Source"
@@ -552,13 +545,13 @@ const AnalyticsInsightsPage = () => {
               <div>
                 <p className="text-sm text-gray-600">Financial Capacity</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {selectedData?.financialCapacity ? `₹${selectedData.financialCapacity.toLocaleString()}` : "N/A"}
+                  {selectedData?.financialCapacity ? `₹${selectedData.financialCapacity.toLocaleString()} Cr` : "N/A"}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Budget Allocation</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {selectedData?.budgetAllocation ? `₹${selectedData.budgetAllocation.toLocaleString()}` : "N/A"}
+                  {selectedData?.budgetAllocation ? `₹${selectedData.budgetAllocation.toLocaleString()} Cr` : "N/A"}
                 </p>
               </div>
             </div>

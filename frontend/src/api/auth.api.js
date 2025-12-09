@@ -78,6 +78,21 @@ export const authAPI = {
     return response;
   },
 
+  forgotPassword: async (email) => {
+    const response = await axiosInstance.post("/auth/forgot-password", { email });
+    return response.data;
+  },
+
+  verifyResetOTP: async (email, otpCode) => {
+    const response = await axiosInstance.post("/auth/verify-otp", { email, otpCode });
+    return response.data;
+  },
+
+  resetPassword: async (resetToken, newPassword) => {
+    const response = await axiosInstance.post("/auth/reset-password", { resetToken, newPassword });
+    return response.data;
+  },
+
   registerInstitute,
   verifyRegistrationOTP,
 };
