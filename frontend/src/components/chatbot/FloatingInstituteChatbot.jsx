@@ -33,7 +33,19 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
 
+  // Ref for auto-scroll
+  const messagesEndRef = useRef(null);
+
   const toggleChat = () => setIsChatOpen((prev) => !prev);
+
+  // Auto-scroll to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loadingChat, isChatOpen]);
 
   // Initialize chatbot with institute data
   useEffect(() => {
@@ -43,7 +55,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
       const context = createInstituteContext(instituteData);
       console.log("FloatingInstituteChatbot: Generated context:", context);
       setChatbotContext(context);
-      
+
       // Add welcome message
       setMessages([
         {
@@ -60,18 +72,18 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
   const createInstituteContext = (data) => {
     // Match the backend formatting logic exactly
     let context = "Institute Analysis Context:\n\n";
-    
+
     // Debug: log the entire data structure
     console.log("FloatingInstituteChatbot: Raw instituteData for context creation:", data);
-    
+
     // Basic institute info - use get() style access with fallbacks
     // Handle different possible field names
-    const instituteName = data.instituteName || data.name || 
-                         (data.latestData && data.latestData.instituteName) || "Unknown";
-    
-    const instituteType = data.instituteType || data.type || 
-                         (data.latestData && data.latestData.instituteType) || "Unknown";
-    
+    const instituteName = data.instituteName || data.name ||
+      (data.latestData && data.latestData.instituteName) || "Unknown";
+
+    const instituteType = data.instituteType || data.type ||
+      (data.latestData && data.latestData.instituteType) || "Unknown";
+
     // Location might be in data.location, latestData.location, or extractedParameters
     let location = data.location || "Unknown";
     if (location === "Unknown" && data.latestData) {
@@ -81,34 +93,34 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
         location = data.latestData.extractedParameters.get("location");
       }
     }
-    
+
     // Status might not exist in the data model, use a default
     const status = data.status || "Active";
-    
-    const completenessScore = data.completenessScore || 
-                            (data.latestData && data.latestData.completenessScore) || 0;
-    
-    const isVerified = data.isVerified ? "Yes" : 
-                      (data.latestData && data.latestData.isVerified) ? "Yes" : "No";
-    
+
+    const completenessScore = data.completenessScore ||
+      (data.latestData && data.latestData.completenessScore) || 0;
+
+    const isVerified = data.isVerified ? "Yes" :
+      (data.latestData && data.latestData.isVerified) ? "Yes" : "No";
+
     context += `INSTITUTE: ${instituteName}\n`;
     context += `TYPE: ${instituteType}\n`;
     context += `LOCATION: ${location}\n`;
     context += `STATUS: ${status}\n`;
     context += `COMPLETENESS SCORE: ${completenessScore}%\n`;
     context += `VERIFIED: ${isVerified}\n\n`;
-    
+
     // Latest data if available - this could be the main data object itself
     const latestData = data.latestData || data;
     if (latestData && typeof latestData === 'object') {
       const academicYear = latestData.academicYear || "N/A";
       context += `LATEST DATA (Academic Year: ${academicYear}):\n`;
-      
+
       // Check if we have parameter data (from the 27 parameters)
-      const hasParameterData = latestData.teacherStudentRatio !== undefined || 
-                              latestData.financialCapacity !== undefined ||
-                              latestData.placementPercentage !== undefined;
-      
+      const hasParameterData = latestData.teacherStudentRatio !== undefined ||
+        latestData.financialCapacity !== undefined ||
+        latestData.placementPercentage !== undefined;
+
       if (hasParameterData) {
         // Academic data
         if (latestData.teacherStudentRatio !== undefined) {
@@ -120,7 +132,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
         if (latestData.studentsGoingForHigherStudies !== undefined) {
           context += `Students Going for Higher Studies: ${latestData.studentsGoingForHigherStudies || "N/A"}\n`;
         }
-        
+
         // Infrastructure data
         if (latestData.vacancyBoysHostelUG !== undefined) {
           context += `Boys Hostel Vacancy (UG): ${latestData.vacancyBoysHostelUG || "N/A"}\n`;
@@ -134,7 +146,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
         if (latestData.landAreaSqKm !== undefined) {
           context += `Land Area: ${latestData.landAreaSqKm || "N/A"} sqkm\n`;
         }
-        
+
         // Facilities data
         if (latestData.facultyStrength !== undefined) {
           context += `Faculty Strength: ${latestData.facultyStrength || "N/A"}\n`;
@@ -145,7 +157,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
         if (latestData.availableWorkshops !== undefined) {
           context += `Available Workshops: ${latestData.availableWorkshops || "N/A"}\n`;
         }
-        
+
         // Financial data
         if (latestData.financialCapacity !== undefined) {
           context += `Financial Capacity: ${latestData.financialCapacity || "N/A"}\n`;
@@ -153,7 +165,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
         if (latestData.budgetAllocation !== undefined) {
           context += `Budget Allocation: ${latestData.budgetAllocation || "N/A"}\n`;
         }
-        
+
         // Additional financial metrics
         if (latestData.capitalExpenditure !== undefined) {
           context += `Capital Expenditure: ${latestData.capitalExpenditure || "N/A"}\n`;
@@ -165,7 +177,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
         context += "No detailed parameter data available.\n";
       }
     }
-    
+
     // Add any additional insights or analytics data
     const insights = data.insights || {};
     if (Object.keys(insights).length > 0) {
@@ -177,7 +189,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
         }
       });
     }
-    
+
     console.log("FloatingInstituteChatbot: Created context with length:", context.length);
     console.log("FloatingInstituteChatbot: Context preview:", context.substring(0, 300) + "...");
     return context;
@@ -245,7 +257,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
       });
 
       // Send question and context separately as expected by the backend
-      const res = await axios.post(`${API_BASE}/api/v1/chat`, { 
+      const res = await axios.post(`${API_BASE}/api/v1/chat`, {
         question: question,
         context: chatbotContext
       });
@@ -418,9 +430,8 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
 
       {/* Chat Sidebar */}
       <div
-        className={`fixed top-0 right-0 w-[22vw] min-w-[320px] max-w-md h-screen bg-white border-l border-gray-200 flex flex-col transition-transform duration-300 z-50 shadow-lg ${
-          isChatOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 w-[22vw] min-w-[320px] max-w-md h-screen bg-white border-l border-gray-200 flex flex-col transition-transform duration-300 z-50 shadow-lg ${isChatOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
@@ -458,11 +469,10 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
                 className={`flex ${isUser ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`relative px-3 py-2 rounded-2xl max-w-[90%] text-sm ${
-                    isUser
-                      ? "bg-primary-blue text-white rounded-br-sm"
-                      : "bg-white text-gray-800 rounded-bl-sm border border-gray-200"
-                  }`}
+                  className={`relative px-3 py-2 rounded-2xl max-w-[90%] text-sm ${isUser
+                    ? "bg-primary-blue text-white rounded-br-sm"
+                    : "bg-white text-gray-800 rounded-bl-sm border border-gray-200"
+                    }`}
                   style={isUser ? { backgroundColor: COLORS.PRIMARY_BLUE } : {}}
                 >
                   {m.text}
@@ -496,6 +506,9 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
               </div>
             </div>
           )}
+
+          {/* Scroll anchor */}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Chat Input + Voice Button */}
@@ -513,11 +526,10 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
             {/* Mic button for voice input */}
             <button
               onClick={toggleListening}
-              className={`rounded-full p-2 border text-sm flex items-center justify-center transition ${
-                isListening
-                  ? "border-primary-blue bg-light-blue text-primary-blue"
-                  : "border-gray-300 bg-gray-50 text-gray-500 hover:border-primary-blue hover:text-primary-blue"
-              }`}
+              className={`rounded-full p-2 border text-sm flex items-center justify-center transition ${isListening
+                ? "border-primary-blue bg-light-blue text-primary-blue"
+                : "border-gray-300 bg-gray-50 text-gray-500 hover:border-primary-blue hover:text-primary-blue"
+                }`}
               title={
                 isListening ? "Click to stop listening" : "Click to speak question"
               }
@@ -533,11 +545,10 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
           <button
             onClick={handleSend}
             disabled={loadingChat || !input.trim()}
-            className={`w-full mt-3 rounded-md px-4 py-2 text-sm font-semibold ${
-              loadingChat || !input.trim()
-                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                : "bg-primary-blue hover:bg-deep-indigo text-white"
-            }`}
+            className={`w-full mt-3 rounded-md px-4 py-2 text-sm font-semibold ${loadingChat || !input.trim()
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+              : "bg-primary-blue hover:bg-deep-indigo text-white"
+              }`}
             style={!(loadingChat || !input.trim()) ? { backgroundColor: COLORS.PRIMARY_BLUE } : {}}
           >
             ➤ Send Message

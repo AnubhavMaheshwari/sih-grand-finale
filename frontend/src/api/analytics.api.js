@@ -67,140 +67,30 @@ const analyticsApi = {
     }
   },
 
-  // Get financial data for institute (specific for NIT Jamshedpur charts)
+  // Get financial data for institute
   getInstituteFinancialData: async (instituteId = null) => {
     try {
       // First get analytics data which includes financial metrics
       const analytics = await analyticsApi.getInstituteAnalytics(instituteId);
-      
-      if (!analytics.success || !analytics.data?.analytics?.trends?.budgetGrowth) {
-        throw new Error("No financial data available");
+
+      if (analytics.success) {
+        // Return the analytics response directly (it should now contain capitalByYear etc)
+        return {
+          success: true,
+          data: analytics
+        };
       }
 
-      // For now, we'll return mock data structure that matches the charts
-      // In a real implementation, we would transform the actual financial data
-      // from the backend to match the chart format
-      
-      // This is a temporary solution - we need to check the actual data structure
-      // from the backend and transform it properly
       return {
-        success: true,
-        data: {
-          capitalByYear: [
-            {
-              year: "2021-22",
-              library: 16159011,
-              labs: 32702870,
-              workshops: 10276185,
-              otherAssets: 116807266,
-            },
-            {
-              year: "2022-23",
-              library: 26960364,
-              labs: 40039505,
-              workshops: 15642801,
-              otherAssets: 205437744,
-            },
-            {
-              year: "2023-24",
-              library: 64619296,
-              labs: 37165334,
-              workshops: 7808673,
-              otherAssets: 117932029,
-            },
-          ],
-          operationalByYear: [
-            {
-              year: "2021-22",
-              salaries: 654305850,
-              maintenance: 270257352,
-            },
-            {
-              year: "2022-23",
-              salaries: 740051982,
-              maintenance: 325776674,
-            },
-            {
-              year: "2023-24",
-              salaries: 892977412,
-              maintenance: 470807984,
-            },
-          ],
-          // Derived data
-          capVsOpByYear: [
-            {
-              year: "2021-22",
-              capital: 16159011 + 32702870 + 10276185 + 116807266,
-              operational: 654305850 + 270257352,
-            },
-            {
-              year: "2022-23",
-              capital: 26960364 + 40039505 + 15642801 + 205437744,
-              operational: 740051982 + 325776674,
-            },
-            {
-              year: "2023-24",
-              capital: 64619296 + 37165334 + 7808673 + 117932029,
-              operational: 892977412 + 470807984,
-            },
-          ],
-          capital2023Breakdown: [
-            { name: "Library", value: 64619296 },
-            { name: "Labs", value: 37165334 },
-            { name: "Workshops", value: 7808673 },
-            { name: "Other Capital Assets", value: 117932029 },
-          ],
-        },
-        message: "Financial data retrieved successfully",
+        success: false,
+        error: "Failed to load financial data"
       };
+
     } catch (error) {
       console.error("Error fetching financial data:", error);
-      // Return mock data as fallback for now
       return {
-        success: true,
-        data: {
-          capitalByYear: [
-            {
-              year: "2021-22",
-              library: 16159011,
-              labs: 32702870,
-              workshops: 10276185,
-              otherAssets: 116807266,
-            },
-            {
-              year: "2022-23",
-              library: 26960364,
-              labs: 40039505,
-              workshops: 15642801,
-              otherAssets: 205437744,
-            },
-            {
-              year: "2023-24",
-              library: 64619296,
-              labs: 37165334,
-              workshops: 7808673,
-              otherAssets: 117932029,
-            },
-          ],
-          operationalByYear: [
-            {
-              year: "2021-22",
-              salaries: 654305850,
-              maintenance: 270257352,
-            },
-            {
-              year: "2022-23",
-              salaries: 740051982,
-              maintenance: 325776674,
-            },
-            {
-              year: "2023-24",
-              salaries: 892977412,
-              maintenance: 470807984,
-            },
-          ],
-        },
-        message: "Using mock financial data",
+        success: false,
+        error: "Failed to connect to server"
       };
     }
   },

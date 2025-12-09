@@ -44,13 +44,21 @@ export const transformFinancialData = (backendData) => {
   }
 
   const { capitalByYear, operationalByYear } = backendData;
-  
+
+  // Calculate capVsOpByYear if not provided
   // Calculate capVsOpByYear if not provided
   const capVsOpByYear = capitalByYear.map((capRow, idx) => {
-    const opRow = operationalByYear?.[idx] || {};
-    const capitalTotal = capRow.library + capRow.labs + capRow.workshops + capRow.otherAssets;
-    const operationalTotal = (opRow.salaries || 0) + (opRow.maintenance || 0);
-    
+    // Try to match operational row by year, not just index
+    const opRow = operationalByYear?.find(op => op.year === capRow.year) || operationalByYear?.[idx] || {};
+
+    // Sum breakdown if available, else use raw sums if passed (usually not passed here, but good to be safe)
+    let capitalTotal = (capRow.library || 0) + (capRow.labs || 0) + (capRow.workshops || 0) + (capRow.otherAssets || 0);
+
+    // If sum is 0 but we have a 'capital' field (unlikely with current backend), use it? 
+    // Actually backend sends breakdown that SUMS up to total. So this is fine.
+
+    let operationalTotal = (opRow.salaries || 0) + (opRow.maintenance || 0);
+
     return {
       year: capRow.year,
       capital: capitalTotal,

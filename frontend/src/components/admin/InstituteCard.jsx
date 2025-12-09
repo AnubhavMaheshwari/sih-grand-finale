@@ -1,16 +1,31 @@
-const InstituteCard = ({ institute, onViewInsights }) => {
+const InstituteCard = ({ institute, onViewInsights, selected, onToggleSelect }) => {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+    <div
+      className={`bg-white p-6 rounded-xl shadow-sm border transition-all duration-200 ${selected ? 'border-indigo-500 ring-1 ring-indigo-500 shadow-md' : 'border-gray-100 hover:shadow-md'
+        }`}
+    >
       <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">{institute.name}</h3>
+        <div className="flex items-start gap-3">
+          {onToggleSelect && (
+            <input
+              type="checkbox"
+              checked={selected || false}
+              onChange={(e) => {
+                e.stopPropagation();
+                onToggleSelect(institute.id);
+              }}
+              className="mt-1.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 cursor-pointer"
+            />
+          )}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">{institute.name}</h3>
+          </div>
         </div>
-        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-          institute.status === "Verified" ? "bg-green-100 text-green-800" :
-          institute.status === "Active" ? "bg-blue-100 text-blue-800" :
-          institute.status === "Needs Data" ? "bg-yellow-100 text-yellow-800" :
-          "bg-gray-100 text-gray-800"
-        }`}>
+        <span className={`px-2 py-1 text-xs font-medium rounded-full ${institute.status === "Verified" ? "bg-green-100 text-green-800" :
+            institute.status === "Active" ? "bg-blue-100 text-blue-800" :
+              institute.status === "Needs Data" ? "bg-yellow-100 text-yellow-800" :
+                "bg-gray-100 text-gray-800"
+          }`}>
           {institute.status}
         </span>
       </div>

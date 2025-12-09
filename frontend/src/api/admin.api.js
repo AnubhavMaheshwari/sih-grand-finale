@@ -22,7 +22,7 @@ const adminApi = {
   // Get all users for management
   getAllUsers: async (params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.role) queryParams.append("role", params.role);
     if (params.search) queryParams.append("search", params.search);
     if (params.page) queryParams.append("page", params.page);
@@ -57,10 +57,16 @@ const adminApi = {
     return response.data;
   },
 
+  // Get specific institute profile by ID
+  getInstituteProfile: async (instituteId) => {
+    const response = await axiosInstance.get(`/admin/institutes/${instituteId}`);
+    return response.data;
+  },
+
   // Get all institutes
   getAllInstitutes: async (params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.category) queryParams.append("category", params.category);
     if (params.search) queryParams.append("search", params.search);
     if (params.page) queryParams.append("page", params.page);
@@ -114,7 +120,7 @@ const adminApi = {
   // Get all documents (admin view)
   getAllDocuments: async (params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.year) queryParams.append("year", params.year);
     if (params.status) queryParams.append("status", params.status);
     if (params.instituteId) queryParams.append("instituteId", params.instituteId);

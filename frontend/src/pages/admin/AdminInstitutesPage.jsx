@@ -9,6 +9,29 @@ const AdminInstitutesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedInstitutes, setSelectedInstitutes] = useState(new Set());
+
+  const toggleSelection = (id) => {
+    setSelectedInstitutes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedInstitutes(new Set());
+  };
+
+  const handleCompare = () => {
+    if (selectedInstitutes.size < 2) return;
+    const ids = Array.from(selectedInstitutes).join(",");
+    navigate(`/admin/compare?ids=${ids}`);
+  };
 
   // Fetch institutes data
   useEffect(() => {
@@ -19,10 +42,10 @@ const AdminInstitutesPage = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Get all institutes with their latest data
       const response = await adminApi.getAllInstitutesWithData();
-      
+
       if (response.success) {
         // Transform the data for display
         const institutesList = response.data.map(institute => {
@@ -41,7 +64,7 @@ const AdminInstitutesPage = () => {
               location = extractedParams.location;
             }
           }
-          
+
           // Determine status based on data completeness and verification
           let status = "Inactive";
           if (institute.latestData) {
@@ -53,13 +76,13 @@ const AdminInstitutesPage = () => {
               status = "Needs Data";
             }
           }
-          
+
           // Format upload date
           let uploadDate = "N/A";
           if (institute.lastUpdated) {
             uploadDate = new Date(institute.lastUpdated).toISOString().split('T')[0];
           }
-          
+
           return {
             id: institute.instituteId,
             name: institute.instituteName,
@@ -77,7 +100,7 @@ const AdminInstitutesPage = () => {
             isVerified: institute.isVerified || false,
           };
         });
-        
+
         setInstitutes(institutesList);
       } else {
         setError(response.error || "Failed to load institutes data");
@@ -97,8 +120,8 @@ const AdminInstitutesPage = () => {
 
   const filteredInstitutes = institutes.filter(institute => {
     return institute.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           institute.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           institute.id.toLowerCase().includes(searchTerm.toLowerCase());
+      institute.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      institute.id.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   if (loading) {
@@ -148,15 +171,46 @@ const AdminInstitutesPage = () => {
       </div>
 
       {/* Institutes Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-20">
         {filteredInstitutes.map((institute) => (
           <InstituteCard
             key={institute.id}
             institute={institute}
             onViewInsights={handleViewInsights}
+            selected={selectedInstitutes.has(institute.id)}
+            onToggleSelect={toggleSelection}
           />
         ))}
       </div>
+
+      {/* Comparison Floating Bar */}
+      {selectedInstitutes.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-full shadow-xl border border-gray-200 p-2 px-6 flex items-center gap-4 z-50 animate-in fade-in slide-in-from-bottom-4">
+          <span className="text-sm font-medium text-gray-700">
+            {selectedInstitutes.size} selected
+          </span>
+          <div className="h-4 w-px bg-gray-300" />
+          <button
+            onClick={clearSelection}
+            className="text-sm text-gray-500 hover:text-gray-700 font-medium"
+          >
+            Clear
+          </button>
+          <button
+            onClick={handleCompare}
+            disabled={selectedInstitutes.size < 2}
+            className={`
+              bg-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-2
+              ${selectedInstitutes.size < 2 ? 'opacity-50 cursor-not-allowed hidden' : 'hover:bg-indigo-700'}
+            `}
+          >
+            Compare Selected
+          </button>
+          {selectedInstitutes.size < 2 && (
+            <span className="text-xs text-gray-400 italic">Select at least 2</span>
+          )}
+        </div>
+      )}
 
       {/* No results message */}
       {filteredInstitutes.length === 0 && !loading && (

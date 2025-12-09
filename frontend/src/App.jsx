@@ -15,6 +15,7 @@ import AdminInstitutesPage from "./pages/admin/AdminInstitutesPage.jsx";
 import PendingRegistrationsPage from "./pages/admin/PendingRegistrationsPage.jsx";
 import InstituteParametersPage from "./pages/admin/InstituteParametersPage.jsx";
 import InstituteAnalyticsPage from "./pages/admin/InstituteAnalyticsPage.jsx";
+import InstituteComparisonPage from "./pages/admin/InstituteComparisonPage.jsx";
 import ReportsManagementPage from "./pages/institute/ReportsManagementPage.jsx";
 import AdminRequestsPage from "./pages/admin/AdminRequestsPage.jsx";
 
@@ -130,6 +131,16 @@ function App() {
               <ProtectedRoute requiredRole="admin">
                 <AdminLayout>
                   <InstituteAnalyticsPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/compare"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <InstituteComparisonPage />
                 </AdminLayout>
               </ProtectedRoute>
             }

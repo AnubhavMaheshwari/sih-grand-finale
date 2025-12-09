@@ -60,13 +60,14 @@ class LLMService:
                                 "You're enthusiastic about helping and maintain a positive tone. "
                                 "When you don't know something, you're honest about it. "
                                 "STRICT CONTENT POLICY: No vulgar, sexual, biased, or caste-discriminatory content. "
-                                "If any request violates policy, politely decline."
+                                "If any request violates policy, politely decline. "
+                                "IMPORTANT: Keep your answers SHORT and CONCISE. Avoid long explanations unless asked."
                             ),
                         },
                         {"role": "user", "content": prompt},
                     ],
                     temperature=0.3,
-                    max_tokens=1500,
+                    max_tokens=800,
                     top_p=0.9,
                 )
                 
@@ -113,7 +114,8 @@ CRITICAL GUIDELINES:
 3. If you see contradictions in context, mention: "There seems to be some inconsistency in the data"
 4. When listing items, present them clearly with bullet points or numbers
 5. Use conversational transitions: "Based on the document...", "I found that...", "The data shows..."
-6. End with helpful follow-ups: "Is there anything else you'd like to know about this?"
+6. KEEP ANSWERS SHORT AND CONCISE. Maximum 2-3 sentences for simple questions.
+7. Only provide detailed 5+ sentence answers if explicitly asked to "explain in detail" or "list all".
 
 CONTEXT FROM INSTITUTE DATA:
 {context}
@@ -122,14 +124,14 @@ USER QUESTION:
 "{question}"
 
 Response format:
-1. Start with acknowledgment if appropriate: "I see you're asking about..."
-2. Present the information clearly
-3. Add relevant context from other parts if helpful
-4. End with an offer for more help
+1. Acknowledge briefly: "I see you're asking about..."
+2. Answer the question directly and briefly (1-3 sentences).
+3. Only add context if it directly clarifies the answer.
+4. End with a short follow-up or offer for help.
 
 IMPORTANT: If the answer is NOT in the context, say: "I couldn't find specific information about this in the provided data. Could you rephrase or ask about something else?"
 
-Now, provide a helpful, human-like response:
+Now, provide a helpful, human-like, and CONCISE response:
 """
     
     def _add_conversational_touch(self, answer: str, question: str) -> str:
