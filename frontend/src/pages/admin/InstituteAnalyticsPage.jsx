@@ -23,9 +23,12 @@ import {
 } from "recharts";
 import { formatCrLabel, CHART_COLORS, PIE_COLORS, axisStyles, gridStyle } from "../../utils/chartUtils.js";
 
-const InstituteAnalyticsPage = () => {
-  const { instituteId } = useParams();
+const InstituteAnalyticsPage = ({ instituteId: propInstituteId, embedded = false }) => {
+  const params = useParams();
   const navigate = useNavigate();
+  // Use prop if available, otherwise use params
+  const instituteId = propInstituteId || params.instituteId;
+
   const [institute, setInstitute] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -48,7 +51,9 @@ const InstituteAnalyticsPage = () => {
 
   // Fetch institute details
   useEffect(() => {
-    fetchInstituteDetails();
+    if (instituteId) {
+      fetchInstituteDetails();
+    }
   }, [instituteId]);
 
   // Fetch insights data
@@ -62,14 +67,14 @@ const InstituteAnalyticsPage = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Get institute data
       const response = await adminApi.getInstituteData(instituteId);
-      
+
       // Log the raw institute data response
       console.log("Institute Details API Response:", response);
       console.log("Institute Details Data:", response.data);
-      
+
       if (response.success) {
         // Log before setting institute data
         console.log("Setting institute data to state:", response.data);
@@ -89,11 +94,11 @@ const InstituteAnalyticsPage = () => {
     try {
       setInsightsLoading(true);
       const response = await analyticsApi.getInstituteFinancialData(instituteId);
-      
+
       // Log the raw financial data response
       console.log("Financial Insights API Response:", response);
       console.log("Financial Insights Data:", response.data);
-      
+
       if (response.success) {
         const transformedData = transformFinancialData(response.data);
         // Log the transformed data
@@ -153,28 +158,40 @@ const InstituteAnalyticsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <button
-              onClick={handleBack}
-              className="inline-flex items-center mb-4 text-sm font-medium text-gray-600 hover:text-gray-900"
-            >
-              ← Back to Institutes
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {institute?.instituteName || institute?.name || "Institute"} - Analytics Insights
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Financial and operational analysis with visual charts
-            </p>
-          </div>
-          <div className="text-sm text-gray-500">
-            Institute ID: {instituteId}
+      {/* Page header - Only show if not embedded */}
+      {!embedded && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <button
+                onClick={handleBack}
+                className="inline-flex items-center mb-4 text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                ← Back to Institutes
+              </button>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {institute?.instituteName || institute?.name || "Institute"} - Analytics Insights
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Financial and operational analysis with visual charts
+              </p>
+            </div>
+            <div className="text-sm text-gray-500">
+              Institute ID: {instituteId}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Embedded Header - Simple Title */}
+      {embedded && (
+        <div className="mb-4 border-b pb-2">
+          <h2 className="text-xl font-bold text-gray-900">
+            {institute?.instituteName || institute?.name || "Institute"}
+          </h2>
+          <p className="text-sm text-gray-500">{institute?.location?.city}, {institute?.location?.state}</p>
+        </div>
+      )}
 
       {/* Main content grid */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -397,8 +414,8 @@ const InstituteAnalyticsPage = () => {
         </div>
       </div>
 
-      {/* Floating Chatbot Component */}
-      <FloatingInstituteChatbot instituteData={institute} />
+      {/* Floating Chatbot Component - Only show if not embedded */}
+      {!embedded && <FloatingInstituteChatbot instituteData={institute} />}
     </div>
   );
 };
