@@ -34,7 +34,7 @@ const documentsApi = {
   // Get institute documents
   getInstituteDocuments: async (params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.year) queryParams.append("year", params.year);
     if (params.status) queryParams.append("status", params.status);
     if (params.page) queryParams.append("page", params.page);
@@ -62,9 +62,10 @@ const documentsApi = {
     const response = await axiosInstance.get(`/documents/documents/${documentId}/view`, {
       responseType: "blob",
     });
-    
+
     // Create blob URL for viewing
-    const blob = new Blob([response.data], { type: "application/pdf" });
+    const contentType = response.headers['content-type'] || 'application/pdf';
+    const blob = new Blob([response.data], { type: contentType });
     return URL.createObjectURL(blob);
   },
 
@@ -83,7 +84,7 @@ const documentsApi = {
   // Admin: Get all documents
   getAllDocuments: async (params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.year) queryParams.append("year", params.year);
     if (params.status) queryParams.append("status", params.status);
     if (params.page) queryParams.append("page", params.page);

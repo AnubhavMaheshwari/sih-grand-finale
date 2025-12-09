@@ -56,7 +56,7 @@ const VerifyRegistrationPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const otpCode = otp.join('');
     if (otpCode.length !== 6) {
       showToast('Please enter a valid 6-digit OTP', 'error');
@@ -66,13 +66,13 @@ const VerifyRegistrationPage = () => {
     setLoading(true);
     try {
       const response = await verifyRegistrationOTP(email, otpCode);
-      
+
       showToast(response.message || 'OTP verified successfully! Your account is pending admin approval.', 'success');
-      
-      // Redirect to login page after successful verification
+
+      // Redirect to institute details page after successful verification
       setTimeout(() => {
-        navigate('/login', { 
-          state: { 
+        navigate('/login', {
+          state: {
             message: 'Registration completed successfully! Your account is pending admin approval. You will be notified once approved.'
           }
         });

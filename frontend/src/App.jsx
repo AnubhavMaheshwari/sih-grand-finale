@@ -16,6 +16,7 @@ import PendingRegistrationsPage from "./pages/admin/PendingRegistrationsPage.jsx
 import InstituteParametersPage from "./pages/admin/InstituteParametersPage.jsx";
 import InstituteAnalyticsPage from "./pages/admin/InstituteAnalyticsPage.jsx";
 import ReportsManagementPage from "./pages/institute/ReportsManagementPage.jsx";
+import AdminRequestsPage from "./pages/admin/AdminRequestsPage.jsx";
 
 // Institute pages
 import UploadDocumentPage from "./pages/institute/UploadDocumentPage.jsx";
@@ -94,24 +95,21 @@ function App() {
             }
           />
           <Route
-            path="/admin/requests"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Requests Management</h1>
-                    <p className="text-gray-600 mt-2">Requests management page coming soon...</p>
-                  </div>
-                </AdminLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/admin/pending-registrations"
             element={
               <ProtectedRoute requiredRole="admin">
                 <AdminLayout>
                   <PendingRegistrationsPage />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/requests"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout>
+                  <AdminRequestsPage />
                 </AdminLayout>
               </ProtectedRoute>
             }

@@ -202,7 +202,7 @@ const PendingRegistrationsPage = () => {
                           disabled={approving}
                           className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {approving ? 'Approving...' : 'Approve'}
+                          {approving ? 'Approve' : 'Approve'}
                         </button>
                         <button
                           onClick={() => setSelectedUserId(registration.userId)}
@@ -221,53 +221,57 @@ const PendingRegistrationsPage = () => {
       </div>
 
       {/* Reject Modal */}
-      {selectedUserId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Reject Registration</h3>
-              <p className="text-gray-600 mb-4">
-                Please provide a reason for rejecting this registration. The institute will be notified.
-              </p>
-              <textarea
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="Enter reason for rejection..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
-                rows="4"
-              />
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => {
-                    setSelectedUserId(null);
-                    setRejectReason('');
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleReject(selectedUserId, rejectReason)}
-                  disabled={rejecting || !rejectReason.trim()}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {rejecting ? 'Rejecting...' : 'Confirm Reject'}
-                </button>
+      {
+        selectedUserId && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-lg max-w-md w-full">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Reject Registration</h3>
+                <p className="text-gray-600 mb-4">
+                  Please provide a reason for rejecting this registration. The institute will be notified.
+                </p>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Enter reason for rejection..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                  rows="4"
+                />
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button
+                    onClick={() => {
+                      setSelectedUserId(null);
+                      setRejectReason('');
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleReject(selectedUserId, rejectReason)}
+                    disabled={rejecting || !rejectReason.trim()}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {rejecting ? 'Rejecting...' : 'Confirm Reject'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Toast Notification */}
-      {toast.message && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={handleToastClose}
-        />
-      )}
-    </div>
+      {
+        toast.message && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={handleToastClose}
+          />
+        )
+      }
+    </div >
   );
 };
 

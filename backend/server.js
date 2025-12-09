@@ -9,10 +9,17 @@ import { DEFAULT_ADMIN } from "./src/config/constants.js";
 
 dotenv.config();
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use("/api", routes);
 
@@ -40,7 +47,7 @@ const createAdminIfNotExists = async () => {
       // Check if admin credentials match .env file
       const passwordMatches = await admin.comparePassword(envAdminPassword);
       const userIdMatches = admin.userId === envAdminId;
-      
+
       if (!userIdMatches || !passwordMatches) {
         // Update admin with .env credentials
         admin.userId = envAdminId;
