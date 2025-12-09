@@ -83,7 +83,7 @@ class InstituteDataService {
       if (existingData) {
         // Update existing data
         changeType = "UPDATE";
-        
+
         // Log changes for each parameter
         await this.logParameterChanges(
           existingData,
@@ -99,12 +99,12 @@ class InstituteDataService {
         existingData.isVerified = false; // Reset verification on update
         existingData.verifiedBy = undefined;
         existingData.verifiedAt = undefined;
-        
+
         savedData = await existingData.save();
       } else {
         // Create new data
         savedData = await InstituteData.create(instituteData);
-        
+
         // Log creation of all parameters
         await this.logParameterCreation(
           savedData,
@@ -240,7 +240,7 @@ class InstituteDataService {
       data.forEach((record) => {
         const completeness = record.completenessScore || 0;
         totalCompleteness += completeness;
-        
+
         if (record.isVerified) {
           verifiedCount++;
         }
@@ -337,7 +337,7 @@ class InstituteDataService {
 
       for (const mapping of parameterMappings) {
         const value = data[mapping.fieldName];
-        
+
         if (value !== undefined && value !== null && value !== "") {
           logPromises.push(
             InstituteParameterHistory.logChange({
@@ -377,7 +377,7 @@ class InstituteDataService {
 
       for (const mapping of parameterMappings) {
         const value = data[mapping.fieldName];
-        
+
         if (value !== undefined && value !== null && value !== "") {
           logPromises.push(
             InstituteParameterHistory.logChange({
@@ -417,7 +417,7 @@ class InstituteDataService {
 
       for (const mapping of parameterMappings) {
         const value = data[mapping.fieldName];
-        
+
         if (value !== undefined && value !== null && value !== "") {
           logPromises.push(
             InstituteParameterHistory.logChange({
@@ -459,7 +459,7 @@ class InstituteDataService {
 
       for (const mapping of parameterMappings) {
         const value = data[mapping.fieldName];
-        
+
         if (value !== undefined && value !== null && value !== "") {
           logPromises.push(
             InstituteParameterHistory.logChange({
@@ -720,20 +720,20 @@ class InstituteDataService {
     try {
       // Import User model here to avoid circular dependency
       const User = (await import("../models/User.model.js")).default;
-      
+
       // Get all institute users (approved registration)
       const instituteUsers = await User.find({
         role: "institute",
         registrationStatus: "approved"
       }).select("instituteId instituteName instituteType fullName email");
-      
+
       if (!instituteUsers || instituteUsers.length === 0) {
         return [];
       }
-      
+
       // Group users by instituteId (in case multiple users per institute)
       const institutesMap = new Map();
-      
+
       for (const user of instituteUsers) {
         if (!institutesMap.has(user.instituteId)) {
           institutesMap.set(user.instituteId, {
@@ -748,38 +748,38 @@ class InstituteDataService {
             uploadedBy: null
           });
         }
-        
+
         const institute = institutesMap.get(user.instituteId);
         institute.users.push({
           fullName: user.fullName,
           email: user.email
         });
       }
-      
+
       // Get latest data for each institute
       const institutes = Array.from(institutesMap.values());
-      
+
       const institutesWithData = await Promise.all(
         institutes.map(async (institute) => {
           try {
             // Get all data for this institute
             const dataResponse = await this.getAllInstituteData(institute.instituteId, 1, 0);
-            
+
             if (dataResponse.data && dataResponse.data.length > 0) {
               const latestData = dataResponse.data[0]; // Already sorted by academicYear descending
-              
+
               institute.latestData = latestData;
               institute.completenessScore = latestData.completenessScore || 0;
               institute.isVerified = latestData.isVerified || false;
               institute.lastUpdated = latestData.updatedAt || latestData.createdAt;
               institute.uploadedBy = latestData.uploadedBy?.fullName || institute.users[0]?.fullName || "Unknown";
-              
+
               // Extract location from data if available
               if (latestData.extractedParameters?.get("location")) {
                 institute.location = latestData.extractedParameters.get("location");
               }
             }
-            
+
             return institute;
           } catch (error) {
             console.error(`Error fetching data for institute ${institute.instituteId}:`, error);
@@ -787,7 +787,7 @@ class InstituteDataService {
           }
         })
       );
-      
+
       return institutesWithData;
     } catch (error) {
       console.error("Error getting all institutes with data:", error);
@@ -819,7 +819,7 @@ class InstituteDataService {
         category: "ACADEMIC",
         dataType: "INTEGER",
       },
-      
+
       // INFRASTRUCTURE PARAMETERS
       {
         fieldName: "vacancyBoysHostelUG",
@@ -851,7 +851,7 @@ class InstituteDataService {
         category: "INFRASTRUCTURE",
         dataType: "DECIMAL",
       },
-      
+
       // FACILITIES PARAMETERS
       {
         fieldName: "labsFacilities",
@@ -879,7 +879,7 @@ class InstituteDataService {
       },
       {
         fieldName: "ictFacilities",
-        label: "ICT facilities",
+        label: "ICT facilities (Information and Communication Technology)",
         category: "FACILITIES",
         dataType: "TEXT",
       },
@@ -889,7 +889,7 @@ class InstituteDataService {
         category: "FACILITIES",
         dataType: "INTEGER",
       },
-      
+
       // ADMINISTRATIVE PARAMETERS
       {
         fieldName: "academicPlan",
@@ -951,7 +951,7 @@ class InstituteDataService {
         category: "ADMINISTRATIVE",
         dataType: "TEXT",
       },
-      
+
       // FINANCIAL PARAMETERS
       {
         fieldName: "financialCapacity",

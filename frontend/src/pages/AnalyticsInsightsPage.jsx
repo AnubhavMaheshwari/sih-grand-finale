@@ -191,7 +191,7 @@ function getParametersByCategory(category) {
     { fieldName: "labEquipments", label: "Lab equipments", category: "Facilities", dataType: "INTEGER" },
     { fieldName: "facultyStrength", label: "Faculty strength", category: "Facilities", dataType: "INTEGER" },
     { fieldName: "libraryResources", label: "Library resources", category: "Facilities", dataType: "TEXT" },
-    { fieldName: "ictFacilities", label: "ICT facilities", category: "Facilities", dataType: "TEXT" },
+    { fieldName: "ictFacilities", label: "ICT facilities (Information and Communication Technology)", category: "Facilities", dataType: "TEXT" },
     { fieldName: "availableWorkshops", label: "Available workshops", category: "Facilities", dataType: "INTEGER" },
 
     // ADMINISTRATIVE PARAMETERS
