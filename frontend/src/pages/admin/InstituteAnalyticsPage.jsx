@@ -4,6 +4,7 @@ import adminApi from "../../api/admin.api.js";
 import analyticsApi from "../../api/analytics.api.js";
 import FloatingInstituteChatbot from "../../components/chatbot/FloatingInstituteChatbot.jsx";
 import { transformFinancialData } from "../../utils/chartUtils.js";
+import { formatInstituteName } from "../../utils/instituteNameFormatter.js";
 import {
   ResponsiveContainer,
   BarChart,
@@ -97,14 +98,14 @@ const InstituteAnalyticsPage = ({ instituteId: propInstituteId, embedded = false
       const profileResponse = await adminApi.getInstituteProfile(instituteId);
       console.log("Institute Profile Response:", profileResponse);
 
-      if (profileResponse.success && profileResponse.data) {
-        // Merge profile data with existing institute data
+      if (profileResponse.success && profileResponse.institute) {
+        // Merge profile data with existing institute data (handle null state)
         setInstitute(prev => ({
-          ...prev,
-          instituteName: profileResponse.data.instituteName,
-          name: profileResponse.data.name,
-          instituteType: profileResponse.data.category,
-          location: profileResponse.data.location,
+          ...(prev || {}),
+          instituteName: profileResponse.institute.instituteName,
+          name: profileResponse.institute.name,
+          instituteType: profileResponse.institute.category,
+          location: profileResponse.institute.location,
         }));
       }
     } catch (err) {
@@ -193,7 +194,7 @@ const InstituteAnalyticsPage = ({ instituteId: propInstituteId, embedded = false
                 ← Back to Institutes
               </button>
               <h1 className="text-3xl font-bold text-gray-900">
-                {institute?.instituteName || institute?.name || "Institute"} - Analytics Insights
+                {formatInstituteName(institute?.instituteName || institute?.name) || `Institute ${instituteId}`}
               </h1>
               <p className="text-gray-600 mt-2">
                 Financial and operational analysis with visual charts

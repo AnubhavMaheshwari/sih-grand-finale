@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import adminApi from "../../api/admin.api.js";
 import InstituteCard from "../../components/admin/InstituteCard.jsx";
+import { formatInstituteName } from "../../utils/instituteNameFormatter.js";
 
 const AdminInstitutesPage = () => {
   const navigate = useNavigate();
@@ -85,7 +86,7 @@ const AdminInstitutesPage = () => {
 
           return {
             id: institute.instituteId,
-            name: institute.instituteName,
+            name: formatInstituteName(institute.instituteName),
             type: institute.instituteType,
             location: location,
             established: "N/A", // Not available in current schema
