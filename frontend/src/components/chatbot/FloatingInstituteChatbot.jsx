@@ -36,6 +36,9 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
   // Ref for auto-scroll
   const messagesEndRef = useRef(null);
 
+  // Ref for click outside detection
+  const chatContainerRef = useRef(null);
+
   const toggleChat = () => setIsChatOpen((prev) => !prev);
 
   // Auto-scroll to bottom
@@ -46,6 +49,27 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, loadingChat, isChatOpen]);
+
+  // Click outside to close chatbot
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isChatOpen && chatContainerRef.current && !chatContainerRef.current.contains(event.target)) {
+        // Check if click is not on the toggle button
+        const toggleButton = document.querySelector('[data-chatbot-toggle]');
+        if (toggleButton && !toggleButton.contains(event.target)) {
+          setIsChatOpen(false);
+        }
+      }
+    };
+
+    if (isChatOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isChatOpen]);
 
   // Initialize chatbot with institute data
   useEffect(() => {
@@ -76,122 +100,251 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
     // Debug: log the entire data structure
     console.log("FloatingInstituteChatbot: Raw instituteData for context creation:", data);
 
-    // Basic institute info - use get() style access with fallbacks
-    // Handle different possible field names
-    const instituteName = data.instituteName || data.name ||
-      (data.latestData && data.latestData.instituteName) || "Unknown";
+    // Helper function to format rupees to crores
+    const formatCr = (value) => {
+      if (value === undefined || value === null) return "N/A";
+      return (value / 10000000).toFixed(2); // 1 Cr = 1,00,00,000
+    };
 
-    const instituteType = data.instituteType || data.type ||
-      (data.latestData && data.latestData.instituteType) || "Unknown";
-
-    // Location might be in data.location, latestData.location, or extractedParameters
-    let location = data.location || "Unknown";
-    if (location === "Unknown" && data.latestData) {
-      if (data.latestData.location) {
-        location = data.latestData.location;
-      } else if (data.latestData.extractedParameters && data.latestData.extractedParameters.get("location")) {
-        location = data.latestData.extractedParameters.get("location");
-      }
-    }
-
-    // Status might not exist in the data model, use a default
+    // Basic institute info
+    const instituteName = data.instituteName || data.name || "Unknown Institute";
+    const instituteType = data.instituteType || data.type || "Unknown";
+    const location = data.location || "Unknown";
+    const instituteId = data.instituteId || "Unknown";
     const status = data.status || "Active";
-
-    const completenessScore = data.completenessScore ||
-      (data.latestData && data.latestData.completenessScore) || 0;
-
-    const isVerified = data.isVerified ? "Yes" :
-      (data.latestData && data.latestData.isVerified) ? "Yes" : "No";
+    const completenessScore = data.completenessScore || 0;
+    const isVerified = data.isVerified ? "Yes" : "No";
 
     context += `INSTITUTE: ${instituteName}\n`;
+    context += `INSTITUTE ID: ${instituteId}\n`;
     context += `TYPE: ${instituteType}\n`;
     context += `LOCATION: ${location}\n`;
     context += `STATUS: ${status}\n`;
     context += `COMPLETENESS SCORE: ${completenessScore}%\n`;
     context += `VERIFIED: ${isVerified}\n\n`;
 
-    // Latest data if available - this could be the main data object itself
-    const latestData = data.latestData || data;
-    if (latestData && typeof latestData === 'object') {
-      const academicYear = latestData.academicYear || "N/A";
-      context += `LATEST DATA (Academic Year: ${academicYear}):\n`;
+    // Check if we have insights data (analytics from the page)
+    if (data.insightsData) {
+      console.log("FloatingInstituteChatbot: Found insights data:", data.insightsData);
+      context += `ANALYTICS DATA AVAILABLE:\n\n`;
 
-      // Check if we have parameter data (from the 27 parameters)
-      const hasParameterData = latestData.teacherStudentRatio !== undefined ||
-        latestData.financialCapacity !== undefined ||
-        latestData.placementPercentage !== undefined;
+      // Capital vs Operational data
+      if (data.insightsData.capVsOpByYear && data.insightsData.capVsOpByYear.length > 0) {
+        context += `CAPITAL VS OPERATIONAL EXPENDITURE BY YEAR:\n`;
+        data.insightsData.capVsOpByYear.forEach(yearData => {
+          context += `Year ${yearData.year}:\n`;
+          if (yearData.capital !== undefined) {
+            context += `  Capital Expenditure: ₹${formatCr(yearData.capital)} Cr\n`;
+          }
+          if (yearData.operational !== undefined) {
+            context += `  Operational Expenditure: ₹${formatCr(yearData.operational)} Cr\n`;
+          }
+          if (yearData.capital && yearData.operational) {
+            const total = yearData.capital + yearData.operational;
+            context += `  Total Expenditure: ₹${formatCr(total)} Cr\n`;
+          }
+        });
+        context += `\n`;
+      }
 
-      if (hasParameterData) {
-        // Academic data
-        if (latestData.teacherStudentRatio !== undefined) {
-          context += `Teacher-Student Ratio: ${latestData.teacherStudentRatio || "N/A"}\n`;
-        }
-        if (latestData.placementPercentage !== undefined) {
-          context += `Placement Percentage: ${latestData.placementPercentage || "N/A"}\n`;
-        }
-        if (latestData.studentsGoingForHigherStudies !== undefined) {
-          context += `Students Going for Higher Studies: ${latestData.studentsGoingForHigherStudies || "N/A"}\n`;
+      // Capital breakdown by year
+      if (data.insightsData.capitalByYear && data.insightsData.capitalByYear.length > 0) {
+        context += `CAPITAL EXPENDITURE BREAKDOWN BY CATEGORY:\n`;
+        data.insightsData.capitalByYear.forEach(yearData => {
+          context += `Year ${yearData.year}:\n`;
+          if (yearData.library !== undefined) context += `  Library: ₹${formatCr(yearData.library)} Cr\n`;
+          if (yearData.labs !== undefined) context += `  Labs: ₹${formatCr(yearData.labs)} Cr\n`;
+          if (yearData.workshops !== undefined) context += `  Workshops: ₹${formatCr(yearData.workshops)} Cr\n`;
+          if (yearData.otherAssets !== undefined) context += `  Other Assets: ₹${formatCr(yearData.otherAssets)} Cr\n`;
+        });
+        context += `\n`;
+      }
+
+      // Operational breakdown by year
+      if (data.insightsData.operationalByYear && data.insightsData.operationalByYear.length > 0) {
+        context += `OPERATIONAL EXPENDITURE BREAKDOWN:\n`;
+        data.insightsData.operationalByYear.forEach(yearData => {
+          context += `Year ${yearData.year}:\n`;
+          if (yearData.salaries !== undefined) context += `  Salaries: ₹${formatCr(yearData.salaries)} Cr\n`;
+          if (yearData.maintenance !== undefined) context += `  Maintenance: ₹${formatCr(yearData.maintenance)} Cr\n`;
+        });
+        context += `\n`;
+      }
+
+      // 2023 breakdown (if available)
+      if (data.insightsData.capital2023Breakdown && data.insightsData.capital2023Breakdown.length > 0) {
+        context += `2023-24 CAPITAL EXPENDITURE COMPOSITION:\n`;
+        data.insightsData.capital2023Breakdown.forEach(item => {
+          context += `  ${item.name}: ₹${formatCr(item.value)} Cr\n`;
+        });
+        context += `\n`;
+      }
+
+      // Add trend analysis and predictions
+      if (data.insightsData.capVsOpByYear && data.insightsData.capVsOpByYear.length >= 2) {
+        context += `TREND ANALYSIS & PREDICTIONS:\n`;
+
+        const years = data.insightsData.capVsOpByYear;
+        const latestYear = years[years.length - 1];
+        const previousYear = years[years.length - 2];
+
+        // Calculate growth rates
+        if (latestYear.capital && previousYear.capital) {
+          const capitalGrowth = ((latestYear.capital - previousYear.capital) / previousYear.capital * 100).toFixed(1);
+          context += `Capital Expenditure Trend: ${capitalGrowth > 0 ? 'Increasing' : 'Decreasing'} by ${Math.abs(capitalGrowth)}% year-over-year\n`;
+
+          // Simple prediction for next year
+          const predictedCapital = latestYear.capital * (1 + parseFloat(capitalGrowth) / 100);
+          context += `Predicted Capital Expenditure (next year): ₹${formatCr(predictedCapital)} Cr\n`;
         }
 
-        // Infrastructure data
-        if (latestData.vacancyBoysHostelUG !== undefined) {
-          context += `Boys Hostel Vacancy (UG): ${latestData.vacancyBoysHostelUG || "N/A"}\n`;
-        }
-        if (latestData.vacancyGirlsHostelUG !== undefined) {
-          context += `Girls Hostel Vacancy (UG): ${latestData.vacancyGirlsHostelUG || "N/A"}\n`;
-        }
-        if (latestData.classroomCapacity !== undefined) {
-          context += `Classroom Capacity: ${latestData.classroomCapacity || "N/A"}\n`;
-        }
-        if (latestData.landAreaSqKm !== undefined) {
-          context += `Land Area: ${latestData.landAreaSqKm || "N/A"} sqkm\n`;
+        if (latestYear.operational && previousYear.operational) {
+          const opGrowth = ((latestYear.operational - previousYear.operational) / previousYear.operational * 100).toFixed(1);
+          context += `Operational Expenditure Trend: ${opGrowth > 0 ? 'Increasing' : 'Decreasing'} by ${Math.abs(opGrowth)}% year-over-year\n`;
+
+          // Simple prediction for next year
+          const predictedOp = latestYear.operational * (1 + parseFloat(opGrowth) / 100);
+          context += `Predicted Operational Expenditure (next year): ₹${formatCr(predictedOp)} Cr\n`;
         }
 
-        // Facilities data
-        if (latestData.facultyStrength !== undefined) {
-          context += `Faculty Strength: ${latestData.facultyStrength || "N/A"}\n`;
-        }
-        if (latestData.labEquipments !== undefined) {
-          context += `Lab Equipment Count: ${latestData.labEquipments || "N/A"}\n`;
-        }
-        if (latestData.availableWorkshops !== undefined) {
-          context += `Available Workshops: ${latestData.availableWorkshops || "N/A"}\n`;
+        const totalCurrent = (latestYear.capital || 0) + (latestYear.operational || 0);
+        const totalPrevious = (previousYear.capital || 0) + (previousYear.operational || 0);
+        if (totalCurrent && totalPrevious) {
+          const totalGrowth = ((totalCurrent - totalPrevious) / totalPrevious * 100).toFixed(1);
+          context += `Total Expenditure Trend: ${totalGrowth > 0 ? 'Increasing' : 'Decreasing'} by ${Math.abs(totalGrowth)}% year-over-year\n`;
+
+          const predictedTotal = totalCurrent * (1 + parseFloat(totalGrowth) / 100);
+          context += `Predicted Total Expenditure (next year): ₹${formatCr(predictedTotal)} Cr\n`;
         }
 
-        // Financial data
-        if (latestData.financialCapacity !== undefined) {
-          context += `Financial Capacity: ${latestData.financialCapacity || "N/A"}\n`;
-        }
-        if (latestData.budgetAllocation !== undefined) {
-          context += `Budget Allocation: ${latestData.budgetAllocation || "N/A"}\n`;
-        }
-
-        // Additional financial metrics
-        if (latestData.capitalExpenditure !== undefined) {
-          context += `Capital Expenditure: ${latestData.capitalExpenditure || "N/A"}\n`;
-        }
-        if (latestData.operationalExpenditure !== undefined) {
-          context += `Operational Expenditure: ${latestData.operationalExpenditure || "N/A"}\n`;
-        }
-      } else {
-        context += "No detailed parameter data available.\n";
+        context += `\n`;
       }
     }
 
-    // Add any additional insights or analytics data
-    const insights = data.insights || {};
-    if (Object.keys(insights).length > 0) {
-      context += "\nANALYTICS INSIGHTS:\n";
-      Object.entries(insights).forEach(([key, value]) => {
-        if (value) {
-          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-          context += `${formattedKey}: ${value}\n`;
+    // Fallback: Handle nested data structure from backend (if available)
+    const latestData = data.latestData || data;
+    if (latestData && typeof latestData === 'object' && !data.insightsData) {
+      const academicYear = latestData.academicYear || latestData.year || "N/A";
+      context += `LATEST DATA (Academic Year: ${academicYear}):\n`;
+
+      // Handle nested data structure from backend
+      const rawData = latestData.rawExtractedData || latestData;
+
+      // Student data
+      if (rawData.studentStrength) {
+        context += `\nSTUDENT INFORMATION:\n`;
+        if (rawData.studentStrength.totalStudents !== undefined) {
+          context += `Total Students: ${rawData.studentStrength.totalStudents}\n`;
         }
-      });
+        if (rawData.studentStrength.maleStudents !== undefined) {
+          context += `Male Students: ${rawData.studentStrength.maleStudents}\n`;
+        }
+        if (rawData.studentStrength.femaleStudents !== undefined) {
+          context += `Female Students: ${rawData.studentStrength.femaleStudents}\n`;
+        }
+      }
+
+      // Faculty data
+      if (rawData.facultyDetails) {
+        context += `\nFACULTY INFORMATION:\n`;
+        if (rawData.facultyDetails.totalFaculty !== undefined) {
+          context += `Total Faculty: ${rawData.facultyDetails.totalFaculty}\n`;
+        }
+        if (rawData.facultyDetails.professors !== undefined) {
+          context += `Professors: ${rawData.facultyDetails.professors}\n`;
+        }
+        if (rawData.facultyDetails.associateProfessors !== undefined) {
+          context += `Associate Professors: ${rawData.facultyDetails.associateProfessors}\n`;
+        }
+        if (rawData.facultyDetails.assistantProfessors !== undefined) {
+          context += `Assistant Professors: ${rawData.facultyDetails.assistantProfessors}\n`;
+        }
+      }
+
+      // Financial data
+      if (rawData.financialResources) {
+        context += `\nFINANCIAL INFORMATION:\n`;
+        if (rawData.financialResources.capitalExpenditure !== undefined) {
+          context += `Capital Expenditure: ₹${rawData.financialResources.capitalExpenditure}\n`;
+        }
+        if (rawData.financialResources.operationalExpenditure !== undefined) {
+          context += `Operational Expenditure: ₹${rawData.financialResources.operationalExpenditure}\n`;
+        }
+        const total = (rawData.financialResources.capitalExpenditure || 0) +
+          (rawData.financialResources.operationalExpenditure || 0);
+        if (total > 0) {
+          context += `Total Expenditure: ₹${total}\n`;
+        }
+      }
+
+      // Placement data
+      if (rawData.placementHigherStudy) {
+        context += `\nPLACEMENT & HIGHER STUDIES:\n`;
+        if (rawData.placementHigherStudy.studentsPlaced !== undefined) {
+          context += `Students Placed: ${rawData.placementHigherStudy.studentsPlaced}\n`;
+        }
+        if (rawData.placementHigherStudy.medianSalary !== undefined) {
+          context += `Median Salary: ₹${rawData.placementHigherStudy.medianSalary}\n`;
+        }
+        if (rawData.placementHigherStudy.higherStudies !== undefined) {
+          context += `Students in Higher Studies: ${rawData.placementHigherStudy.higherStudies}\n`;
+        }
+      }
+
+      // Research data
+      if (rawData.sponsoredResearch) {
+        context += `\nRESEARCH INFORMATION:\n`;
+        if (rawData.sponsoredResearch.totalProjects !== undefined) {
+          context += `Total Research Projects: ${rawData.sponsoredResearch.totalProjects}\n`;
+        }
+        if (rawData.sponsoredResearch.totalAmount !== undefined) {
+          context += `Total Research Funding: ₹${rawData.sponsoredResearch.totalAmount}\n`;
+        }
+      }
+
+      // PhD data
+      if (rawData.phdStudents) {
+        context += `\nPHD STUDENTS:\n`;
+        if (rawData.phdStudents.totalPhDStudents !== undefined) {
+          context += `Total PhD Students: ${rawData.phdStudents.totalPhDStudents}\n`;
+        }
+      }
+
+      // Sanctioned intake
+      if (rawData.sanctionedIntake) {
+        context += `\nSANCTIONED INTAKE:\n`;
+        if (rawData.sanctionedIntake.totalIntake !== undefined) {
+          context += `Total Sanctioned Intake: ${rawData.sanctionedIntake.totalIntake}\n`;
+        }
+      }
+
+      // Fallback for flat structure (if data is not nested)
+      if (!rawData.studentStrength && !rawData.facultyDetails && !rawData.financialResources) {
+        context += `\nADDITIONAL DATA:\n`;
+
+        // Check for flat fields
+        if (latestData.placementPercentage !== undefined) {
+          context += `Placement Percentage: ${latestData.placementPercentage}%\n`;
+        }
+        if (latestData.financialCapacity !== undefined) {
+          context += `Financial Capacity: ₹${latestData.financialCapacity}\n`;
+        }
+        if (latestData.teacherStudentRatio !== undefined) {
+          context += `Teacher-Student Ratio: ${latestData.teacherStudentRatio}\n`;
+        }
+        if (latestData.facultyStrength !== undefined) {
+          context += `Faculty Strength: ${latestData.facultyStrength}\n`;
+        }
+      }
+    }
+
+    // If no data at all
+    if (!data.insightsData && !latestData) {
+      context += `No detailed data available for this institute.\n`;
     }
 
     console.log("FloatingInstituteChatbot: Created context with length:", context.length);
-    console.log("FloatingInstituteChatbot: Context preview:", context.substring(0, 300) + "...");
+    console.log("FloatingInstituteChatbot: Context preview:", context.substring(0, 500) + "...");
     return context;
   };
 
@@ -421,6 +574,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
       {/* Floating Toggle Button */}
       <button
         onClick={toggleChat}
+        data-chatbot-toggle
         className="fixed bottom-6 right-6 bg-primary-blue hover:bg-deep-indigo text-white font-medium px-4 py-3 rounded-full flex items-center gap-2 shadow-lg transition z-40"
         style={{ backgroundColor: COLORS.PRIMARY_BLUE }}
       >
@@ -430,6 +584,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
 
       {/* Chat Sidebar */}
       <div
+        ref={chatContainerRef}
         className={`fixed top-0 right-0 w-[22vw] min-w-[320px] max-w-md h-screen bg-white border-l border-gray-200 flex flex-col transition-transform duration-300 z-50 shadow-lg ${isChatOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
@@ -469,7 +624,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
                 className={`flex ${isUser ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`relative px-3 py-2 rounded-2xl max-w-[90%] text-sm ${isUser
+                  className={`relative px-3 py-2 rounded-2xl max-w-[90%] text-base ${isUser
                     ? "bg-primary-blue text-white rounded-br-sm"
                     : "bg-white text-gray-800 rounded-bl-sm border border-gray-200"
                     }`}
