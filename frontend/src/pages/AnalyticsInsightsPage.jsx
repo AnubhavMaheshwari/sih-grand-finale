@@ -73,7 +73,7 @@ function ParameterProgressChart({ data, year }) {
           const filled = filledCounts[index];
           const total = category.count;
           const percentage = Math.round((filled / total) * 100);
-          
+
           return (
             <div key={category.name} className="space-y-2">
               <div className="flex items-center justify-between">
@@ -107,19 +107,21 @@ function ParameterProgressChart({ data, year }) {
 
 // Comparison Chart
 function YearComparisonChart({ allData, selectedYear }) {
-  const years = [...new Set(allData.map(d => d.academicYear))].sort((a, b) => a - b);
-  
+  // Ensure years are sorted and unique
+  const years = [...new Set(allData.map(d => Number(d.academicYear)))].sort((a, b) => a - b);
+
   // Calculate completion percentage for each year
   const completionData = years.map(year => {
-    const data = allData.find(d => d.academicYear === year);
+    // Loose equality check for year to handle string/number mismatch
+    const data = allData.find(d => d.academicYear == year);
     if (!data) return 0;
-    
+
     const totalParams = 27;
-    const filledParams = Object.values(data).filter(v => 
-      v !== undefined && v !== "" && v !== null && 
+    const filledParams = Object.values(data).filter(v =>
+      v !== undefined && v !== "" && v !== null &&
       typeof v !== 'object' && !['_id', 'instituteId', 'academicYear', 'createdAt', 'updatedAt', 'isVerified', 'source', 'uploadedBy', 'verifiedBy'].includes(v)
     ).length;
-    
+
     return Math.round((filledParams / totalParams) * 100);
   });
 
@@ -131,28 +133,39 @@ function YearComparisonChart({ allData, selectedYear }) {
         <h3 className="text-lg font-semibold text-gray-900">Year-over-Year Completion</h3>
         <TrendingUp className="w-5 h-5 text-gray-400" />
       </div>
-      <div className="w-full h-48 flex items-end justify-between gap-2">
-        {years.map((year, index) => {
-          const isSelected = selectedYear === year;
-          const value = completionData[index];
-          
-          return (
-            <div key={year} className="flex flex-col items-center flex-1">
-              <div
-                className={`w-4/5 rounded-t-lg transition-all hover:opacity-90 ${
-                  isSelected ? 'ring-2 ring-offset-2' : ''
-                }`}
-                style={{
-                  height: `${(value / maxValue) * 100}%`,
-                  backgroundColor: isSelected ? COLORS.primary : COLORS.neutral,
-                  ringColor: COLORS.primary,
-                }}
-              />
-              <span className="text-xs text-gray-500 mt-2">{year}</span>
-              <span className="text-xs font-semibold text-gray-900 mt-1">{value}%</span>
-            </div>
-          );
-        })}
+      <div className="w-full h-48 flex items-end justify-between gap-2 border-b border-gray-100 pb-2">
+        {years.length > 0 ? (
+          years.map((year, index) => {
+            const isSelected = Number(selectedYear) === year;
+            const value = completionData[index] || 0;
+            const heightPercentage = Math.max(value, 2); // Show at least a tiny bar
+
+            return (
+              <div key={year} className="flex flex-col items-center flex-1 h-full justify-end group cursor-pointer">
+                <div className="relative w-full flex flex-col items-center justify-end h-full">
+                  <div className="mb-2 opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full bg-gray-800 text-white text-xs py-1 px-2 rounded pointer-events-none whitespace-nowrap z-10">
+                    {value}% Completion
+                  </div>
+                  <div
+                    className={`w-12 max-w-[80%] rounded-t-md transition-all duration-500 ease-out ${isSelected ? 'ring-2 ring-offset-2 ring-indigo-500' : 'hover:opacity-80'
+                      }`}
+                    style={{
+                      height: `${(heightPercentage / maxValue) * 100}%`,
+                      backgroundColor: isSelected ? COLORS.primary : "#9CA3AF", // Explicit gray for non-selected
+                    }}
+                  />
+                </div>
+                <span className={`text-xs mt-2 font-medium ${isSelected ? 'text-indigo-600' : 'text-gray-500'}`}>
+                  {year}
+                </span>
+              </div>
+            );
+          })
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
+            No yearly data available
+          </div>
+        )}
       </div>
     </div>
   );
@@ -165,14 +178,14 @@ function getParametersByCategory(category) {
     { fieldName: "teacherStudentRatio", label: "Teacher-Student Ratio", category: "Academic", dataType: "STRING" },
     { fieldName: "placementPercentage", label: "Placement percentage", category: "Academic", dataType: "INTEGER" },
     { fieldName: "studentsGoingForHigherStudies", label: "Students going for higher studies", category: "Academic", dataType: "INTEGER" },
-    
+
     // INFRASTRUCTURE PARAMETERS
     { fieldName: "vacancyBoysHostelUG", label: "Vacancy in BOYS hostel (UG)", category: "Infrastructure", dataType: "INTEGER" },
     { fieldName: "vacancyGirlsHostelUG", label: "Vacancy in GIRLS hostel (UG)", category: "Infrastructure", dataType: "INTEGER" },
     { fieldName: "classroomCapacity", label: "Classroom capacity", category: "Infrastructure", dataType: "INTEGER" },
     { fieldName: "liftAvailable", label: "Lift available", category: "Infrastructure", dataType: "BOOLEAN" },
     { fieldName: "landAreaSqKm", label: "Land area (sqkm)", category: "Infrastructure", dataType: "DECIMAL" },
-    
+
     // FACILITIES PARAMETERS
     { fieldName: "labsFacilities", label: "Labs facilities", category: "Facilities", dataType: "TEXT" },
     { fieldName: "labEquipments", label: "Lab equipments", category: "Facilities", dataType: "INTEGER" },
@@ -180,7 +193,7 @@ function getParametersByCategory(category) {
     { fieldName: "libraryResources", label: "Library resources", category: "Facilities", dataType: "TEXT" },
     { fieldName: "ictFacilities", label: "ICT facilities", category: "Facilities", dataType: "TEXT" },
     { fieldName: "availableWorkshops", label: "Available workshops", category: "Facilities", dataType: "INTEGER" },
-    
+
     // ADMINISTRATIVE PARAMETERS
     { fieldName: "academicPlan", label: "Academic plan", category: "Administrative", dataType: "TEXT" },
     { fieldName: "complianceCertificate", label: "Compliance certificate", category: "Administrative", dataType: "TEXT" },
@@ -192,7 +205,7 @@ function getParametersByCategory(category) {
     { fieldName: "leadershipQualifications", label: "Leadership qualifications", category: "Administrative", dataType: "TEXT" },
     { fieldName: "institutionalNameNorms", label: "Institutional name norms", category: "Administrative", dataType: "TEXT" },
     { fieldName: "safetyCertificates", label: "Safety certificates", category: "Administrative", dataType: "TEXT" },
-    
+
     // FINANCIAL PARAMETERS
     { fieldName: "financialCapacity", label: "Financial capacity", category: "Financial", dataType: "LONG" },
     { fieldName: "budgetAllocation", label: "Budget allocation", category: "Financial", dataType: "LONG" },
@@ -238,11 +251,11 @@ const AnalyticsInsightsPage = () => {
       if (response.success) {
         const data = response.data?.data || response.data || [];
         setAllData(data);
-        
+
         // Extract available years
         const years = [...new Set(data.map(d => d.academicYear))].sort((a, b) => b - a);
         setAvailableYears(years);
-        
+
         if (years.length > 0) {
           setSelectedYear(years[0]);
         }
@@ -262,11 +275,11 @@ const AnalyticsInsightsPage = () => {
     if (!selectedData) return null;
 
     const totalParams = 27;
-    const filledParams = Object.values(selectedData).filter(v => 
-      v !== undefined && v !== "" && v !== null && 
+    const filledParams = Object.values(selectedData).filter(v =>
+      v !== undefined && v !== "" && v !== null &&
       typeof v !== 'object' && !['_id', 'instituteId', 'academicYear', 'createdAt', 'updatedAt', 'isVerified', 'source', 'uploadedBy', 'verifiedBy'].includes(v)
     ).length;
-    
+
     const completionPercentage = Math.round((filledParams / totalParams) * 100);
 
     // Calculate category-wise completion
@@ -421,14 +434,14 @@ const AnalyticsInsightsPage = () => {
             </div>
             <PieChartIcon className="w-5 h-5 text-gray-400" />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {["Academic", "Infrastructure", "Facilities", "Administrative", "Financial"].map((category, index) => {
               const colors = [COLORS.primary, COLORS.secondary, COLORS.tertiary, COLORS.quaternary, COLORS.neutral];
               const percentage = metrics?.categoryCompletion?.[index] || 0;
               const params = getParametersByCategory(category);
               const filled = params.filter(param => selectedData?.[param.fieldName] !== undefined && selectedData?.[param.fieldName] !== "" && selectedData?.[param.fieldName] !== null).length;
-              
+
               return (
                 <div key={category} className="text-center">
                   <div className="relative w-32 h-32 mx-auto mb-4">
@@ -562,11 +575,11 @@ const AnalyticsInsightsPage = () => {
                 <div>
                   <h4 className="text-sm font-semibold text-gray-900">Data Quality</h4>
                   <p className="text-sm text-gray-600">
-                    {metrics?.completionPercentage >= 80 
+                    {metrics?.completionPercentage >= 80
                       ? "Excellent data completeness. All major parameters are filled."
                       : metrics?.completionPercentage >= 60
-                      ? "Good data coverage. Consider filling remaining parameters for better insights."
-                      : "Data completeness needs improvement. Fill more parameters for comprehensive analysis."}
+                        ? "Good data coverage. Consider filling remaining parameters for better insights."
+                        : "Data completeness needs improvement. Fill more parameters for comprehensive analysis."}
                   </p>
                 </div>
               </div>
@@ -575,7 +588,7 @@ const AnalyticsInsightsPage = () => {
                 <div>
                   <h4 className="text-sm font-semibold text-gray-900">Trend Analysis</h4>
                   <p className="text-sm text-gray-600">
-                    {allData.length > 1 
+                    {allData.length > 1
                       ? `Data available for ${allData.length} academic years. Track progress over time using the year comparison chart.`
                       : "Single year data available. Submit data for more years to enable trend analysis."}
                   </p>
