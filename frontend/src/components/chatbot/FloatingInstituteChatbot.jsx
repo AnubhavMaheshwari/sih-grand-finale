@@ -410,7 +410,7 @@ const FloatingInstituteChatbot = ({ instituteData }) => {
       });
 
       // Send question and context separately as expected by the backend
-      const res = await axios.post(`${API_BASE}/api/v1/chat`, {
+      const res = await axios.post(`${API_BASE.replace(/\/$/, "")}/api/v1/chat`, {
         question: question,
         context: chatbotContext
       });
