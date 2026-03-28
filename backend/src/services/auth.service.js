@@ -286,9 +286,9 @@ export const registerInstitute = async (userData) => {
   const emailResult = await sendOTPEmail(email, otpCode);
   
   if (!emailResult.success) {
-    // If email fails, delete the user and throw error
-    await User.findByIdAndDelete(newUser._id);
-    throw new Error("Failed to send OTP email. Please try again later.");
+    console.warn(`⚠️ REGISTRATION EMAIL FAILED for ${email}. OTP is: ${otpCode}`);
+    console.warn(`Reason: ${emailResult.error}`);
+    // DO NOT throw error here, allow user to find OTP in logs
   }
 
   // Prepare response (don't include sensitive data)

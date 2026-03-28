@@ -180,9 +180,11 @@ export const registerInstitute = async (req, res) => {
     
     successResponse(res, result, 201);
   } catch (error) {
-    if (error.message.includes("already exists") || 
+    if (error.message.includes("already registered") || 
+        error.message.includes("already exists") || 
         error.message.includes("Invalid") ||
-        error.message.includes("required")) {
+        error.message.includes("required") ||
+        error.message.includes("OTP")) {
       return errorResponse(res, error.message, 400);
     }
     console.error("REGISTER INSTITUTE ERROR:", error);
