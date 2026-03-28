@@ -6,8 +6,8 @@ Run this from the chatbot directory, not from src directory
 import os
 import sys
 
-# Add the src directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# Add the project root to the path if needed
+sys.path.insert(0, os.path.dirname(__file__))
 
 # Load environment variables
 from dotenv import load_dotenv

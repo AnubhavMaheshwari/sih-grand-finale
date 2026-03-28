@@ -30,7 +30,7 @@ async def health_check():
         # Check LLM availability
         llm_available = False
         try:
-            from ..services.llm_service import llm_service
+            from src.services.llm_service import llm_service
             # Try to access the API key (won't actually make API call)
             if os.getenv("GROQ_API_KEY"):
                 llm_available = True
@@ -40,7 +40,7 @@ async def health_check():
         # Check content filter availability
         content_filter_available = False
         try:
-            from ..core.content_filter import content_filter
+            from src.core.content_filter import content_filter
             content_filter_available = True
         except:
             content_filter_available = False
@@ -75,7 +75,7 @@ async def llm_health_check():
     Tests actual LLM connectivity by making a small test request.
     """
     try:
-        from ..services.llm_service import llm_service
+        from src.services.llm_service import llm_service
         
         # Make a simple test request
         test_result = llm_service.generate_answer(
@@ -107,7 +107,7 @@ async def content_filter_health_check():
     Tests the content filter with sample inputs.
     """
     try:
-        from ..core.content_filter import content_filter
+        from src.core.content_filter import content_filter
         
         # Test cases
         test_cases = [

@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 
-from services.llm_service import llm_service
-from core.content_filter import content_filter
+from src.services.llm_service import llm_service
+from src.core.content_filter import content_filter
 
 router = APIRouter()
 

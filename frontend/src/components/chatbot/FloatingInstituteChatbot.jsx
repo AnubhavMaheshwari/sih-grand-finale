@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Volume2, VolumeX, Bot, Mic, MicOff, X } from "lucide-react";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_CHATBOT_URL || "http://localhost:8000";
 
 // Site theme colors
 const COLORS = {

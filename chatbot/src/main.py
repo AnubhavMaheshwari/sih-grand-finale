@@ -11,9 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
 
 # Import routers
-from routes.chat import router as chat_router
-from routes.institute import router as institute_router
-from routes.health import router as health_router
+from src.routes.chat import router as chat_router
+from src.routes.institute import router as institute_router
+from src.routes.health import router as health_router
 
 # Create FastAPI app
 app = FastAPI(

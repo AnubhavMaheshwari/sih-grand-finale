@@ -1,7 +1,7 @@
 import os
 from typing import Dict, Any, Optional
 from groq import Groq
-from core.content_filter import content_filter
+from src.core.content_filter import content_filter
 
 class LLMService:
     """Service for handling LLM interactions with GROQ."""

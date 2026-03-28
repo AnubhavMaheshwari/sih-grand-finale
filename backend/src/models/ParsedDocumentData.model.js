@@ -7,7 +7,6 @@ const parsedDocumentDataSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "UploadedDocument",
       required: true,
-      index: true,
     },
     
     instituteId: {

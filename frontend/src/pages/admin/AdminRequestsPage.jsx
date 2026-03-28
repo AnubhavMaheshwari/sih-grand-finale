@@ -214,7 +214,7 @@ const AdminRequestsPage = () => {
                                                             {(file.size / 1024 / 1024).toFixed(2)} MB
                                                         </span>
                                                         <a
-                                                            href={`http://localhost:8000/${file.path}`}
+                                                            href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/${file.path}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-indigo-600 hover:text-indigo-800 text-xs font-medium"
